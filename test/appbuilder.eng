@@ -3,6 +3,7 @@ types
     Integer, String     <: Type;
     Decl;
     IfStmt, MapStmt     <: Stmt;
+    Var;
 
 tokens
 	' ' :: skip

@@ -1,12 +1,21 @@
-﻿using System;
+﻿using Engage.front;
+using Engage.mid;
+using System;
+using System.IO;
 
 namespace Engage
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private const string AppBuilderSpec = @"..\..\..\..\test\appbuilder.eng";
+
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Engage!");
+            var spec = Parser.ParseEngSpec(File.ReadAllText(AppBuilderSpec));
+            Console.WriteLine("Spec read!");
+            var plan = IntermediateFactory.Ast2ir(spec);
+            Console.WriteLine("Plan made!");
         }
     }
 }

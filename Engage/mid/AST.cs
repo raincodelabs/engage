@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Engage.mid
 {
@@ -44,6 +45,14 @@ namespace Engage.mid
         public Trigger LHS;
         public Reaction RHS;
         public List<Assignment> Context = new List<Assignment>();
+
+        internal Operation GetContext(string name)
+        {
+            foreach (var a in Context)
+                if (a.LHS == name)
+                    return a.RHS;
+            return null;
+        }
     }
 
     public partial class Trigger
