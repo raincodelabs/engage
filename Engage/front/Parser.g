@@ -16,17 +16,27 @@ Lexeme ::=
 	/ NumberLex  := "number"       Special=$true
 	/ StringLex  := "string"       Special=$true;
 
-HandlerDecl ::= i:s? LHS=Trigger i:s? "->" i:s? RHS=Reaction;
+HandlerDecl ::= i:s? LHS=Trigger i:s? "->" i:s? RHS=Reaction (i:s? "where" Context=Assignment+,("," i:s?))?;
 
-Trigger ::= (Literal=Quoted / "EOF" EOF=$true) ("given" Flag=Id)?;
+Trigger ::= (Literal=Quoted / "EOF" EOF=$true) (i:s "given" i:s Flag=Id)?;
 
 Reaction ::=
 	  PushReaction := "push" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?
 	/ LiftReaction := "lift" i:s Flag=Id
-	/ DropReaction := "lift" i:s Flag=Id
+	/ DropReaction := "drop" i:s Flag=Id
 	;
 
-string Id ::= re:"[a-zA-Z_01-9]+";
+Assignment ::= i:s? LHS=Id i:s? ":=" i:s? RHS=Operation;
+
+Operation ::=
+	  PopAction       := "pop"    i:s Name=Id
+	/ PopStarAction   := "pop*"   i:s Name=Id
+	/ AwaitAction     := "await"  i:s Name=Id (i:s? "with" i:s TmpContext=Id)
+	/ AwaitAction     := "await"  i:s? "(" i:s? Name=Id i:s "given" i:s ExtraContext=Id i:s? ")" (i:s? "with" i:s TmpContext=Id)
+	/ AwaitStarAction := "await*" i:s Name=Id (i:s? "with" i:s TmpContext=Id)
+	;
+
+string Id ::= re:"[a-zA-Z_01-9#]+";
 string Quoted ::= "'" re:"[^']+" "'";
 
 # Spacing

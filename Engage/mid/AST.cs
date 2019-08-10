@@ -6,7 +6,7 @@ namespace Engage.mid
     {
         public List<TypeDecl> Types = new List<TypeDecl>();
         public List<TokenDecl> Tokens = new List<TokenDecl>();
-        public List<HandlerDecl> Handlers= new List<HandlerDecl>();
+        public List<HandlerDecl> Handlers = new List<HandlerDecl>();
     }
 
     public partial class TypeDecl
@@ -43,6 +43,7 @@ namespace Engage.mid
     {
         public Trigger LHS;
         public Reaction RHS;
+        public List<Assignment> Context = new List<Assignment>();
     }
 
     public partial class Trigger
@@ -72,12 +73,36 @@ namespace Engage.mid
         public string Flag;
     }
 
-    public partial class Context
-    {
-        public List<Assignment> Lets = new List<Assignment>();
-    }
-
     public partial class Assignment
     {
+        public string LHS;
+        public Operation RHS;
+    }
+
+    public partial class Operation
+    {
+    }
+
+    public partial class PopAction : Operation
+    {
+        public string Name;
+    }
+
+    public partial class PopStarAction : Operation
+    {
+        public string Name;
+    }
+
+    public partial class AwaitAction : Operation
+    {
+        public string Name;
+        public string TmpContext;
+        public string ExtraContext;
+    }
+
+    public partial class AwaitStarAction : Operation
+    {
+        public string Name;
+        public string TmpContext;
     }
 }
