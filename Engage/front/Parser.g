@@ -3,31 +3,31 @@
 [using Engage.mid]
 
 EngSpec ::= i:s?
-	"types" Types=TypeDecl*,(i:s*)
-	"tokens" Tokens=TokenDecl*,(i:s*)
-	"handlers" Handlers=HandlerDecl*,(i:s*) i:s?;
+	"types" Types=TypeDecl*,(i:s?) i:s?
+	"tokens" Tokens=TokenDecl*,(i:s?) i:s?
+	"handlers" Handlers=HandlerDecl*,(i:s?) i:s?;
 
-TypeDecl ::= Names=Id+,"," ("<:" i:s? Super=Id)?;
+TypeDecl ::= i:s? Names=Id+,("," i:s?) (i:s? "<:" i:s? Super=Id)? ";";
 
-TokenDecl ::= Names=Lexeme+,"," "::" i:s? Type=Id;
+TokenDecl ::= i:s? Names=Lexeme+,("," i:s?) i:s? "::" i:s? Type=Id;
 
 Lexeme ::=
-	  LiteralLex := Literal=Quoted  Special=$false
-	/ NumberLex  := "number" Special=$true
-	/ StringLex  := "string" Special=$true;
+	  LiteralLex := Literal=Quoted Special=$false
+	/ NumberLex  := "number"       Special=$true
+	/ StringLex  := "string"       Special=$true;
 
-HandlerDecl ::= LHS=Trigger "->" RHS=Reaction;
+HandlerDecl ::= i:s? LHS=Trigger i:s? "->" i:s? RHS=Reaction;
 
 Trigger ::= (Literal=Quoted / "EOF" EOF=$true) ("given" Flag=Id)?;
 
 Reaction ::=
-	  PushReaction := "push" Name=Id ("(" Args=Id+,"," ")")?
-	/ LiftReaction := "lift" Flag=Id
-	/ DropReaction := "lift" Flag=Id
+	  PushReaction := "push" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?
+	/ LiftReaction := "lift" i:s Flag=Id
+	/ DropReaction := "lift" i:s Flag=Id
 	;
 
 string Id ::= re:"[a-zA-Z_01-9]+";
-string Quoted ::= "'" re:"[\\w]+" "'";
+string Quoted ::= "'" re:"[^']+" "'";
 
 # Spacing
 string s ::= (i:Lay/i:comment)+;

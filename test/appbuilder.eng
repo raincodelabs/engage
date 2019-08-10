@@ -1,0 +1,40 @@
+types
+    Program;
+    Integer, String     <: Type;
+    Decl;
+    IfStmt, MapStmt     <: Stmt;
+
+tokens
+	' ' :: skip
+	'dcl', 'enddcl', 'integer', 'char', 'if', 'map', 'to' :: keyword
+	number :: N
+	string :: V
+
+handlers
+    EOF                 -> push Program(data,code)
+%                           where data := pop* Decl,
+%                                 code := pop* Stmt
+    %
+%    'dcl'               -> lift DCL
+%    'enddcl'            -> drop DCL
+%    ';' given DCL       -> push Decl(v,t)
+%                           where t := pop Type,
+%                                 v := pop Var
+%    'integer' given DCL -> push Integer
+%    'char'    given DCL -> push String(n)
+%                           where n := await (N given BRACKET) with CHAR
+%    '(' given CHAR      -> lift BRACKET
+%    ')' given CHAR      -> drop BRACKET
+%    'if'                -> push IfStmt(cond,code)
+%                           where cond := await E with IF#,
+%                                 code := await* Stmt with IF#
+%    'endif'             -> drop IF
+%    'map'               -> push MapStmt(from, to)
+%                           where from := await E with MAP,
+%                                 to   := await V with MAP
+    %
+%    V given MAP         -> assert exists Decl(v,t) such that v == this
+%
+%# implicit?
+%V                       -> push Var(name:this)
+%N                       -> push Int32(this)
