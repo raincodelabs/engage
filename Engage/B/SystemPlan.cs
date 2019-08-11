@@ -100,6 +100,8 @@ namespace Engage.B
             foreach (var hpk in Handlers.Keys)
             {
                 List<C.CsStmt> branchType = new List<C.CsStmt>();
+                if (hpk == "EOF")
+                    branchType.Add(new C.CsSimpleStmt("Flush()"));
                 if (Handlers[hpk].Count == 1)
                 {
                     foreach (var action in Handlers[hpk][0].Recipe)

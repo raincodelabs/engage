@@ -36,6 +36,7 @@ namespace AB
                 switch (type)
                 {
                     case TokenType.TEOF:
+                        Flush();
                         var code = new List<Stmt>();
                         while (Main.Count > 0 && Main.Peek() is Stmt)
                             code.Add(Main.Pop() as Stmt);
@@ -73,7 +74,7 @@ namespace AB
                                     if (!BRACKET)
                                         return Message.Misfire;
                                     Push(new String(n));
-                                    return Message.Consume;
+                                    return Message.Perfect;
                                 }
                                 );
                                 break;
@@ -94,10 +95,10 @@ namespace AB
                                         var target = _target as Var;
                                         MAP = false;
                                         Push(new MapStmt(source, target));
-                                        return Message.Consume;
+                                        return Message.Perfect;
                                     }
                                     );
-                                    return Message.Consume;
+                                    return Message.Perfect;
                                 }
                                 );
                                 break;
@@ -108,7 +109,7 @@ namespace AB
                                 {
                                     var cond = _cond as Expr;
                                     IF--;
-                                    return Message.Consume;
+                                    return Message.Perfect;
                                 }
                                 );
                                 break;

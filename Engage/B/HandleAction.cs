@@ -116,7 +116,7 @@ namespace Engage.B
                 lambda.AddCode($"if (!{ExtraFlag})", "return Message.Misfire");
             if (BaseAction != null)
                 BaseAction.GenerateAbstractCode(lambda.Code);
-            lambda.AddCode("return Message.Consume");
+            lambda.AddCode("return Message.Perfect");
             code.Add(lambda);
         }
     }

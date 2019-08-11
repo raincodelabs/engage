@@ -33,6 +33,15 @@ namespace EngageRuntime
             Trigger();
         }
 
+        protected void Flush()
+        {
+            Log("FLUSH");
+            Trigger();
+
+            foreach (var msg in Pending.ToArray())
+                Log($"forced a {msg.ExpectedType} handler: return code {msg.Handler(null)}");
+        }
+
         private void Trigger()
         {
             while (Main.Count > 0)
