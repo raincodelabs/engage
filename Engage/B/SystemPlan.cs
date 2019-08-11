@@ -119,6 +119,13 @@ namespace Engage.B
                     {
                         List<C.CsStmt> branchLex = new List<C.CsStmt>();
                         Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
+                        if (!String.IsNullOrEmpty(hp.GuardFlag))
+                        {
+                            var tmp = new C.CsComplexStmt();
+                            tmp.Before = $"if (!{hp.GuardFlag})";
+                            tmp.AddCode($"ERROR = \"flag {hp.GuardFlag} not lifted when expected\"");
+                            branchLex.Add(tmp);
+                        }
                         foreach (var action in hp.Recipe)
                         {
                             if (action != null)

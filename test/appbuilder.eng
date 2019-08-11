@@ -34,6 +34,5 @@ handlers
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
-%    Var                 -> push Var(this)
 
 %    V given MAP         -> assert exists Decl(v,t) such that v == this

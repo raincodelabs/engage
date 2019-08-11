@@ -66,6 +66,10 @@ namespace AB
                                 break;
 
                             case ";":
+                                if (!DCL)
+                                {
+                                    ERROR = "flag DCL not lifted when expected";
+                                }
                                 Type t;
                                 if (Main.Peek() is Type)
                                 {
@@ -90,10 +94,18 @@ namespace AB
                                 break;
 
                             case "integer":
+                                if (!DCL)
+                                {
+                                    ERROR = "flag DCL not lifted when expected";
+                                }
                                 Push(new Integer());
                                 break;
 
                             case "char":
+                                if (!DCL)
+                                {
+                                    ERROR = "flag DCL not lifted when expected";
+                                }
                                 CHAR = true;
                                 LetWait(typeof(Num), _n =>
                                 {
@@ -109,10 +121,18 @@ namespace AB
                                 break;
 
                             case "(":
+                                if (!CHAR)
+                                {
+                                    ERROR = "flag CHAR not lifted when expected";
+                                }
                                 BRACKET = true;
                                 break;
 
                             case ")":
+                                if (!CHAR)
+                                {
+                                    ERROR = "flag CHAR not lifted when expected";
+                                }
                                 BRACKET = false;
                                 break;
 
