@@ -4,12 +4,13 @@ types
     ABProgram;
     Integer, String     <: Type;
     Decl;
-    IfStmt, MapStmt     <: Stmt;
+    IfStmt, MapStmt, ClearStmt, ReturnStmt
+                        <: Stmt;
     Var, Num            <: Expr;
 
 tokens
 	' ', '\r', '\n' :: skip
-	'dcl', 'enddcl', 'integer', 'char', 'if', 'endif', 'map', 'to', ';', '(', ')' :: reserved
+	'dcl', 'enddcl', 'integer', 'char', 'if', 'endif', 'map', 'to', 'clear', 'return', ';', '(', ')' :: reserved
 	number :: Num
 	string :: Var
 
@@ -34,5 +35,8 @@ handlers
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
+    'clear'             -> push ClearStmt(view)
+                           where view := await Var
+    'return'            -> push ReturnStmt
 
 %    V given MAP         -> assert exists Decl(v,t) such that v == this

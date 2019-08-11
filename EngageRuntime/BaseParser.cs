@@ -8,6 +8,8 @@ namespace EngageRuntime
         protected string input;
         protected int pos;
 
+        private bool exec = false;
+
         protected List<Message> Pending = new List<Message>();
         protected Stack<object> Main = new Stack<object>();
 
@@ -22,12 +24,14 @@ namespace EngageRuntime
 
         protected void Push(object _x)
         {
+            Log($"        push {_x} :: {_x.GetType()}");
             Main.Push(_x);
             Trigger();
         }
 
         protected void Schedule(Type _type, Func<object, int> _action)
         {
+            //Log($"SCHEDULE for {_type}");
             Message message = new Message(_type, _action);
             Pending.Add(message);
             Trigger();
@@ -35,24 +39,39 @@ namespace EngageRuntime
 
         protected void Flush()
         {
-            Log("FLUSH");
+            //Log("FLUSH");
             Trigger();
-
+            exec = true;
             foreach (var msg in Pending.ToArray())
-                Log($"forced a {msg.ExpectedType} handler: return code {msg.Handler(null)}");
+                Log($"forced a {msg.ExpectedType} handler: return code {Convert.ToString(msg.Handler(null), 2)}");
+            exec = false;
         }
 
-        private void Trigger()
+        protected void Trigger()
         {
+            if (exec)
+            {
+                //Log("TRIGGER FAILED");
+                return;
+            }
+            //Log("TRIGGER");
+            exec = true;
             while (Main.Count > 0)
-                if (ApplyOne(Main.Peek()))
-                    Main.Pop(); // discard and continue
-                else
+            {
+                var top = Main.Pop();
+                if (!ApplyOne(top))
+                {
+                    Main.Push(top); // put it back
+                    exec = false;
                     return; // all currently pending actions fail at the moment
+                }
+            }
+            exec = false;
         }
 
         private bool ApplyOne(object _x)
         {
+            //Log($"APPLY to {_x} :: {_x.GetType()}");
             Type _t = _x.GetType();
             foreach (var candidate in Pending)
             {
@@ -61,12 +80,15 @@ namespace EngageRuntime
                     int code = candidate.Handler(_x);
                     if (code == Message.Misfire)
                         continue;
-                    if (code == Message.Perfect)
+                    if (code == Message.Perfect || code == Message.Neglect)
                         Pending.Remove(candidate);
+                    if (code == Message.Neglect)
+                        return ApplyOne(_x); // better luck next time?
+                    //Log($"APPLY to {_x} :: {_x.GetType()} SUCCESS");
                     return true; // Consume or Perfect
                 }
             }
-            return false;
+            return false; // nothing or only misfires
         }
     }
 }

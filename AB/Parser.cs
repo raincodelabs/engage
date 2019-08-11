@@ -64,8 +64,22 @@ namespace AB
                                 DCL = false;
                                 break;
 
+                            case "return":
+                                Push(new ReturnStmt());
+                                break;
+
                             case "endif":
                                 IF--;
+                                break;
+
+                            case "clear":
+                                Schedule(typeof(Var), _view =>
+                                {
+                                    var view = _view as Var;
+                                    Push(new ClearStmt(view));
+                                    return Message.Perfect;
+                                }
+                                );
                                 break;
 
                             case "char":
@@ -234,6 +248,18 @@ namespace AB
                 t = TokenType.Treserved;
                 s = "to";
                 pos += 2;
+            }
+            else if (pos + 4 < input.Length && input[pos] == 'c' && input[pos + 1] == 'l' && input[pos + 2] == 'e' && input[pos + 3] == 'a' && input[pos + 4] == 'r')
+            {
+                t = TokenType.Treserved;
+                s = "clear";
+                pos += 5;
+            }
+            else if (pos + 5 < input.Length && input[pos] == 'r' && input[pos + 1] == 'e' && input[pos + 2] == 't' && input[pos + 3] == 'u' && input[pos + 4] == 'r' && input[pos + 5] == 'n')
+            {
+                t = TokenType.Treserved;
+                s = "return";
+                pos += 6;
             }
             else if (input[pos] == ';')
             {

@@ -121,7 +121,7 @@ namespace Engage.B
                     foreach (var hp in list)
                     {
                         List<C.CsStmt> branchLex = new List<C.CsStmt>();
-                        Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
+                        //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
                         if (!String.IsNullOrEmpty(hp.GuardFlag))
                         {
                             var tmp = new C.CsComplexStmt();

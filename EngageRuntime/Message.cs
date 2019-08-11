@@ -4,9 +4,10 @@ namespace EngageRuntime
 {
     public class Message
     {
-        public const int Misfire = 1; // keep looking / did not consume anything
-        public const int Consume = 2; // success / keep me for future
-        public const int Perfect = 3; // termination / remove m
+        public const int Misfire = 0b1000; // did not apply / did not consume / do not remove
+        public const int Neglect = 0b1101; //         apply / did not consume /        remove
+        public const int Consume = 0b1110; //         apply /         consume / do not remove
+        public const int Perfect = 0b1111; //         apply /         consume /        remove
 
         public System.Type ExpectedType;
 
