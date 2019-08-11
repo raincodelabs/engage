@@ -52,8 +52,42 @@ namespace Engage.mid
             if (IntFlags.Count > 0)
                 p.AddField(String.Join(", ", IntFlags), "int", isPublic: false);
             p.AddField("Main", "Stack<Object>", isPublic: false);
-            p.AddField("_input", "string", isPublic: false);
-            p.AddField("_pos", "int", isPublic: false);
+            p.AddField("input", "string", isPublic: false);
+            p.AddField("pos", "int", isPublic: false);
+            // parser constructor
+            var pc = new CsConstructor();
+            pc.AddArgument("input", "string");
+            pc.AddCode("pos = 0");
+            p.AddConstructor(pc);
+            // the parse function
+            var pf = new CsMethod();
+            pf.Name = "Parse";
+            pf.RetType = "object";
+            pf.AddCode("TokenType type");
+            pf.AddCode("string lexeme");
+            List<CsStmt> loop = new List<CsStmt>();
+            var pl = new CsComplexStmt();
+            pl.Before = "do";
+            pl.After = "while (type != TokenType.TEOF)";
+
+            // main parsing loop: begin
+            pl.AddCode("var t = NextToken();");
+            pl.AddCode("lexeme = t.Item2;");
+            pl.AddCode("type = t.Item1;");
+            // main parsing loop: end
+
+            pf.AddCode(pl);
+            pf.AddCode("return null"); // TODO!!!
+            p.AddMethod(pf);
+
+            // tokeniser
+            var tok = new CsMethod();
+            tok.IsPublic = false;
+            tok.Name = "NextToken";
+            tok.RetType = "Tuple<TokenType, string>";
+            tok.AddCode("return null"); // TODO
+            p.AddMethod(tok);
+
             return p;
         }
     }

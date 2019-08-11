@@ -14,7 +14,7 @@ namespace Engage.back
         public string Super;
         private Dictionary<string, string> PublicFields = new Dictionary<string, string>();
         private Dictionary<string, string> PrivateFields = new Dictionary<string, string>();
-        private HashSet<CsConstructor> Constructors = new HashSet<CsConstructor>();
+        private HashSet<CsExeField> Methods = new HashSet<CsExeField>();
         private HashSet<string> Usings = new HashSet<string>();
 
         public void AddUsing(string name)
@@ -31,9 +31,10 @@ namespace Engage.back
         }
 
         public void AddConstructor(CsConstructor c)
-        {
-            Constructors.Add(c);
-        }
+            => Methods.Add(c);
+
+        public void AddMethod(CsMethod c)
+            => Methods.Add(c);
 
         public List<string> GenerateCode()
         {
@@ -68,7 +69,7 @@ namespace Engage.back
             foreach (var fn in PrivateFields.Keys)
                 GenerateCodeForField(lines, level + 1, fn, PrivateFields[fn], isPublic: false);
             lines.Empty();
-            foreach (var c in Constructors)
+            foreach (var c in Methods)
                 c.GenerateClassCode(lines, level + 1, Name);
             lines.Comment(level + 1, "TODO");
             lines.Close(level);
@@ -85,25 +86,99 @@ namespace Engage.back
         }
     }
 
-    public class CsConstructor
+    public abstract class CsExeField
     {
-        private List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
+        public bool IsPublic = true;
+        protected List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
+        protected List<CsStmt> Code = new List<CsStmt>();
 
         public void AddArgument(string name, string type)
         {
             Args.Add(new Tuple<string, string>(name, type));
         }
 
-        public void GenerateClassCode(List<string> lines, int level, string className)
+        public void AddCode(string line)
+            => AddCode(new CsSimpleStmt() { Code = line });
+
+        public void AddCode(CsStmt line)
+            => Code.Add(line);
+
+        public abstract void GenerateClassCode(List<string> lines, int level, string className);
+    }
+
+    public class CsConstructor : CsExeField
+    {
+        public override void GenerateClassCode(List<string> lines, int level, string className)
         {
             string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
-            lines.Add(level, $"public {className}({args})");
+            lines.Add(level, $"{(IsPublic ? "public" : "private")} {className}({args})");
             lines.Open(level);
             foreach (var a in Args)
                 if (a.Item2.IsCollection())
                     lines.Add(level + 1, $"{a.Item1}.AddRange(_{a.Item1});");
                 else
                     lines.Add(level + 1, $"{a.Item1} = _{a.Item1};");
+            foreach (var line in Code)
+                line.GenerateCode(lines, level + 1);
+            lines.Close(level);
+        }
+    }
+
+    public abstract class CsStmt
+    {
+        public abstract void GenerateCode(List<string> lines, int level);
+    }
+
+    public class CsSimpleStmt : CsStmt
+    {
+        public string Code;
+
+        public override void GenerateCode(List<string> lines, int level)
+        {
+            if (!Code.EndsWith(";"))
+                Code += ";";
+            lines.Add(level, Code);
+        }
+    }
+
+    public class CsComplexStmt : CsStmt
+    {
+        public string Before, After;
+        public List<CsStmt> Code = new List<CsStmt>();
+
+        public void AddCode(string stmt)
+            => AddCode(new CsSimpleStmt() { Code = stmt });
+
+        public void AddCode(CsStmt stmt)
+            => Code.Add(stmt);
+
+        public override void GenerateCode(List<string> lines, int level)
+        {
+            if (!String.IsNullOrEmpty(Before))
+                lines.Add(level, Before);
+            lines.Open(level);
+            foreach (var stmt in Code)
+                stmt.GenerateCode(lines, level + 1);
+            lines.Close(level);
+            if (!After.EndsWith(";"))
+                After += ";";
+            if (!String.IsNullOrEmpty(After))
+                lines.Add(level, After);
+        }
+    }
+
+    public class CsMethod : CsExeField
+    {
+        public string Name;
+        public string RetType;
+
+        public override void GenerateClassCode(List<string> lines, int level, string className)
+        {
+            string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
+            lines.Add(level, $"{(IsPublic ? "public" : "private")} {RetType} {Name}({args})");
+            lines.Open(level);
+            foreach (var line in Code)
+                line.GenerateCode(lines, level + 1);
             lines.Close(level);
         }
     }

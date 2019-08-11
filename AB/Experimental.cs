@@ -22,41 +22,42 @@ namespace AB
         public object Parse()
         {
             TokenType type;
-            string lex;
+            string lexeme;
             do
             {
                 var t = NextToken();
-                lex = t.Item2;
+                lexeme = t.Item2;
                 type = t.Item1;
 
-                if (type == TokenType.TEOF)
+                switch (type)
                 {
-                    List<Decl> data = new List<Decl>();
-                    while (Main.Peek() is Decl)
-                        data.Add(Main.Pop() as Decl);
-                    List<Stmt> code = new List<Stmt>();
-                    while (Main.Peek() is Stmt)
-                        code.Add(Main.Pop() as Stmt);
-                    Main.Push(new ABProgram(data, code));
-                }
-                if (type == TokenType.TReserved)
-                {
-                    switch(lex)
-                    {
-                        case "dcl":
-                            DCL = true;
-                            break;
-                        case "enddcl":
-                            DCL = false;
-                            break;
-                    }
+                    case TokenType.TEOF:
+                        List<Decl> data = new List<Decl>();
+                        while (Main.Peek() is Decl)
+                            data.Add(Main.Pop() as Decl);
+                        List<Stmt> code = new List<Stmt>();
+                        while (Main.Peek() is Stmt)
+                            code.Add(Main.Pop() as Stmt);
+                        Main.Push(new ABProgram(data, code));
+                        break;
+                    case TokenType.TReserved:
+                        switch (lexeme)
+                        {
+                            case "dcl":
+                                DCL = true;
+                                break;
+                            case "enddcl":
+                                DCL = false;
+                                break;
+                        }
+                        break;
                 }
             } while (type != TokenType.TEOF);
 
             return null;
         }
 
-        public Tuple<TokenType, string> NextToken()
+        private Tuple<TokenType, string> NextToken()
         {
             TokenType t = TokenType.TUndefined;
             string s = "";

@@ -9,9 +9,31 @@ namespace AB
         private bool DCL, BRACKET, CHAR, MAP;
         private int IF;
         private Stack<Object> Main = new Stack<Object>();
-        private string _input;
-        private int _pos;
+        private string input;
+        private int pos;
 
+        public Parser(string _input)
+        {
+            input = _input;
+            pos = 0;
+        }
+        public object Parse()
+        {
+            TokenType type;
+            string lexeme;
+            do
+            {
+                var t = NextToken();
+                lexeme = t.Item2;
+                type = t.Item1;
+            }
+            while (type != TokenType.TEOF);
+            return null;
+        }
+        private Tuple<TokenType, string> NextToken()
+        {
+            return null;
+        }
         // TODO
     }
 }
