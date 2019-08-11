@@ -2,7 +2,13 @@
 
 public class MapStmt : Stmt
 {
-    public Expr source
-    public Var target
+    public Expr source;
+    public Var target;
+
+    public MapStmt(Expr _source, Var _target)
+    {
+        source = _source;
+        target = _target;
+    }
     // TODO
 }

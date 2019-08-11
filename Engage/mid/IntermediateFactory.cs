@@ -37,8 +37,8 @@ namespace Engage.mid
                                 cp.Args.Add(new Tuple<string, TypePlan>(a, plan.Types[aa.Name]));
                             else if (c is AwaitStarAction asa)
                                 cp.Args.Add(new Tuple<string, TypePlan>(a, plan.Types[asa.Name].Copy(true)));
-                            tp.Constructors.Add(cp);
                         }
+                        tp.Constructors.Add(cp);
                         Console.WriteLine($"[IR] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
                     }
                 }

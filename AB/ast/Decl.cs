@@ -2,7 +2,13 @@
 
 public class Decl
 {
-    public Var v
-    public Type t
+    public Var v;
+    public Type t;
+
+    public Decl(Var _v, Type _t)
+    {
+        v = _v;
+        t = _t;
+    }
     // TODO
 }

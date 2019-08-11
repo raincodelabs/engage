@@ -2,5 +2,9 @@
 
 public class Integer : Type
 {
+
+    public Integer()
+    {
+    }
     // TODO
 }
