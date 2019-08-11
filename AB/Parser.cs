@@ -57,12 +57,71 @@ namespace AB
                     case TokenType.Treserved:
                         switch (lexeme)
                         {
-                            case "dcl":
-                                DCL = true;
+                            case "integer":
+                                if (!DCL)
+                                {
+                                    ERROR = "flag DCL not lifted when expected";
+                                }
+                                Push(new Integer());
                                 break;
 
                             case "enddcl":
                                 DCL = false;
+                                break;
+
+                            case "endif":
+                                IF--;
+                                break;
+
+                            case "char":
+                                if (!DCL)
+                                {
+                                    ERROR = "flag DCL not lifted when expected";
+                                }
+                                CHAR = true;
+                                LetWait(typeof(Num), _n =>
+                                {
+                                    var n = _n as Num;
+                                    CHAR = false;
+                                    if (!BRACKET)
+                                    {
+                                        ERROR = "flag BRACKET was not raised when expected";
+                                    }
+                                    Push(new String(n));
+                                }
+                                );
+                                break;
+
+                            case "dcl":
+                                DCL = true;
+                                break;
+
+                            case "map":
+                                MAP = true;
+                                LetWait(typeof(Expr), _source =>
+                                {
+                                    var source = _source as Expr;
+                                    MAP = false;
+                                    MAP = true;
+                                    LetWait(typeof(Var), _target =>
+                                    {
+                                        var target = _target as Var;
+                                        MAP = false;
+                                        Push(new MapStmt(source, target));
+                                    }
+                                    );
+                                }
+                                );
+                                break;
+
+                            case "if":
+                                IF++;
+                                LetWait(typeof(Expr), _cond =>
+                                {
+                                    var cond = _cond as Expr;
+                                    IF--;
+                                }
+                                );
                                 break;
 
                             case ";":
@@ -93,33 +152,6 @@ namespace AB
                                 Push(new Decl(v, t));
                                 break;
 
-                            case "integer":
-                                if (!DCL)
-                                {
-                                    ERROR = "flag DCL not lifted when expected";
-                                }
-                                Push(new Integer());
-                                break;
-
-                            case "char":
-                                if (!DCL)
-                                {
-                                    ERROR = "flag DCL not lifted when expected";
-                                }
-                                CHAR = true;
-                                LetWait(typeof(Num), _n =>
-                                {
-                                    var n = _n as Num;
-                                    CHAR = false;
-                                    if (!BRACKET)
-                                    {
-                                        ERROR = "flag BRACKET was not raised when expected";
-                                    }
-                                    Push(new String(n));
-                                }
-                                );
-                                break;
-
                             case "(":
                                 if (!CHAR)
                                 {
@@ -134,38 +166,6 @@ namespace AB
                                     ERROR = "flag CHAR not lifted when expected";
                                 }
                                 BRACKET = false;
-                                break;
-
-                            case "if":
-                                IF++;
-                                LetWait(typeof(Expr), _cond =>
-                                {
-                                    var cond = _cond as Expr;
-                                    IF--;
-                                }
-                                );
-                                break;
-
-                            case "endif":
-                                IF--;
-                                break;
-
-                            case "map":
-                                MAP = true;
-                                LetWait(typeof(Expr), _source =>
-                                {
-                                    var source = _source as Expr;
-                                    MAP = false;
-                                    MAP = true;
-                                    LetWait(typeof(Var), _target =>
-                                    {
-                                        var target = _target as Var;
-                                        MAP = false;
-                                        Push(new MapStmt(source, target));
-                                    }
-                                    );
-                                }
-                                );
                                 break;
 
                         }

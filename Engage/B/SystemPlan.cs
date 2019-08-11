@@ -115,7 +115,9 @@ namespace Engage.B
                 {
                     var swLex = new C.CsSwitchCase();
                     swLex.Expression = "lexeme";
-                    foreach (var hp in Handlers[hpk])
+                    var list = Handlers[hpk];
+                    list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
+                    foreach (var hp in list)
                     {
                         List<C.CsStmt> branchLex = new List<C.CsStmt>();
                         Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
