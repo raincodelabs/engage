@@ -151,6 +151,14 @@ namespace AB
                         }
                         break;
 
+                    case TokenType.TNum:
+                        Push(new Num(System.Int32.Parse(lexeme)));
+                        break;
+
+                    case TokenType.TVar:
+                        Push(new Var(lexeme));
+                        break;
+
                 }
                 if (!System.String.IsNullOrEmpty(ERROR))
                 {

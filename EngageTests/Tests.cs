@@ -1,4 +1,3 @@
-using Engage.front;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
@@ -8,30 +7,38 @@ namespace EngageTests
     public class Tests
     {
         private const string AppBuilderSpec = @"..\..\..\..\test\appbuilder.eng";
+        private const string AppBuilderRule = @"..\..\..\..\test\simple.ab";
+
+        [TestMethod]
+        public void TryEngagedParser()
+        {
+            var parser = new AB.Parser(File.ReadAllText(AppBuilderRule));
+            var spec = parser.Parse();
+        }
 
         [TestMethod]
         public void TryAppBuilder()
         {
-            var spec = Parser.ParseEngSpec(File.ReadAllText(AppBuilderSpec));
+            var spec = Engage.Parser.ParseEngSpec(File.ReadAllText(AppBuilderSpec));
         }
 
         [TestMethod]
         public void TryTypeDecl()
         {
-            var spec = Parser.ParseTypeDecl("Program;");
+            var spec = Engage.Parser.ParseTypeDecl("Program;");
         }
 
         [TestMethod]
         public void TryTokenDecl()
         {
-            var spec = Parser.ParseTokenDecl("' ' :: skip");
+            var spec = Engage.Parser.ParseTokenDecl("' ' :: skip");
         }
+
         [TestMethod]
         public void TryQuoted()
         {
-            var spec = Parser.ParseQuoted("'foo'");
+            var spec = Engage.Parser.ParseQuoted("'foo'");
             Assert.AreEqual("foo", spec);
         }
-
     }
 }

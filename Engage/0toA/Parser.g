@@ -1,4 +1,4 @@
-﻿[namespace Engage.front]
+﻿[namespace Engage]
 [class public Parser]
 [using Engage.A]
 
@@ -19,7 +19,7 @@ Lexeme ::=
 
 HandlerDecl ::= i:s? LHS=Trigger i:s? "->" i:s? RHS=Reaction (i:s? "where" Context=Assignment+,("," i:s?))?;
 
-Trigger ::= (Literal=Quoted / "EOF" EOF=$true) (i:s "given" i:s Flag=Id)?;
+Trigger ::= (Terminal=Quoted / "EOF" EOF=$true / NonTerminal=Id) (i:s "given" i:s Flag=Id)?;
 
 Reaction ::=
 	  PushReaction := "push" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?

@@ -9,9 +9,9 @@ namespace Engage
         public static B.SystemPlan Ast2ir(A.EngSpec input)
         {
             B.SystemPlan output = new B.SystemPlan(input.NS);
+            InferTokens(output, input);
             InferTypes(output, input);
             InferFlags(output, input);
-            InferTokens(output, input);
             foreach (var hd in input.Handlers)
             {
                 var hp = ConvertHandler(hd);
@@ -34,13 +34,12 @@ namespace Engage
             if (hd.LHS.EOF)
                 hp.ReactOn = new B.TokenPlan() { Special = true, Value = "EOF" };
             else
-                hp.ReactOn = new B.TokenPlan() { Special = false, Value = hd.LHS.Literal };
+                hp.ReactOn = new B.TokenPlan() { Special = false, Value = hd.LHS.Terminal };
             if (!String.IsNullOrEmpty(hd.LHS.Flag))
                 hp.GuardFlag = hd.LHS.Flag;
             if (hd.Context.All(ass => ass.RHS is A.AwaitAction || ass.RHS is A.AwaitStarAction))
             {
                 // Asynchronously: schedule parsing
-                // in reverse order, provide last result to the new one
                 B.HandleAction act = hd.RHS.ToHandleAction();
                 for (int i = hd.Context.Count - 1; i >= 0; i--)
                     act = hd.Context[i].RHS.ToHandleAction(hd.Context[i].LHS, act);
@@ -88,6 +87,42 @@ namespace Engage
                         Console.WriteLine($"[IR] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
                     }
                 }
+            foreach (var t in plan.Tokens.Keys)
+            {
+                if (t == "skip" || t == "reserved")
+                    continue;
+                if (!plan.Types.ContainsKey(t))
+                    plan.AddType(t, null);
+                B.TypePlan tp = plan.Types[t];
+                foreach (B.TokenPlan tok in plan.Tokens[t])
+                {
+                    if (!tok.Special)
+                        continue;
+                    B.ConstPlan cp = new B.ConstPlan();
+                    switch (tok.Value)
+                    {
+                        case "number":
+                            cp.Args.Add(new Tuple<string, B.TypePlan>("n", new B.TypePlan() { Name = "System.Int32" }));
+                            break;
+
+                        case "string":
+                            cp.Args.Add(new Tuple<string, B.TypePlan>("s", new B.TypePlan() { Name = "System.String" }));
+                            break;
+
+                        default:
+                            cp = null;
+                            break;
+                    }
+                    if (cp != null)
+                    {
+                        tp.Constructors.Add(cp);
+                        Console.WriteLine($"[IR] Inferred trivial constructor {cp.ToString(tp.Name, null)}");
+
+                    }
+                }
+
+                Console.WriteLine($"[DEBUG] token {String.Join("; ", plan.Tokens[t])} - {tp}");
+            }
         }
 
         private static void InferFlags(B.SystemPlan plan, A.EngSpec spec)

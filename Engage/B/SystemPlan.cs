@@ -95,6 +95,9 @@ namespace Engage.B
             var swType = new C.CsSwitchCase();
             swType.Expression = "type";
 
+            var UsedTokens = new HashSet<string>();
+            UsedTokens.Add("skip");
+
             foreach (var hpk in Handlers.Keys)
             {
                 List<C.CsStmt> branchType = new List<C.CsStmt>();
@@ -115,7 +118,7 @@ namespace Engage.B
                     foreach (var hp in Handlers[hpk])
                     {
                         List<C.CsStmt> branchLex = new List<C.CsStmt>();
-                        //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
+                        Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
                         foreach (var action in hp.Recipe)
                         {
                             if (action != null)
@@ -128,6 +131,29 @@ namespace Engage.B
                     branchType.Add(swLex);
                 }
                 swType.Branches["TokenType.T" + hpk] = branchType;
+                UsedTokens.Add(hpk);
+            }
+            foreach (var t in Tokens.Keys)
+            {
+                if (!UsedTokens.Contains(t))
+                    Console.WriteLine($"[B2C] unused token {t}");
+                foreach (B.TokenPlan tok in Tokens[t])
+                {
+                    if (!tok.Special)
+                        continue;
+                    List<C.CsStmt> branchType = new List<C.CsStmt>();
+                    switch (tok.Value)
+                    {
+                        case "number":
+                            branchType.Add(new C.CsSimpleStmt($"Push(new {t}(System.Int32.Parse(lexeme)));"));
+                            break;
+
+                        case "string":
+                            branchType.Add(new C.CsSimpleStmt($"Push(new {t}(lexeme));"));
+                            break;
+                    }
+                    swType.Branches["TokenType.T" + t] = branchType;
+                }
             }
 
             pl.AddCode(swType);

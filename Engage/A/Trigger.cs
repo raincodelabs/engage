@@ -2,7 +2,8 @@
 {
     public partial class Trigger
     {
-        public string Literal = "";
+        public string Terminal = "";
+        public string NonTerminal = "";
         public bool EOF = false;
         public string Flag = "";
     }

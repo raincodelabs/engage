@@ -14,5 +14,8 @@
 
         public override int GetHashCode()
             => Value.GetHashCode() + Special.GetHashCode();
+
+        public override string ToString()
+            => (Special ? "!" : "") + Value;
     }
 }

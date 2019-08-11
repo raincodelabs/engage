@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Engage.C
+namespace Engage
 {
     public static class GenExt
     {
