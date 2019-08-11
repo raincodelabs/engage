@@ -1,12 +1,15 @@
 // Engage! generated this file, please do not edit manually
 
-public class String : Type
+namespace AB
 {
-    public Num n;
-
-    public String(Num _n)
+    public class String : Type
     {
-        n = _n;
+        public Num n;
+
+        public String(Num _n)
+        {
+            n = _n;
+        }
+        // TODO
     }
-    // TODO
 }

@@ -1,7 +1,10 @@
 // Engage! generated this file, please do not edit manually
 
-public class Var : Expr
+namespace AB
 {
+    public class Var : Expr
+    {
 
-    // TODO
+        // TODO
+    }
 }

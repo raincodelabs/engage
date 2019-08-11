@@ -1,0 +1,5 @@
+dcl
+	f integer;
+enddcl
+
+map 42 to f

@@ -3,6 +3,7 @@
 [using Engage.mid]
 
 EngSpec ::= i:s?
+	"namespace" i:s NS=Id i:s?
 	"types" Types=TypeDecl*,(i:s?) i:s?
 	"tokens" Tokens=TokenDecl*,(i:s?) i:s?
 	"handlers" Handlers=HandlerDecl*,(i:s?) i:s?;

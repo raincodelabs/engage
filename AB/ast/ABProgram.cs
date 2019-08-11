@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace AB
 {
-    public class IfStmt : Stmt
+    public class ABProgram
     {
-        public Expr cond;
+        public List<Decl> data = new List<Decl>();
         public List<Stmt> code = new List<Stmt>();
 
-        public IfStmt(Expr _cond, List<Stmt> _code)
+        public ABProgram(List<Decl> _data, List<Stmt> _code)
         {
-            cond = _cond;
+            data.AddRange(_data);
             code.AddRange(_code);
         }
         // TODO

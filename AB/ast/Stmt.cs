@@ -1,7 +1,10 @@
 // Engage! generated this file, please do not edit manually
 
-public class Stmt
+namespace AB
 {
+    public class Stmt
+    {
 
-    // TODO
+        // TODO
+    }
 }

@@ -1,7 +1,10 @@
 // Engage! generated this file, please do not edit manually
 
-public class Type
+namespace AB
 {
+    public class Type
+    {
 
-    // TODO
+        // TODO
+    }
 }

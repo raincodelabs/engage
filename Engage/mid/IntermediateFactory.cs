@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Engage.mid
 {
@@ -6,8 +7,9 @@ namespace Engage.mid
     {
         public static SystemPlan Ast2ir(EngSpec input)
         {
-            SystemPlan output = new SystemPlan();
+            SystemPlan output = new SystemPlan(input.NS);
             InferTypes(output, input);
+            InferFlags(output, input);
             return output;
         }
 
@@ -42,6 +44,34 @@ namespace Engage.mid
                         Console.WriteLine($"[IR] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
                     }
                 }
+        }
+
+        private static void InferFlags(SystemPlan plan, EngSpec spec)
+        {
+            foreach (var h in spec.Handlers)
+            {
+                if (h.RHS is LiftReaction lr)
+                    plan.BoolFlags.Add(lr.Flag);
+                else if (h.RHS is DropReaction dr)
+                    plan.BoolFlags.Add(dr.Flag);
+
+                foreach (var a in h.Context)
+                    if (a.RHS is AwaitAction aa)
+                    {
+                        if (!String.IsNullOrEmpty(aa.ExtraContext))
+                            plan.BoolFlags.Add(aa.ExtraContext);
+                        if (!String.IsNullOrEmpty(aa.TmpContext))
+                            plan.BoolFlags.Add(aa.TmpContext);
+                    }
+            }
+            foreach (var f in plan.BoolFlags.Distinct().ToArray())
+                if (f.EndsWith('#'))
+                {
+                    plan.IntFlags.Add(f.Substring(0, f.Length - 1));
+                    plan.BoolFlags.Remove(f);
+                }
+
+            Console.WriteLine($"[IR] Inferred flags: Boolean {String.Join(", ", plan.BoolFlags)}; counter {String.Join(", ", plan.IntFlags)}");
         }
     }
 }

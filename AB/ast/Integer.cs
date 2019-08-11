@@ -1,10 +1,13 @@
 // Engage! generated this file, please do not edit manually
 
-public class Integer : Type
+namespace AB
 {
-
-    public Integer()
+    public class Integer : Type
     {
+
+        public Integer()
+        {
+        }
+        // TODO
     }
-    // TODO
 }

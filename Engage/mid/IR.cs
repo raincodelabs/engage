@@ -7,7 +7,15 @@ namespace Engage.mid
 {
     public class SystemPlan
     {
+        public string NS;
         public Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
+        public HashSet<string> BoolFlags = new HashSet<string>();
+        public HashSet<string> IntFlags = new HashSet<string>();
+
+        public SystemPlan(string ns)
+        {
+            NS = ns;
+        }
 
         internal void AddType(string n, string super, bool silent = false)
         {
@@ -28,10 +36,26 @@ namespace Engage.mid
 
         internal bool IsType(string n) => Types.ContainsKey(n);
 
-        public IEnumerable<CsClass> GenerateClasses()
+        public IEnumerable<CsClass> GenerateDataClasses()
             => Types.Values
                 .Where(t => !t.IsList)
-                .Select(t => t.GenerateClass());
+                .Select(t => t.GenerateClass(NS));
+
+        public CsClass GenerateParser()
+        {
+            var p = new CsClass();
+            p.NS = NS;
+            p.Name = "Parser";
+            p.AddUsing("System");
+            if (BoolFlags.Count > 0)
+                p.AddField(String.Join(", ", BoolFlags), "bool", isPublic: false);
+            if (IntFlags.Count > 0)
+                p.AddField(String.Join(", ", IntFlags), "int", isPublic: false);
+            p.AddField("Main", "Stack<Object>", isPublic: false);
+            p.AddField("_input", "string", isPublic: false);
+            p.AddField("_pos", "int", isPublic: false);
+            return p;
+        }
     }
 
     public class TypePlan
@@ -54,9 +78,10 @@ namespace Engage.mid
         public override string ToString()
             => IsList ? $"List<{Name}>" : Name;
 
-        internal CsClass GenerateClass()
+        internal CsClass GenerateClass(string ns)
         {
             var result = new CsClass();
+            result.NS = ns;
             result.Name = Name;
             result.Super = Super;
             foreach (var c in Constructors)

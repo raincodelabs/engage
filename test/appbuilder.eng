@@ -1,5 +1,7 @@
+namespace AB
+
 types
-    Program;
+    ABProgram;
     Integer, String     <: Type;
     Decl;
     IfStmt, MapStmt     <: Stmt;
@@ -7,12 +9,12 @@ types
 
 tokens
 	' ' :: skip
-	'dcl', 'enddcl', 'integer', 'char', 'if', 'map', 'to' :: reserved
+	'dcl', 'enddcl', 'integer', 'char', 'if', 'map', 'to', ';', '(', ')' :: reserved
 	number :: Num
 	string :: Var
 
 handlers
-    EOF                 -> push Program(data,code)
+    EOF                 -> push ABProgram(data,code)
                            where data := pop* Decl,
                                  code := pop* Stmt
     'dcl'               -> lift DCL
@@ -28,7 +30,7 @@ handlers
     'if'                -> push IfStmt(cond,code)
                            where cond := await Expr with IF#,
                                  code := await* Stmt with IF#
-    'endif'             -> drop IF
+    'endif'             -> drop IF#
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP

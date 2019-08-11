@@ -1,14 +1,17 @@
 // Engage! generated this file, please do not edit manually
 
-public class MapStmt : Stmt
+namespace AB
 {
-    public Expr source;
-    public Var target;
-
-    public MapStmt(Expr _source, Var _target)
+    public class MapStmt : Stmt
     {
-        source = _source;
-        target = _target;
+        public Expr source;
+        public Var target;
+
+        public MapStmt(Expr _source, Var _target)
+        {
+            source = _source;
+            target = _target;
+        }
+        // TODO
     }
-    // TODO
 }

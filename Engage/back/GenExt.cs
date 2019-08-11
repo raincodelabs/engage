@@ -24,7 +24,7 @@ namespace Engage.back
             => lines.Add(Indent(level) + "}");
 
         public static bool IsCollection(this string type)
-            => type.StartsWith("List<") || type.StartsWith("HashSet<") || type.StartsWith("Dictionary<");
+            => type.StartsWith("List<") || type.StartsWith("HashSet<") || type.StartsWith("Dictionary<") || type.StartsWith("Stack<");
 
         private static string Indent(int level)
             => new String(' ', level * 4);
