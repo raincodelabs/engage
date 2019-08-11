@@ -167,6 +167,7 @@ namespace AB
                                 }
                                 BRACKET = false;
                                 break;
+
                         }
                         break;
 
@@ -177,6 +178,7 @@ namespace AB
                     case TokenType.TVar:
                         Push(new Var(lexeme));
                         break;
+
                 }
                 if (!System.String.IsNullOrEmpty(ERROR))
                 {
@@ -206,7 +208,6 @@ namespace AB
             Pending[_type].Enqueue(_action);
         }
 
-        // NB: MANUALLY EDITED, DO NOT LOSE!!!
         private void Push(object _x)
         {
             System.Type _t = _x.GetType();
@@ -220,7 +221,9 @@ namespace AB
                 }
             }
             if (_a != null)
+            {
                 _a(_x);
+            }
             else
             {
                 Main.Push(_x);
@@ -327,5 +330,6 @@ namespace AB
             }
             return new Tuple<TokenType, string>(t, s);
         }
+
     }
 }

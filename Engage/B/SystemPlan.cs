@@ -210,9 +210,11 @@ namespace Engage.B
             push.RetType = "void";
             push.AddArgument("x", "object");
             push.AddCode("System.Type _t = _x.GetType()");
-            var ifst = new C.CsComplexStmt("if (Pending.ContainsKey(_t) && Pending[_t].Count > 0)", "Action<object> _a = Pending[_t].Dequeue();");
-            ifst.AddCode("_a(_x)");
-            push.AddCode(ifst);
+            push.AddCode("Action<object> _a = null");
+            var ifst = new C.CsComplexStmt("if ((_t == key || _t.IsSubclassOf(key)) && Pending[key].Count > 0)", "_a = Pending[key].Dequeue()");
+            ifst.AddCode("break");
+            push.AddCode(new C.CsComplexStmt("foreach (var key in Pending.Keys)", ifst));
+            push.AddCode(new C.CsComplexStmt("if (_a != null)", "_a(_x)"));
             push.AddCode("else", "Main.Push(_x)");
             cls.AddMethod(push);
         }
