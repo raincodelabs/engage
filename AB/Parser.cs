@@ -6,6 +6,14 @@ namespace AB
 {
     public class Parser
     {
+        private enum TokenType
+        {
+            TUndefined,
+            TEOF,
+            Treserved,
+            TNum,
+            TVar,
+        }
         private bool DCL, BRACKET, CHAR, MAP;
         private int IF;
         private Stack<Object> Main = new Stack<Object>();

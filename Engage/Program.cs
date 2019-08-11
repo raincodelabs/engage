@@ -20,10 +20,10 @@ namespace Engage
             var css = plan.GenerateDataClasses();
             Console.WriteLine("Abstract code generated!");
             foreach (var cs in css)
-                File.WriteAllLines(Path.Combine(Output, $"ast\\{cs.Name}.cs"), cs.GenerateCode());
+                File.WriteAllLines(Path.Combine(Output, $"ast\\{cs.Name}.cs"), cs.GenerateFileCode());
             Console.WriteLine("Concrete code generated!");
             var p = plan.GenerateParser();
-            File.WriteAllLines(Path.Combine(Output, "Parser.cs"), p.GenerateCode());
+            File.WriteAllLines(Path.Combine(Output, "Parser.cs"), p.GenerateFileCode());
             Console.WriteLine("Parser generated!");
         }
     }

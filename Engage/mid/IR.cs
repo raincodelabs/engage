@@ -55,6 +55,14 @@ namespace Engage.mid
             p.AddField("Main", "Stack<Object>", isPublic: false);
             p.AddField("input", "string", isPublic: false);
             p.AddField("pos", "int", isPublic: false);
+            // token types
+            var tt = new CsEnum();
+            tt.IsPublic = false;
+            tt.Name = "TokenType";
+            tt.Values.Add("TUndefined");
+            tt.Values.Add("TEOF");
+            tt.Values.AddRange(Tokens.Keys.Where(t => t != "skip").Select(t => "T" + t));
+            p.AddInner(tt);
             // parser constructor
             var pc = new CsConstructor();
             pc.AddArgument("input", "string");

@@ -40,12 +40,14 @@ namespace AB
                             code.Add(Main.Pop() as Stmt);
                         Main.Push(new ABProgram(data, code));
                         break;
+
                     case TokenType.Treserved:
                         switch (lexeme)
                         {
                             case "dcl":
                                 DCL = true;
                                 break;
+
                             case "enddcl":
                                 DCL = false;
                                 break;
@@ -101,14 +103,14 @@ namespace AB
             }
             return new Tuple<TokenType, string>(t, s);
         }
-    }
 
-    internal enum TokenType
-    {
-        TUndefined,
-        Treserved,
-        TNum,
-        TVar,
-        TEOF,
+        private enum TokenType
+        {
+            TUndefined,
+            Treserved,
+            TNum,
+            TVar,
+            TEOF,
+        }
     }
 }

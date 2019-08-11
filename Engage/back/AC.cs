@@ -7,18 +7,29 @@ namespace Engage.back
     /// <summary>
     /// Almost code / abstract code
     /// </summary>
-    public class CsClass
+
+    public abstract class CsTop
     {
-        public string NS; // TODO!
         public string Name;
+
+        public abstract void GenerateCode(List<string> lines, int level);
+    }
+
+    public class CsClass : CsTop
+    {
+        public string NS;
         public string Super;
         private Dictionary<string, string> PublicFields = new Dictionary<string, string>();
         private Dictionary<string, string> PrivateFields = new Dictionary<string, string>();
         private HashSet<CsExeField> Methods = new HashSet<CsExeField>();
         private HashSet<string> Usings = new HashSet<string>();
+        private List<CsTop> Inners = new List<CsTop>();
 
         public void AddUsing(string name)
             => Usings.Add(name);
+
+        public void AddInner(CsTop thing)
+            => Inners.Add(thing);
 
         public void AddField(string name, string type, bool isPublic = true)
         {
@@ -36,41 +47,43 @@ namespace Engage.back
         public void AddMethod(CsMethod c)
             => Methods.Add(c);
 
-        public List<string> GenerateCode()
+        public List<string> GenerateFileCode()
         {
             List<string> lines = new List<string>();
-            GenerateCode(lines);
+            GenerateFileCode(lines);
             return lines;
         }
 
-        public void GenerateCode(List<string> lines)
+        public void GenerateFileCode(List<string> lines)
         {
             lines.Comment("Engage! generated this file, please do not edit manually");
             foreach (var u in Usings)
                 lines.Add($"using {u};");
             lines.Empty();
             if (String.IsNullOrEmpty(NS))
-                GenerateClassCode(lines, 0);
+                GenerateCode(lines, 0);
             else
             {
                 lines.Add($"namespace {NS}");
                 lines.Open();
-                GenerateClassCode(lines, 1);
+                GenerateCode(lines, 1);
                 lines.Close();
             }
         }
 
-        private void GenerateClassCode(List<string> lines, int level)
+        public override void GenerateCode(List<string> lines, int level)
         {
             lines.Add(level, $"public class {Name}" + (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
             lines.Open(level);
+            foreach (var inner in Inners)
+                inner.GenerateCode(lines, level + 1);
             foreach (var fn in PublicFields.Keys)
                 GenerateCodeForField(lines, level + 1, fn, PublicFields[fn]);
             foreach (var fn in PrivateFields.Keys)
                 GenerateCodeForField(lines, level + 1, fn, PrivateFields[fn], isPublic: false);
             lines.Empty();
-            foreach (var c in Methods)
-                c.GenerateClassCode(lines, level + 1, Name);
+            foreach (var m in Methods)
+                m.GenerateCode(lines, level + 1, Name);
             lines.Comment(level + 1, "TODO");
             lines.Close(level);
         }
@@ -109,12 +122,12 @@ namespace Engage.back
                 Code.Add(line);
         }
 
-        public abstract void GenerateClassCode(List<string> lines, int level, string className);
+        public abstract void GenerateCode(List<string> lines, int level, string className);
     }
 
     public class CsConstructor : CsExeField
     {
-        public override void GenerateClassCode(List<string> lines, int level, string className)
+        public override void GenerateCode(List<string> lines, int level, string className)
         {
             string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
             lines.Add(level, $"{(IsPublic ? "public" : "private")} {className}({args})");
@@ -208,13 +221,28 @@ namespace Engage.back
         public string Name;
         public string RetType;
 
-        public override void GenerateClassCode(List<string> lines, int level, string className)
+        public override void GenerateCode(List<string> lines, int level, string className)
         {
             string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
             lines.Add(level, $"{(IsPublic ? "public" : "private")} {RetType} {Name}({args})");
             lines.Open(level);
             foreach (var line in Code)
                 line.GenerateCode(lines, level + 1);
+            lines.Close(level);
+        }
+    }
+
+    public class CsEnum : CsTop
+    {
+        public bool IsPublic = true;
+        public List<string> Values = new List<string>();
+
+        public override void GenerateCode(List<string> lines, int level)
+        {
+            lines.Add(level, $"{(IsPublic ? "public" : "private")} enum {Name}");
+            lines.Open(level);
+            foreach (var v in Values)
+                lines.Add(level + 1, v + ",");
             lines.Close(level);
         }
     }
