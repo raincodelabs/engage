@@ -6,7 +6,8 @@ namespace AB
     internal class ManualParser
     {
         // flags
-        private bool DCL, BRACKET, CHAR, MAP, IF;
+        private bool DCL, BRACKET, CHAR, MAP;
+        private int IF;
 
         private Stack<Object> Main = new Stack<Object>();
 
@@ -71,6 +72,37 @@ namespace AB
                     case TokenType.Treserved:
                         switch (lexeme)
                         {
+                            case "if":
+                                IF++;
+                                Func<AB.Expr, Action<object>> tmp = null;
+                                tmp = _cond => _target =>
+                                {
+                                    var target = _target as Stmt;
+                                    IF--;
+                                    Push(_target);
+                                    if (target == null)
+                                    {
+                                        //get all Stmts from the stack
+                                        List<Stmt> _all_targets = new List<Stmt>();
+                                        while (Main.Peek() is Stmt)
+                                            _all_targets.Add(Main.Pop() as Stmt);
+                                        Push(new IfStmt(_cond, _all_targets));
+                                    }
+                                    else
+                                    {
+                                        IF++;
+                                        LetWait(typeof(Stmt), tmp(_cond));
+                                    }
+                                };
+                                LetWait(typeof(Expr), _cond =>
+                                {
+                                    var cond = _cond as Expr;
+                                    IF--;
+                                    IF++;
+                                    LetWait(typeof(Stmt), tmp(cond));
+                                }
+                                );
+                                break;
                             case "dcl":
                                 DCL = true;
                                 break;

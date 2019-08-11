@@ -41,15 +41,15 @@ namespace AB
                 switch (type)
                 {
                     case TokenType.TEOF:
-                        var data = new List<Decl>();
-                        while (Main.Peek() is Decl)
-                        {
-                            data.Add(Main.Pop() as Decl);
-                        }
                         var code = new List<Stmt>();
-                        while (Main.Peek() is Stmt)
+                        while (Main.Count > 0 && Main.Peek() is Stmt)
                         {
                             code.Add(Main.Pop() as Stmt);
+                        }
+                        var data = new List<Decl>();
+                        while (Main.Count > 0 && Main.Peek() is Decl)
+                        {
+                            data.Add(Main.Pop() as Decl);
                         }
                         Push(new ABProgram(data, code));
                         break;
@@ -167,7 +167,6 @@ namespace AB
                                 }
                                 BRACKET = false;
                                 break;
-
                         }
                         break;
 
@@ -178,7 +177,6 @@ namespace AB
                     case TokenType.TVar:
                         Push(new Var(lexeme));
                         break;
-
                 }
                 if (!System.String.IsNullOrEmpty(ERROR))
                 {
@@ -187,6 +185,10 @@ namespace AB
                 }
             }
             while (type != TokenType.TEOF);
+            if (Main.Peek() is ABProgram)
+            {
+                return Main.Pop();
+            }
             return null;
         }
 
@@ -204,14 +206,21 @@ namespace AB
             Pending[_type].Enqueue(_action);
         }
 
+        // NB: MANUALLY EDITED, DO NOT LOSE!!!
         private void Push(object _x)
         {
             System.Type _t = _x.GetType();
-            if (Pending.ContainsKey(_t) && Pending[_t].Count > 0)
+            Action<object> _a = null;
+            foreach (var key in Pending.Keys)
             {
-                Action<object> _a = Pending[_t].Dequeue();
-                _a(_x);
+                if ((_t == key || _t.IsSubclassOf(key)) && Pending[key].Count > 0)
+                {
+                    _a = Pending[key].Dequeue();
+                    break;
+                }
             }
+            if (_a != null)
+                _a(_x);
             else
             {
                 Main.Push(_x);
@@ -226,7 +235,7 @@ namespace AB
             {
                 return new Tuple<TokenType, string>(TokenType.TEOF, "");
             }
-            while (input[pos] == ' ' && pos < input.Length)
+            while (pos < input.Length && (input[pos] == ' ' || input[pos] == '\r' || input[pos] == '\n'))
             {
                 pos++;
             }
@@ -311,13 +320,12 @@ namespace AB
             else
             {
                 t = TokenType.TVar;
-                while (pos < input.Length && input[pos] != ' ')
+                while (pos < input.Length && input[pos] != ' ' && input[pos] != '\r' && input[pos] != '\n')
                 {
                     s += input[pos++];
                 }
             }
             return new Tuple<TokenType, string>(t, s);
         }
-
     }
 }

@@ -80,7 +80,7 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<CsStmt> code)
         {
             code.Add(new CsSimpleStmt($"var {Target} = new List<{Name}>()"));
-            var tmp = new CsComplexStmt($"while (Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
+            var tmp = new CsComplexStmt($"while (Main.Count > 0 && Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
             code.Add(tmp);
         }
     }

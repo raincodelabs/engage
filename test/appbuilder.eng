@@ -8,15 +8,15 @@ types
     Var, Num            <: Expr;
 
 tokens
-	' ' :: skip
+	' ', '\r', '\n' :: skip
 	'dcl', 'enddcl', 'integer', 'char', 'if', 'endif', 'map', 'to', ';', '(', ')' :: reserved
 	number :: Num
 	string :: Var
 
 handlers
     EOF                 -> push ABProgram(data,code)
-                           where data := pop* Decl,
-                                 code := pop* Stmt
+                           where code := pop* Stmt,
+                                 data := pop* Decl
     'dcl'               -> lift DCL
     'enddcl'            -> drop DCL
     ';' given DCL       -> push Decl(v,t)

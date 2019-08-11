@@ -13,7 +13,10 @@ namespace EngageTests
         public void TryEngagedParser()
         {
             var parser = new AB.Parser(File.ReadAllText(AppBuilderRule));
-            var spec = parser.Parse();
+            AB.ABProgram spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(1, spec.data.Count);
+            Assert.AreEqual(1, spec.code.Count);
         }
 
         [TestMethod]

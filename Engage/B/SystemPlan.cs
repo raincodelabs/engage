@@ -174,6 +174,7 @@ namespace Engage.B
             // main parsing loop: end
 
             pf.AddCode(pl);
+            pf.AddCode($"if (Main.Peek() is {TopType})", "return Main.Pop()");
             pf.AddCode("return null"); // TODO!!!
             p.AddMethod(pf);
 
@@ -232,7 +233,7 @@ namespace Engage.B
             if (Tokens.ContainsKey("skip"))
             {
                 string cond = String.Join(" || ", Tokens["skip"].Select(t => $"input[pos] == '{t.Value}'"));
-                tok.AddCode(new C.CsComplexStmt($"while ({cond} && pos < input.Length)", "pos++"));
+                tok.AddCode(new C.CsComplexStmt($"while (pos < input.Length && ({cond}))", "pos++"));
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
