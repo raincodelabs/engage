@@ -32,6 +32,7 @@ Assignment ::= i:s? LHS=Id i:s? ":=" i:s? RHS=Operation;
 Operation ::=
 	  PopAction       := "pop"    i:s Name=Id
 	/ PopStarAction   := "pop*"   i:s Name=Id
+	/ PopHashAction   := "pop#"   i:s Name=Id
 	/ AwaitAction     := "await"  i:s Name=Id (i:s? "with" i:s TmpContext=Id)
 	/ AwaitAction     := "await"  i:s? "(" i:s? Name=Id i:s "given" i:s ExtraContext=Id i:s? ")" (i:s? "with" i:s TmpContext=Id)
 	/ AwaitStarAction := "await*" i:s Name=Id (i:s? "with" i:s TmpContext=Id)

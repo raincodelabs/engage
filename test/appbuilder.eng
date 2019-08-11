@@ -15,8 +15,8 @@ tokens
 
 handlers
     EOF                 -> push ABProgram(data,code)
-                           where code := pop* Stmt,
-                                 data := pop* Decl
+                           where code := pop# Stmt,
+                                 data := pop# Decl
     'dcl'               -> lift DCL
     'enddcl'            -> drop DCL
     ';' given DCL       -> push Decl(v,t)

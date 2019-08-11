@@ -37,7 +37,7 @@ namespace Engage
                 hp.ReactOn = new B.TokenPlan() { Special = false, Value = hd.LHS.Terminal };
             if (!String.IsNullOrEmpty(hd.LHS.Flag))
                 hp.GuardFlag = hd.LHS.Flag;
-            if (hd.Context.All(ass => ass.RHS is A.AwaitAction || ass.RHS is A.AwaitStarAction))
+            if (hd.Context.All(ass => ass.RHS is A.AwaitAction || ass.RHS is A.AwaitStarAction || ass.RHS is A.PopHashAction))
             {
                 // Asynchronously: schedule parsing
                 B.HandleAction act = hd.RHS.ToHandleAction();
@@ -78,6 +78,8 @@ namespace Engage
                                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[pa.Name]));
                             else if (c is A.PopStarAction psa)
                                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[psa.Name].Copy(true)));
+                            else if (c is A.PopHashAction pha)
+                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[pha.Name].Copy(true)));
                             else if (c is A.AwaitAction aa)
                                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[aa.Name]));
                             else if (c is A.AwaitStarAction asa)
@@ -117,7 +119,6 @@ namespace Engage
                     {
                         tp.Constructors.Add(cp);
                         Console.WriteLine($"[IR] Inferred trivial constructor {cp.ToString(tp.Name, null)}");
-
                     }
                 }
 

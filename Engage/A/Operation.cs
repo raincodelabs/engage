@@ -22,6 +22,20 @@
             => new B.PopAll() { Name = Name, Target = target };
     }
 
+    public partial class PopHashAction : Operation
+    {
+        public string Name;
+
+        internal override B.HandleAction ToHandleAction(string target, B.HandleAction prev = null)
+        {
+            var a = new B.PopSeveral() { Name = Name, Target = target };
+            a.SiblingActions.Add(prev);
+            if (prev is B.PopSeveral ps)
+                a.SiblingActions.AddRange(ps.SiblingActions);
+            return a;
+        }
+    }
+
     public partial class AwaitAction : Operation
     {
         public string Name;

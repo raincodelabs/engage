@@ -85,6 +85,39 @@ namespace Engage.B
         }
     }
 
+    public class PopSeveral : HandleAction
+    {
+        public string Name;
+        public string Target;
+
+        public List<HandleAction> SiblingActions = new List<HandleAction>();
+
+        public override void GenerateAbstractCode(List<CsStmt> code)
+        {
+            GenerateInitialisationCode(code);
+            foreach (var sa in SiblingActions)
+                if (sa is PopSeveral ps)
+                    ps.GenerateInitialisationCode(code);
+
+            var loop = new CsComplexStmt();
+            loop.Before = "while (Main.Count > 0)";
+            loop.AddCode($"if (Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
+            foreach (var sa in SiblingActions)
+                if (sa is PopSeveral ps)
+                    loop.AddCode($"else if (Main.Peek() is {ps.Name})", $"{ps.Target}.Add(Main.Pop() as {ps.Name})");
+            loop.AddCode("else", "break");
+            code.Add(loop);
+            foreach (var sa in SiblingActions)
+                if (!(sa is PopSeveral))
+                    sa.GenerateAbstractCode(code);
+        }
+
+        public void GenerateInitialisationCode(List<CsStmt> code)
+        {
+            code.Add(new CsSimpleStmt($"var {Target} = new List<{Name}>()"));
+        }
+    }
+
     public class AwaitOne : HandleAction
     {
         public string Name;

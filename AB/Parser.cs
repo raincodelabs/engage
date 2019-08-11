@@ -38,11 +38,16 @@ namespace AB
                     case TokenType.TEOF:
                         Flush();
                         var code = new List<Stmt>();
-                        while (Main.Count > 0 && Main.Peek() is Stmt)
-                            code.Add(Main.Pop() as Stmt);
                         var data = new List<Decl>();
-                        while (Main.Count > 0 && Main.Peek() is Decl)
-                            data.Add(Main.Pop() as Decl);
+                        while (Main.Count > 0)
+                        {
+                            if (Main.Peek() is Stmt)
+                                code.Add(Main.Pop() as Stmt);
+                            else if (Main.Peek() is Decl)
+                                data.Add(Main.Pop() as Decl);
+                            else
+                                break;
+                        }
                         Push(new ABProgram(data, code));
                         break;
 
