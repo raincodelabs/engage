@@ -10,6 +10,32 @@ namespace AB
 
         private Stack<Object> Main = new Stack<Object>();
 
+        private Dictionary<System.Type, Queue<Action<object>>> Pending = new Dictionary<System.Type, Queue<Action<object>>>();
+
+        private void Push(object x)
+        {
+            System.Type t = x.GetType();
+            if (Pending.ContainsKey(t) && Pending[t].Count > 0)
+            {
+                Action<object> a = Pending[t].Dequeue();
+                a(x);
+            }
+            else
+                Main.Push(x);
+        }
+
+        private void LetWait(System.Type type, Action<object> action)
+        {
+            if (Main.Peek().GetType() == type)
+            {
+                action(Main.Pop());
+                return;
+            }
+            if (!Pending.ContainsKey(type))
+                Pending[type] = new Queue<Action<object>>();
+            Pending[type].Enqueue(action);
+        }
+
         private string _input;
         private int _pos;
 
@@ -21,6 +47,7 @@ namespace AB
 
         public object Parse()
         {
+            string ERROR = "";
             TokenType type;
             string lexeme;
             do
@@ -51,8 +78,43 @@ namespace AB
                             case "enddcl":
                                 DCL = false;
                                 break;
+
+                            case "char":
+                                CHAR = true;
+                                LetWait(typeof(Num), _n =>
+                                {
+                                    var n = _n as Num;
+                                    CHAR = false;
+                                    if (BRACKET)
+                                        Push(new String(n));
+                                    else
+                                        ERROR = "Flag BRACKET is not raised";
+                                }
+                                );
+                                break;
+
+                            case "map":
+                                MAP = true;
+                                LetWait(typeof(Expr), x =>
+                                {
+                                    var source = x as Expr;
+                                    MAP = false;
+                                    MAP = true;
+                                    LetWait(typeof(Var), y =>
+                                    {
+                                        var target = y as Var;
+                                        Push(new MapStmt(source, target));
+                                        MAP = false;
+                                    });
+                                });
+                                break;
                         }
                         break;
+                }
+                if (!System.String.IsNullOrEmpty(ERROR))
+                {
+                    Console.WriteLine("Parser error: " + ERROR);
+                    return null;
                 }
             } while (type != TokenType.TEOF);
 

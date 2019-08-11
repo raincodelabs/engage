@@ -76,15 +76,21 @@ namespace Engage.back
             lines.Add(level, $"public class {Name}" + (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
             lines.Open(level);
             foreach (var inner in Inners)
+            {
                 inner.GenerateCode(lines, level + 1);
+                lines.Empty();
+            }
             foreach (var fn in PublicFields.Keys)
                 GenerateCodeForField(lines, level + 1, fn, PublicFields[fn]);
             foreach (var fn in PrivateFields.Keys)
                 GenerateCodeForField(lines, level + 1, fn, PrivateFields[fn], isPublic: false);
             lines.Empty();
             foreach (var m in Methods)
+            {
                 m.GenerateCode(lines, level + 1, Name);
-            lines.Comment(level + 1, "TODO");
+                lines.Empty();
+            }
+            //lines.Comment(level + 1, "TODO");
             lines.Close(level);
         }
 
@@ -96,6 +102,21 @@ namespace Engage.back
                 lines.Add(level, $"{mod} {type} {name} = new {type}();");
             else
                 lines.Add(level, $"{mod} {type} {name};");
+        }
+    }
+
+    public class CsEnum : CsTop
+    {
+        public bool IsPublic = true;
+        public List<string> Values = new List<string>();
+
+        public override void GenerateCode(List<string> lines, int level)
+        {
+            lines.Add(level, $"{(IsPublic ? "public" : "private")} enum {Name}");
+            lines.Open(level);
+            foreach (var v in Values)
+                lines.Add(level + 1, v + ",");
+            lines.Close(level);
         }
     }
 
@@ -137,6 +158,22 @@ namespace Engage.back
                     lines.Add(level + 1, $"{a.Item1}.AddRange(_{a.Item1});");
                 else
                     lines.Add(level + 1, $"{a.Item1} = _{a.Item1};");
+            foreach (var line in Code)
+                line.GenerateCode(lines, level + 1);
+            lines.Close(level);
+        }
+    }
+
+    public class CsMethod : CsExeField
+    {
+        public string Name;
+        public string RetType;
+
+        public override void GenerateCode(List<string> lines, int level, string className)
+        {
+            string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
+            lines.Add(level, $"{(IsPublic ? "public" : "private")} {RetType} {Name}({args})");
+            lines.Open(level);
             foreach (var line in Code)
                 line.GenerateCode(lines, level + 1);
             lines.Close(level);
@@ -216,33 +253,32 @@ namespace Engage.back
         }
     }
 
-    public class CsMethod : CsExeField
+    public class CsSwitchCase : CsStmt
     {
-        public string Name;
-        public string RetType;
-
-        public override void GenerateCode(List<string> lines, int level, string className)
-        {
-            string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
-            lines.Add(level, $"{(IsPublic ? "public" : "private")} {RetType} {Name}({args})");
-            lines.Open(level);
-            foreach (var line in Code)
-                line.GenerateCode(lines, level + 1);
-            lines.Close(level);
-        }
-    }
-
-    public class CsEnum : CsTop
-    {
-        public bool IsPublic = true;
-        public List<string> Values = new List<string>();
+        public string Expression;
+        public Dictionary<string, List<CsStmt>> Branches = new Dictionary<string, List<CsStmt>>();
+        public List<CsStmt> DefaultBranch = new List<CsStmt>();
 
         public override void GenerateCode(List<string> lines, int level)
         {
-            lines.Add(level, $"{(IsPublic ? "public" : "private")} enum {Name}");
+            lines.Add(level, $"switch ({Expression})");
             lines.Open(level);
-            foreach (var v in Values)
-                lines.Add(level + 1, v + ",");
+            foreach (var cond in Branches.Keys)
+            {
+                lines.Add(level + 1, $"case {cond}:");
+                foreach (var line in Branches[cond])
+                    line.GenerateCode(lines, level + 2);
+                lines.Add(level + 2, "break;");
+                lines.Empty();
+            }
+            if (DefaultBranch.Count > 0)
+            {
+                lines.Add(level + 1, "default:");
+                foreach (var line in DefaultBranch)
+                    line.GenerateCode(lines, level + 2);
+                lines.Add(level + 2, "break;");
+                lines.Empty();
+            }
             lines.Close(level);
         }
     }

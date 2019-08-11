@@ -14,30 +14,182 @@ namespace AB
             TNum,
             TVar,
         }
+
         private bool DCL, BRACKET, CHAR, MAP;
         private int IF;
         private Stack<Object> Main = new Stack<Object>();
         private string input;
         private int pos;
+        private Dictionary<System.Type, Queue<Action<object>>> Pending = new Dictionary<System.Type, Queue<Action<object>>>();
 
         public Parser(string _input)
         {
             input = _input;
             pos = 0;
         }
+
         public object Parse()
         {
+            string ERROR = "";
             TokenType type;
             string lexeme;
             do
             {
-                var t = NextToken();
-                lexeme = t.Item2;
-                type = t.Item1;
+                var _token = NextToken();
+                lexeme = _token.Item2;
+                type = _token.Item1;
+                switch (type)
+                {
+                    case TokenType.TEOF:
+                        var data = new List<Decl>();
+                        while (Main.Peek() is Decl)
+                        {
+                            data.Add(Main.Pop() as Decl);
+                        }
+                        var code = new List<Stmt>();
+                        while (Main.Peek() is Stmt)
+                        {
+                            code.Add(Main.Pop() as Stmt);
+                        }
+                        Push(new ABProgram(data, code));
+                        break;
+
+                    case TokenType.Treserved:
+                        switch (lexeme)
+                        {
+                            case "dcl":
+                                DCL = true;
+                                break;
+
+                            case "enddcl":
+                                DCL = false;
+                                break;
+
+                            case ";":
+                                Type t;
+                                if (Main.Peek() is Type)
+                                {
+                                    t = Main.Pop() as Type;
+                                }
+                                else
+                                {
+                                    ERROR = "the top of the stack is not of type Type";
+                                    t = null;
+                                }
+                                Var v;
+                                if (Main.Peek() is Var)
+                                {
+                                    v = Main.Pop() as Var;
+                                }
+                                else
+                                {
+                                    ERROR = "the top of the stack is not of type Var";
+                                    v = null;
+                                }
+                                Push(new Decl(v, t));
+                                break;
+
+                            case "integer":
+                                Push(new Integer());
+                                break;
+
+                            case "char":
+                                CHAR = true;
+                                LetWait(typeof(Num), _n =>
+                                {
+                                    var n = _n as Num;
+                                    CHAR = false;
+                                    if (!BRACKET)
+                                    {
+                                        ERROR = "flag BRACKET was not raised when expected";
+                                    }
+                                    Push(new String(n));
+                                }
+                                );
+                                break;
+
+                            case "(":
+                                BRACKET = true;
+                                break;
+
+                            case ")":
+                                BRACKET = false;
+                                break;
+
+                            case "if":
+                                IF++;
+                                LetWait(typeof(Expr), _cond =>
+                                {
+                                    var cond = _cond as Expr;
+                                    IF--;
+                                }
+                                );
+                                break;
+
+                            case "endif":
+                                IF--;
+                                break;
+
+                            case "map":
+                                MAP = true;
+                                LetWait(typeof(Expr), _source =>
+                                {
+                                    var source = _source as Expr;
+                                    MAP = false;
+                                    MAP = true;
+                                    LetWait(typeof(Var), _target =>
+                                    {
+                                        var target = _target as Var;
+                                        MAP = false;
+                                        Push(new MapStmt(source, target));
+                                    }
+                                    );
+                                }
+                                );
+                                break;
+
+                        }
+                        break;
+
+                }
+                if (!System.String.IsNullOrEmpty(ERROR))
+                {
+                    Console.WriteLine("Parser error: " + ERROR);
+                    return null;
+                }
             }
             while (type != TokenType.TEOF);
             return null;
         }
+
+        private void LetWait(System.Type _type, Action<object> _action)
+        {
+            if (Main.Peek().GetType() == _type)
+            {
+                _action(Main.Pop());
+                return;
+            }
+            if (!Pending.ContainsKey(_type))
+            {
+                Pending[_type] = new Queue<Action<object>>();
+            }
+            Pending[_type].Enqueue(_action);
+        }
+
+        private void Push(object _x)
+        {
+            System.Type _t = _x.GetType();
+            if (Pending.ContainsKey(_t) && Pending[_t].Count > 0)
+            {
+                Action<object> _a = Pending[_t].Dequeue();
+                _a(_x);
+            }
+            else
+            {
+                Main.Push(_x);
+            }
+        }
+
         private Tuple<TokenType, string> NextToken()
         {
             TokenType t = TokenType.TUndefined;
@@ -83,6 +235,12 @@ namespace AB
                 t = TokenType.Treserved;
                 s = "if";
                 pos += 2;
+            }
+            else if (pos + 4 < input.Length && input[pos] == 'e' && input[pos + 1] == 'n' && input[pos + 2] == 'd' && input[pos + 3] == 'i' && input[pos + 4] == 'f')
+            {
+                t = TokenType.Treserved;
+                s = "endif";
+                pos += 5;
             }
             else if (pos + 2 < input.Length && input[pos] == 'm' && input[pos + 1] == 'a' && input[pos + 2] == 'p')
             {
@@ -132,6 +290,6 @@ namespace AB
             }
             return new Tuple<TokenType, string>(t, s);
         }
-        // TODO
+
     }
 }

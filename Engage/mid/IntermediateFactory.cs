@@ -12,7 +12,49 @@ namespace Engage.mid
             InferTypes(output, input);
             InferFlags(output, input);
             InferTokens(output, input);
+            foreach (var hd in input.Handlers)
+            {
+                var hp = ConvertHandler(hd);
+                string type = hp.ReactOn.Value;
+                foreach (var k in output.Tokens.Keys)
+                    if (output.Tokens[k].Contains(hp.ReactOn))
+                        type = k;
+                if (String.IsNullOrEmpty(type))
+                    Console.WriteLine($"[IF] Cannot determine type of token '{hp.ReactOn.Value}'");
+                if (!output.Handlers.ContainsKey(type))
+                    output.Handlers[type] = new List<HandlerPlan>();
+                output.Handlers[type].Add(hp);
+            }
             return output;
+        }
+
+        private static HandlerPlan ConvertHandler(HandlerDecl hd)
+        {
+            HandlerPlan hp = new HandlerPlan();
+            if (hd.LHS.EOF)
+                hp.ReactOn = new TokenPlan() { Special = true, Value = "EOF" };
+            else
+                hp.ReactOn = new TokenPlan() { Special = false, Value = hd.LHS.Literal };
+            if (!String.IsNullOrEmpty(hd.LHS.Flag))
+                hp.GuardFlag = hd.LHS.Flag;
+            if (hd.Context.All(ass => ass.RHS is AwaitAction || ass.RHS is AwaitStarAction))
+            {
+                // Asynchronously: schedule parsing
+                // in reverse order, provide last result to the new one
+                HandleAction act = hd.RHS.ToHandleAction();
+                for (int i = hd.Context.Count - 1; i >= 0; i--)
+                    act = hd.Context[i].RHS.ToHandleAction(hd.Context[i].LHS, act);
+                // add *one* action!
+                hp.Recipe.Add(act);
+            }
+            else
+            {
+                // Synchronously: just get it from the stack one by one
+                foreach (var ass in hd.Context)
+                    hp.Recipe.Add(ass.RHS.ToHandleAction(ass.LHS));
+                hp.Recipe.Add(hd.RHS.ToHandleAction());
+            }
+            return hp;
         }
 
         private static void InferTypes(SystemPlan plan, EngSpec spec)

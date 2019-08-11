@@ -5,6 +5,5 @@ namespace AB
     public class Type
     {
 
-        // TODO
     }
 }

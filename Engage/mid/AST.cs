@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Engage.mid
 {
@@ -63,24 +62,35 @@ namespace Engage.mid
         public string Flag = "";
     }
 
-    public partial class Reaction
+    public class Reaction
     {
+        public virtual HandleAction ToHandleAction()
+            => null;
     }
 
     public partial class PushReaction : Reaction
     {
         public string Name;
         public List<string> Args = new List<string>();
+
+        public override HandleAction ToHandleAction()
+            => new PushNew(Name, Args);
     }
 
     public partial class LiftReaction : Reaction
     {
         public string Flag;
+
+        public override HandleAction ToHandleAction()
+            => new LiftFlag() { Flag = Flag };
     }
 
     public partial class DropReaction : Reaction
     {
         public string Flag;
+
+        public override HandleAction ToHandleAction()
+            => new DropFlag() { Flag = Flag };
     }
 
     public partial class Assignment
@@ -91,16 +101,24 @@ namespace Engage.mid
 
     public partial class Operation
     {
+        internal virtual HandleAction ToHandleAction(string target, HandleAction prev =null)
+            => null;
     }
 
     public partial class PopAction : Operation
     {
         public string Name;
+
+        internal override HandleAction ToHandleAction(string target, HandleAction prev = null)
+            => new PopOne() { Name = Name, Target = target };
     }
 
     public partial class PopStarAction : Operation
     {
         public string Name;
+
+        internal override HandleAction ToHandleAction(string target, HandleAction prev = null)
+            => new PopAll() { Name = Name, Target = target };
     }
 
     public partial class AwaitAction : Operation
@@ -108,6 +126,13 @@ namespace Engage.mid
         public string Name;
         public string TmpContext;
         public string ExtraContext;
+
+        internal override HandleAction ToHandleAction(string target, HandleAction prev = null)
+        {
+            var a = new AwaitOne() { Name = Name, Target = target, Flag = TmpContext, ExtraFlag = ExtraContext };
+            a.BaseAction = prev;
+            return a;
+        }
     }
 
     public partial class AwaitStarAction : Operation
