@@ -53,15 +53,14 @@ namespace Engage.B
             var p = new C.CsClass();
             p.NS = NS;
             p.Name = "Parser";
+            p.Super = "BaseParser";
+            p.AddUsing("EngageRuntime");
             p.AddUsing("System");
+            p.AddUsing("System.Collections.Generic");
             if (BoolFlags.Count > 0)
                 p.AddField(String.Join(", ", BoolFlags), "bool", isPublic: false);
             if (IntFlags.Count > 0)
                 p.AddField(String.Join(", ", IntFlags), "int", isPublic: false);
-            p.AddField("Main", "Stack<Object>", isPublic: false);
-            p.AddField("input", "string", isPublic: false);
-            p.AddField("pos", "int", isPublic: false);
-            p.AddField("Pending", "Dictionary<System.Type, Queue<Action<object>>>", isPublic: false);
             // token types
             var tt = new C.CsEnum();
             tt.IsPublic = false;
@@ -72,8 +71,8 @@ namespace Engage.B
             p.AddInner(tt);
             // parser constructor
             var pc = new C.CsConstructor();
+            pc.InheritFromBase = true;
             pc.AddArgument("input", "string");
-            pc.AddCode("pos = 0");
             p.AddConstructor(pc);
             // the parse function
             var pf = new C.CsMethod();
@@ -179,44 +178,9 @@ namespace Engage.B
             p.AddMethod(pf);
 
             // other methods
-            GenerateAsync(p);
-            GeneratePusher(p);
             GenerateTokeniser(p);
 
             return p;
-        }
-
-        private void GenerateAsync(C.CsClass cls)
-        {
-            var wait = new C.CsMethod();
-            wait.IsPublic = false;
-            wait.Name = "LetWait";
-            wait.RetType = "void";
-            wait.AddArgument("type", "System.Type");
-            wait.AddArgument("action", "Action<object>");
-            var ifst = new C.CsComplexStmt("if (Main.Peek().GetType() == _type)", "_action(Main.Pop());");
-            ifst.AddCode("return");
-            wait.AddCode(ifst);
-            wait.AddCode("if (!Pending.ContainsKey(_type))", "Pending[_type] = new Queue<Action<object>>();");
-            wait.AddCode("Pending[_type].Enqueue(_action)");
-            cls.AddMethod(wait);
-        }
-
-        private void GeneratePusher(C.CsClass cls)
-        {
-            var push = new C.CsMethod();
-            push.IsPublic = false;
-            push.Name = "Push";
-            push.RetType = "void";
-            push.AddArgument("x", "object");
-            push.AddCode("System.Type _t = _x.GetType()");
-            push.AddCode("Action<object> _a = null");
-            var ifst = new C.CsComplexStmt("if ((_t == key || _t.IsSubclassOf(key)) && Pending[key].Count > 0)", "_a = Pending[key].Dequeue()");
-            ifst.AddCode("break");
-            push.AddCode(new C.CsComplexStmt("foreach (var key in Pending.Keys)", ifst));
-            push.AddCode(new C.CsComplexStmt("if (_a != null)", "_a(_x)"));
-            push.AddCode("else", "Main.Push(_x)");
-            cls.AddMethod(push);
         }
 
         private void GenerateTokeniser(C.CsClass cls)

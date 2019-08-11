@@ -104,7 +104,7 @@ namespace Engage.B
             }
             // TODO: check for "extra flag"
             var lambda = new CsComplexStmt();
-            lambda.Before = $"LetWait(typeof({Name}), _{Target} =>";
+            lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
             lambda.After = ");";
             lambda.AddCode($"var {Target} = _{Target} as {Name};");
             if (!String.IsNullOrEmpty(Flag))
@@ -113,9 +113,10 @@ namespace Engage.B
                 tmp.GenerateAbstractCode(lambda.Code);
             }
             if (!String.IsNullOrEmpty(ExtraFlag))
-                lambda.AddCode($"if (!{ExtraFlag})", $"ERROR = \"flag {ExtraFlag} was not raised when expected\"");
+                lambda.AddCode($"if (!{ExtraFlag})", "return Message.Misfire");
             if (BaseAction != null)
                 BaseAction.GenerateAbstractCode(lambda.Code);
+            lambda.AddCode("return Message.Consume");
             code.Add(lambda);
         }
     }

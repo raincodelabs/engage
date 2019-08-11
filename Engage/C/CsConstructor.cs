@@ -6,16 +6,20 @@ namespace Engage.C
 {
     public class CsConstructor : CsExeField
     {
+        public bool InheritFromBase = false;
+
         public override void GenerateCode(List<string> lines, int level, string className)
         {
-            string args = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
-            lines.Add(level, $"{(IsPublic ? "public" : "private")} {className}({args})");
+            string args1 = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
+            string args2 = String.Join(", ", Args.Select(a => $"_{a.Item1}"));
+            lines.Add(level, $"{(IsPublic ? "public" : "private")} {className}({args1}){(InheritFromBase ? $" : base({args2})" : "")}");
             lines.Open(level);
-            foreach (var a in Args)
-                if (a.Item2.IsCollection())
-                    lines.Add(level + 1, $"{a.Item1}.AddRange(_{a.Item1});");
-                else
-                    lines.Add(level + 1, $"{a.Item1} = _{a.Item1};");
+            if (!InheritFromBase)
+                foreach (var a in Args)
+                    if (a.Item2.IsCollection())
+                        lines.Add(level + 1, $"{a.Item1}.AddRange(_{a.Item1});");
+                    else
+                        lines.Add(level + 1, $"{a.Item1} = _{a.Item1};");
             foreach (var line in Code)
                 line.GenerateCode(lines, level + 1);
             lines.Close(level);

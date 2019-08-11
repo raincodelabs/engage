@@ -9,7 +9,7 @@ namespace EngageRuntime
         protected int pos;
 
         protected List<Message> Pending = new List<Message>();
-        private Stack<object> Main = new Stack<object>();
+        protected Stack<object> Main = new Stack<object>();
 
         public BaseParser(string _input)
         {

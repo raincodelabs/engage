@@ -1,10 +1,11 @@
 // Engage! generated this file, please do not edit manually
+using EngageRuntime;
 using System;
 using System.Collections.Generic;
 
 namespace AB
 {
-    public class Parser
+    public class Parser : BaseParser
     {
         private enum TokenType
         {
@@ -17,15 +18,9 @@ namespace AB
 
         private bool DCL, BRACKET, CHAR, MAP;
         private int IF;
-        private Stack<Object> Main = new Stack<Object>();
-        private string input;
-        private int pos;
-        private Dictionary<System.Type, Queue<Action<object>>> Pending = new Dictionary<System.Type, Queue<Action<object>>>();
 
-        public Parser(string _input)
+        public Parser(string _input) : base(_input)
         {
-            input = _input;
-            pos = 0;
         }
 
         public object Parse()
@@ -43,14 +38,10 @@ namespace AB
                     case TokenType.TEOF:
                         var code = new List<Stmt>();
                         while (Main.Count > 0 && Main.Peek() is Stmt)
-                        {
                             code.Add(Main.Pop() as Stmt);
-                        }
                         var data = new List<Decl>();
                         while (Main.Count > 0 && Main.Peek() is Decl)
-                        {
                             data.Add(Main.Pop() as Decl);
-                        }
                         Push(new ABProgram(data, code));
                         break;
 
@@ -59,9 +50,7 @@ namespace AB
                         {
                             case "integer":
                                 if (!DCL)
-                                {
                                     ERROR = "flag DCL not lifted when expected";
-                                }
                                 Push(new Integer());
                                 break;
 
@@ -75,19 +64,16 @@ namespace AB
 
                             case "char":
                                 if (!DCL)
-                                {
                                     ERROR = "flag DCL not lifted when expected";
-                                }
                                 CHAR = true;
-                                LetWait(typeof(Num), _n =>
+                                Schedule(typeof(Num), _n =>
                                 {
                                     var n = _n as Num;
                                     CHAR = false;
                                     if (!BRACKET)
-                                    {
-                                        ERROR = "flag BRACKET was not raised when expected";
-                                    }
+                                        return Message.Misfire;
                                     Push(new String(n));
+                                    return Message.Consume;
                                 }
                                 );
                                 break;
@@ -98,42 +84,41 @@ namespace AB
 
                             case "map":
                                 MAP = true;
-                                LetWait(typeof(Expr), _source =>
+                                Schedule(typeof(Expr), _source =>
                                 {
                                     var source = _source as Expr;
                                     MAP = false;
                                     MAP = true;
-                                    LetWait(typeof(Var), _target =>
+                                    Schedule(typeof(Var), _target =>
                                     {
                                         var target = _target as Var;
                                         MAP = false;
                                         Push(new MapStmt(source, target));
+                                        return Message.Consume;
                                     }
                                     );
+                                    return Message.Consume;
                                 }
                                 );
                                 break;
 
                             case "if":
                                 IF++;
-                                LetWait(typeof(Expr), _cond =>
+                                Schedule(typeof(Expr), _cond =>
                                 {
                                     var cond = _cond as Expr;
                                     IF--;
+                                    return Message.Consume;
                                 }
                                 );
                                 break;
 
                             case ";":
                                 if (!DCL)
-                                {
                                     ERROR = "flag DCL not lifted when expected";
-                                }
                                 Type t;
                                 if (Main.Peek() is Type)
-                                {
                                     t = Main.Pop() as Type;
-                                }
                                 else
                                 {
                                     ERROR = "the top of the stack is not of type Type";
@@ -141,9 +126,7 @@ namespace AB
                                 }
                                 Var v;
                                 if (Main.Peek() is Var)
-                                {
                                     v = Main.Pop() as Var;
-                                }
                                 else
                                 {
                                     ERROR = "the top of the stack is not of type Var";
@@ -154,17 +137,13 @@ namespace AB
 
                             case "(":
                                 if (!CHAR)
-                                {
                                     ERROR = "flag CHAR not lifted when expected";
-                                }
                                 BRACKET = true;
                                 break;
 
                             case ")":
                                 if (!CHAR)
-                                {
                                     ERROR = "flag CHAR not lifted when expected";
-                                }
                                 BRACKET = false;
                                 break;
 
@@ -188,46 +167,8 @@ namespace AB
             }
             while (type != TokenType.TEOF);
             if (Main.Peek() is ABProgram)
-            {
                 return Main.Pop();
-            }
             return null;
-        }
-
-        private void LetWait(System.Type _type, Action<object> _action)
-        {
-            if (Main.Peek().GetType() == _type)
-            {
-                _action(Main.Pop());
-                return;
-            }
-            if (!Pending.ContainsKey(_type))
-            {
-                Pending[_type] = new Queue<Action<object>>();
-            }
-            Pending[_type].Enqueue(_action);
-        }
-
-        private void Push(object _x)
-        {
-            System.Type _t = _x.GetType();
-            Action<object> _a = null;
-            foreach (var key in Pending.Keys)
-            {
-                if ((_t == key || _t.IsSubclassOf(key)) && Pending[key].Count > 0)
-                {
-                    _a = Pending[key].Dequeue();
-                    break;
-                }
-            }
-            if (_a != null)
-            {
-                _a(_x);
-            }
-            else
-            {
-                Main.Push(_x);
-            }
         }
 
         private Tuple<TokenType, string> NextToken()
@@ -235,17 +176,11 @@ namespace AB
             TokenType t = TokenType.TUndefined;
             string s = "";
             if (pos >= input.Length)
-            {
                 return new Tuple<TokenType, string>(TokenType.TEOF, "");
-            }
             while (pos < input.Length && (input[pos] == ' ' || input[pos] == '\r' || input[pos] == '\n'))
-            {
                 pos++;
-            }
             if (pos >= input.Length)
-            {
                 return new Tuple<TokenType, string>(TokenType.TEOF, "");
-            }
             else if (pos + 2 < input.Length && input[pos] == 'd' && input[pos + 1] == 'c' && input[pos + 2] == 'l')
             {
                 t = TokenType.Treserved;
@@ -316,17 +251,13 @@ namespace AB
             {
                 t = TokenType.TNum;
                 while (pos < input.Length && (input[pos] == '0' || input[pos] == '1' || input[pos] == '2' || input[pos] == '3' || input[pos] == '4' || input[pos] == '5' || input[pos] == '6' || input[pos] == '7' || input[pos] == '8' || input[pos] == '9'))
-                {
                     s += input[pos++];
-                }
             }
             else
             {
                 t = TokenType.TVar;
                 while (pos < input.Length && input[pos] != ' ' && input[pos] != '\r' && input[pos] != '\n')
-                {
                     s += input[pos++];
-                }
             }
             return new Tuple<TokenType, string>(t, s);
         }

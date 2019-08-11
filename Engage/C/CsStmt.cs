@@ -63,10 +63,12 @@ namespace Engage.C
         {
             if (!String.IsNullOrEmpty(Before))
                 lines.Add(level, Before);
-            lines.Open(level);
+            if (Code.Count > 1)
+                lines.Open(level);
             foreach (var stmt in Code)
                 stmt.GenerateCode(lines, level + 1);
-            lines.Close(level);
+            if (Code.Count > 1)
+                lines.Close(level);
             if (!String.IsNullOrEmpty(After))
             {
                 if (!After.EndsWith(";"))
