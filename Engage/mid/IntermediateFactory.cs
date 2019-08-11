@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Engage.mid
@@ -10,6 +11,7 @@ namespace Engage.mid
             SystemPlan output = new SystemPlan(input.NS);
             InferTypes(output, input);
             InferFlags(output, input);
+            InferTokens(output, input);
             return output;
         }
 
@@ -72,6 +74,22 @@ namespace Engage.mid
                 }
 
             Console.WriteLine($"[IR] Inferred flags: Boolean {String.Join(", ", plan.BoolFlags)}; counter {String.Join(", ", plan.IntFlags)}");
+        }
+
+        private static void InferTokens(SystemPlan plan, EngSpec spec)
+        {
+            foreach (var t in spec.Tokens)
+            {
+                List<TokenPlan> ts = new List<TokenPlan>();
+                foreach (var a in t.Names)
+                    if (a is NumberLex)
+                        ts.Add(new TokenPlan() { Special = true, Value = "number" });
+                    else if (a is StringLex)
+                        ts.Add(new TokenPlan() { Special = true, Value = "string" });
+                    else if (a is LiteralLex al)
+                        ts.Add(new TokenPlan() { Special = false, Value = al.Literal });
+                plan.Tokens[t.Type] = ts;
+            }
         }
     }
 }

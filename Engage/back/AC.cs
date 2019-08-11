@@ -98,10 +98,16 @@ namespace Engage.back
         }
 
         public void AddCode(string line)
-            => AddCode(new CsSimpleStmt() { Code = line });
+            => AddCode(new CsSimpleStmt(line));
+
+        public void AddCode(string cond, string line)
+            => AddCode(new CsComplexStmt(cond, line));
 
         public void AddCode(CsStmt line)
-            => Code.Add(line);
+        {
+            if (line != null)
+                Code.Add(line);
+        }
 
         public abstract void GenerateClassCode(List<string> lines, int level, string className);
     }
@@ -133,6 +139,15 @@ namespace Engage.back
     {
         public string Code;
 
+        public CsSimpleStmt()
+        {
+        }
+
+        public CsSimpleStmt(string code)
+        {
+            Code = code;
+        }
+
         public override void GenerateCode(List<string> lines, int level)
         {
             if (!Code.EndsWith(";"))
@@ -146,8 +161,27 @@ namespace Engage.back
         public string Before, After;
         public List<CsStmt> Code = new List<CsStmt>();
 
+        public CsComplexStmt()
+        {
+        }
+
+        public CsComplexStmt(string before, CsStmt code, string after = "")
+        {
+            Before = before;
+            Code.Add(code);
+            After = after;
+        }
+
+        public CsComplexStmt(string before, string code, string after = "")
+            : this(before, new CsSimpleStmt(code), after)
+        {
+        }
+
         public void AddCode(string stmt)
-            => AddCode(new CsSimpleStmt() { Code = stmt });
+            => AddCode(new CsSimpleStmt(stmt));
+
+        public void AddCode(string cond, string line)
+            => AddCode(new CsComplexStmt(cond, line));
 
         public void AddCode(CsStmt stmt)
             => Code.Add(stmt);
@@ -160,10 +194,12 @@ namespace Engage.back
             foreach (var stmt in Code)
                 stmt.GenerateCode(lines, level + 1);
             lines.Close(level);
-            if (!After.EndsWith(";"))
-                After += ";";
             if (!String.IsNullOrEmpty(After))
+            {
+                if (!After.EndsWith(";"))
+                    After += ";";
                 lines.Add(level, After);
+            }
         }
     }
 

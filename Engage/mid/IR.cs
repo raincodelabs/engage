@@ -11,6 +11,7 @@ namespace Engage.mid
         public Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
         public HashSet<string> BoolFlags = new HashSet<string>();
         public HashSet<string> IntFlags = new HashSet<string>();
+        public Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
 
         public SystemPlan(string ns)
         {
@@ -85,11 +86,126 @@ namespace Engage.mid
             tok.IsPublic = false;
             tok.Name = "NextToken";
             tok.RetType = "Tuple<TokenType, string>";
-            tok.AddCode("return null"); // TODO
+            GenerateTokeniser(tok);
             p.AddMethod(tok);
 
             return p;
         }
+
+        private void GenerateTokeniser(CsMethod tok)
+        {
+            // init phase
+            tok.AddCode("TokenType t = TokenType.TUndefined;");
+            tok.AddCode("string s = \"\";");
+            // EOF phase
+            tok.AddCode(new CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            // skip
+            if (Tokens.ContainsKey("skip"))
+            {
+                string cond = String.Join(" || ", Tokens["skip"].Select(t => $"input[pos] == '{t.Value}'"));
+                tok.AddCode(new CsComplexStmt($"while ({cond} && pos < input.Length)", "pos++"));
+            }
+            else
+                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
+            // EOF after skip
+            tok.AddCode(new CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            // reserved
+            if (Tokens.ContainsKey("reserved"))
+                GenerateBranches("reserved", tok);
+            else
+                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'reserved'");
+            // number
+            foreach (var tt in Tokens.Keys)
+            {
+                if (tt == "skip")
+                    continue;
+                if (tt == "reserved")
+                    continue;
+                GenerateBranches(tt, tok);
+            }
+            tok.AddCode("return new Tuple<TokenType, string>(t, s);");
+        }
+
+        // Precondition: Tokens.Contains(token_name)
+        private void GenerateBranches(string token_name, CsMethod method)
+        {
+            if (!Tokens.ContainsKey(token_name))
+                return;
+            foreach (var tm in Tokens[token_name])
+                if (tm.Special)
+                    method.AddCode(GenerateBranchSpecialMatch(tm.Value, token_name));
+                else
+                    method.AddCode(GenerateBranchPreciseMatch(tm.Value, token_name));
+        }
+
+        private CsComplexStmt GenerateBranchSpecialMatch(string value, string type)
+        {
+            switch (value)
+            {
+                case "number":
+                    return GenerateBranchNumberMatch(type);
+
+                case "string":
+                    return GenerateBranchStringMatch(type);
+
+                default:
+                    Console.WriteLine($"[IR] Cannot generate a match for '{value}'");
+                    return null;
+            }
+        }
+
+        private CsComplexStmt GenerateBranchStringMatch(string type)
+        {
+            string cond = "";
+            if (Tokens.ContainsKey("skip"))
+                foreach (var t in Tokens["skip"])
+                    cond += $" && input[pos] != '{t.Value}'";
+            CsComplexStmt ifst = new CsComplexStmt();
+            ifst.Before = "else";
+            ifst.AddCode($"t = TokenType.T{type}");
+            ifst.AddCode($"while (pos < input.Length{cond})", "s += input[pos++]");
+            return ifst;
+        }
+
+        private CsComplexStmt GenerateBranchNumberMatch(string type)
+        {
+            CsComplexStmt ifst = new CsComplexStmt();
+            string cond = string.Join(" || ", "0123456789".Select(c => $"input[pos] == '{c}'"));
+            ifst.Before = $"else if ({cond})";
+            ifst.AddCode($"t = TokenType.T{type}");
+            ifst.AddCode($"while (pos < input.Length && ({cond}))", "s += input[pos++]");
+            return ifst;
+        }
+
+        private CsComplexStmt GenerateBranchPreciseMatch(string value, string type)
+        {
+            int len = value.Length;
+            CsComplexStmt ifst = new CsComplexStmt();
+            string cond;
+            if (len > 1)
+                cond = $"pos + {len - 1} < input.Length";
+            else
+                cond = "";
+            for (int i = 0; i < len; i++)
+                cond += $" && input[pos + {i}] == '{value[i]}'";
+            if (cond.StartsWith(" && "))
+                cond = cond.Substring(4);
+            cond = cond.Replace(" + 0", "");
+            ifst.Before = $"else if ({cond})";
+            ifst.AddCode($"t = TokenType.T{type}");
+            ifst.AddCode($"s = \"{value}\"");
+            if (len > 1)
+                ifst.AddCode($"pos += {len}");
+            else
+                ifst.AddCode("pos++");
+            return ifst;
+        }
+    }
+
+    public class TokenPlan
+    {
+        public bool Special = false;
+        public string Value;
     }
 
     public class TypePlan

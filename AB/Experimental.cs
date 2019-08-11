@@ -40,7 +40,7 @@ namespace AB
                             code.Add(Main.Pop() as Stmt);
                         Main.Push(new ABProgram(data, code));
                         break;
-                    case TokenType.TReserved:
+                    case TokenType.Treserved:
                         switch (lexeme)
                         {
                             case "dcl":
@@ -73,14 +73,14 @@ namespace AB
             if (_input.StartsWith("dcl"))
             {
                 // reserved
-                t = TokenType.TReserved;
+                t = TokenType.Treserved;
                 s = "dcl";
                 _pos += 3;
             }
             else if (_input.StartsWith("enddcl"))
             {
                 // reserved
-                t = TokenType.TReserved;
+                t = TokenType.Treserved;
                 s = "enddcl";
                 _pos += 6;
             }
@@ -106,7 +106,7 @@ namespace AB
     internal enum TokenType
     {
         TUndefined,
-        TReserved,
+        Treserved,
         TNum,
         TVar,
         TEOF,
