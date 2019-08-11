@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engage.back;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,6 +27,11 @@ namespace Engage.mid
         }
 
         internal bool IsType(string n) => Types.ContainsKey(n);
+
+        public IEnumerable<CsClass> GenerateClasses()
+            => Types.Values
+                .Where(t => !t.IsList)
+                .Select(t => t.GenerateClass());
     }
 
     public class TypePlan
@@ -44,6 +50,27 @@ namespace Engage.mid
             // do not copy constructors!
             return plan;
         }
+
+        public override string ToString()
+            => IsList ? $"List<{Name}>" : Name;
+
+        internal CsClass GenerateClass()
+        {
+            var result = new CsClass();
+            result.Name = Name;
+            result.Super = Super;
+            foreach (var c in Constructors)
+            {
+                var cc = new CsConstructor();
+                foreach (var a in c.Args)
+                {
+                    result.AddField(a.Item1, a.Item2.ToString());
+                    cc.AddArgument(a.Item1, a.Item2.ToString());
+                }
+                result.AddConstructor(cc);
+            }
+            return result;
+        }
     }
 
     public class ConstPlan
@@ -58,7 +85,7 @@ namespace Engage.mid
             if (Args.Count > 0)
             {
                 result += "(";
-                result += String.Join(",", Args.Select(a=> $"{a.Item1}:{a.Item2.Name}"));
+                result += String.Join(",", Args.Select(a => $"{a.Item1}:{a.Item2.ToString()}"));
                 result += ")";
             }
             return result;

@@ -3,13 +3,13 @@ types
     Integer, String     <: Type;
     Decl;
     IfStmt, MapStmt     <: Stmt;
-    Var;
+    Var, Num            <: Expr;
 
 tokens
 	' ' :: skip
 	'dcl', 'enddcl', 'integer', 'char', 'if', 'map', 'to' :: reserved
-	number :: N
-	string :: V
+	number :: Num
+	string :: Var
 
 handlers
     EOF                 -> push Program(data,code)
@@ -22,15 +22,15 @@ handlers
                                  v := pop Var
     'integer' given DCL -> push Integer
     'char'    given DCL -> push String(n)
-                           where n := await (N given BRACKET) with CHAR
+                           where n := await (Num given BRACKET) with CHAR
     '(' given CHAR      -> lift BRACKET
     ')' given CHAR      -> drop BRACKET
     'if'                -> push IfStmt(cond,code)
-                           where cond := await E with IF#,
+                           where cond := await Expr with IF#,
                                  code := await* Stmt with IF#
     'endif'             -> drop IF
     'map'               -> push MapStmt(source,target)
-                           where source := await E with MAP,
-                                 target := await V with MAP
+                           where source := await Expr with MAP,
+                                 target := await Var with MAP
 
 %    V given MAP         -> assert exists Decl(v,t) such that v == this
