@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Engage.mid
+namespace Engage
 {
     public class IntermediateFactory
     {
-        public static SystemPlan Ast2ir(EngSpec input)
+        public static B.SystemPlan Ast2ir(A.EngSpec input)
         {
-            SystemPlan output = new SystemPlan(input.NS);
+            B.SystemPlan output = new B.SystemPlan(input.NS);
             InferTypes(output, input);
             InferFlags(output, input);
             InferTokens(output, input);
@@ -22,26 +22,26 @@ namespace Engage.mid
                 if (String.IsNullOrEmpty(type))
                     Console.WriteLine($"[IF] Cannot determine type of token '{hp.ReactOn.Value}'");
                 if (!output.Handlers.ContainsKey(type))
-                    output.Handlers[type] = new List<HandlerPlan>();
+                    output.Handlers[type] = new List<B.HandlerPlan>();
                 output.Handlers[type].Add(hp);
             }
             return output;
         }
 
-        private static HandlerPlan ConvertHandler(HandlerDecl hd)
+        private static B.HandlerPlan ConvertHandler(A.HandlerDecl hd)
         {
-            HandlerPlan hp = new HandlerPlan();
+            B.HandlerPlan hp = new B.HandlerPlan();
             if (hd.LHS.EOF)
-                hp.ReactOn = new TokenPlan() { Special = true, Value = "EOF" };
+                hp.ReactOn = new B.TokenPlan() { Special = true, Value = "EOF" };
             else
-                hp.ReactOn = new TokenPlan() { Special = false, Value = hd.LHS.Literal };
+                hp.ReactOn = new B.TokenPlan() { Special = false, Value = hd.LHS.Literal };
             if (!String.IsNullOrEmpty(hd.LHS.Flag))
                 hp.GuardFlag = hd.LHS.Flag;
-            if (hd.Context.All(ass => ass.RHS is AwaitAction || ass.RHS is AwaitStarAction))
+            if (hd.Context.All(ass => ass.RHS is A.AwaitAction || ass.RHS is A.AwaitStarAction))
             {
                 // Asynchronously: schedule parsing
                 // in reverse order, provide last result to the new one
-                HandleAction act = hd.RHS.ToHandleAction();
+                B.HandleAction act = hd.RHS.ToHandleAction();
                 for (int i = hd.Context.Count - 1; i >= 0; i--)
                     act = hd.Context[i].RHS.ToHandleAction(hd.Context[i].LHS, act);
                 // add *one* action!
@@ -57,7 +57,7 @@ namespace Engage.mid
             return hp;
         }
 
-        private static void InferTypes(SystemPlan plan, EngSpec spec)
+        private static void InferTypes(B.SystemPlan plan, A.EngSpec spec)
         {
             foreach (var t in spec.Types)
             {
@@ -66,23 +66,23 @@ namespace Engage.mid
                 plan.AddType(t.Super, null, silent: true);
             }
             foreach (var h in spec.Handlers)
-                if (h.RHS is PushReaction pr)
+                if (h.RHS is A.PushReaction pr)
                 {
                     if (plan.Types.ContainsKey(pr.Name))
                     {
                         var tp = plan.Types[pr.Name];
-                        var cp = new ConstPlan();
+                        var cp = new B.ConstPlan();
                         foreach (var a in pr.Args)
                         {
-                            Operation c = h.GetContext(a);
-                            if (c is PopAction pa)
-                                cp.Args.Add(new Tuple<string, TypePlan>(a, plan.Types[pa.Name]));
-                            else if (c is PopStarAction psa)
-                                cp.Args.Add(new Tuple<string, TypePlan>(a, plan.Types[psa.Name].Copy(true)));
-                            else if (c is AwaitAction aa)
-                                cp.Args.Add(new Tuple<string, TypePlan>(a, plan.Types[aa.Name]));
-                            else if (c is AwaitStarAction asa)
-                                cp.Args.Add(new Tuple<string, TypePlan>(a, plan.Types[asa.Name].Copy(true)));
+                            A.Operation c = h.GetContext(a);
+                            if (c is A.PopAction pa)
+                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[pa.Name]));
+                            else if (c is A.PopStarAction psa)
+                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[psa.Name].Copy(true)));
+                            else if (c is A.AwaitAction aa)
+                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[aa.Name]));
+                            else if (c is A.AwaitStarAction asa)
+                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[asa.Name].Copy(true)));
                         }
                         tp.Constructors.Add(cp);
                         Console.WriteLine($"[IR] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
@@ -90,17 +90,17 @@ namespace Engage.mid
                 }
         }
 
-        private static void InferFlags(SystemPlan plan, EngSpec spec)
+        private static void InferFlags(B.SystemPlan plan, A.EngSpec spec)
         {
             foreach (var h in spec.Handlers)
             {
-                if (h.RHS is LiftReaction lr)
+                if (h.RHS is A.LiftReaction lr)
                     plan.BoolFlags.Add(lr.Flag);
-                else if (h.RHS is DropReaction dr)
+                else if (h.RHS is A.DropReaction dr)
                     plan.BoolFlags.Add(dr.Flag);
 
                 foreach (var a in h.Context)
-                    if (a.RHS is AwaitAction aa)
+                    if (a.RHS is A.AwaitAction aa)
                     {
                         if (!String.IsNullOrEmpty(aa.ExtraContext))
                             plan.BoolFlags.Add(aa.ExtraContext);
@@ -118,18 +118,18 @@ namespace Engage.mid
             Console.WriteLine($"[IR] Inferred flags: Boolean {String.Join(", ", plan.BoolFlags)}; counter {String.Join(", ", plan.IntFlags)}");
         }
 
-        private static void InferTokens(SystemPlan plan, EngSpec spec)
+        private static void InferTokens(B.SystemPlan plan, A.EngSpec spec)
         {
             foreach (var t in spec.Tokens)
             {
-                List<TokenPlan> ts = new List<TokenPlan>();
+                List<B.TokenPlan> ts = new List<B.TokenPlan>();
                 foreach (var a in t.Names)
-                    if (a is NumberLex)
-                        ts.Add(new TokenPlan() { Special = true, Value = "number" });
-                    else if (a is StringLex)
-                        ts.Add(new TokenPlan() { Special = true, Value = "string" });
-                    else if (a is LiteralLex al)
-                        ts.Add(new TokenPlan() { Special = false, Value = al.Literal });
+                    if (a is A.NumberLex)
+                        ts.Add(new B.TokenPlan() { Special = true, Value = "number" });
+                    else if (a is A.StringLex)
+                        ts.Add(new B.TokenPlan() { Special = true, Value = "string" });
+                    else if (a is A.LiteralLex al)
+                        ts.Add(new B.TokenPlan() { Special = false, Value = al.Literal });
                 plan.Tokens[t.Type] = ts;
             }
         }

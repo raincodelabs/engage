@@ -1,9 +1,8 @@
-﻿using Engage.back;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Engage.mid
+namespace Engage.B
 {
     public class SystemPlan
     {
@@ -14,7 +13,6 @@ namespace Engage.mid
         public HashSet<string> IntFlags = new HashSet<string>();
         public Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
         public Dictionary<string, List<HandlerPlan>> Handlers = new Dictionary<string, List<HandlerPlan>>();
-        //public List<HandlerPlan> Handlers = new List<HandlerPlan>();
 
         public SystemPlan(string ns)
         {
@@ -45,14 +43,14 @@ namespace Engage.mid
 
         internal bool IsType(string n) => Types.ContainsKey(n);
 
-        public IEnumerable<CsClass> GenerateDataClasses()
+        public IEnumerable<C.CsClass> GenerateDataClasses()
             => Types.Values
                 .Where(t => !t.IsList)
                 .Select(t => t.GenerateClass(NS));
 
-        public CsClass GenerateParser()
+        public C.CsClass GenerateParser()
         {
-            var p = new CsClass();
+            var p = new C.CsClass();
             p.NS = NS;
             p.Name = "Parser";
             p.AddUsing("System");
@@ -65,7 +63,7 @@ namespace Engage.mid
             p.AddField("pos", "int", isPublic: false);
             p.AddField("Pending", "Dictionary<System.Type, Queue<Action<object>>>", isPublic: false);
             // token types
-            var tt = new CsEnum();
+            var tt = new C.CsEnum();
             tt.IsPublic = false;
             tt.Name = "TokenType";
             tt.Values.Add("TUndefined");
@@ -73,19 +71,19 @@ namespace Engage.mid
             tt.Values.AddRange(Tokens.Keys.Where(t => t != "skip").Select(t => "T" + t));
             p.AddInner(tt);
             // parser constructor
-            var pc = new CsConstructor();
+            var pc = new C.CsConstructor();
             pc.AddArgument("input", "string");
             pc.AddCode("pos = 0");
             p.AddConstructor(pc);
             // the parse function
-            var pf = new CsMethod();
+            var pf = new C.CsMethod();
             pf.Name = "Parse";
             pf.RetType = "object";
             pf.AddCode("string ERROR = \"\"");
             pf.AddCode("TokenType type");
             pf.AddCode("string lexeme");
-            List<CsStmt> loop = new List<CsStmt>();
-            var pl = new CsComplexStmt();
+            List<C.CsStmt> loop = new List<C.CsStmt>();
+            var pl = new C.CsComplexStmt();
             pl.Before = "do";
             pl.After = "while (type != TokenType.TEOF)";
 
@@ -94,12 +92,12 @@ namespace Engage.mid
             pl.AddCode("lexeme = _token.Item2;");
             pl.AddCode("type = _token.Item1;");
 
-            var swType = new CsSwitchCase();
+            var swType = new C.CsSwitchCase();
             swType.Expression = "type";
 
             foreach (var hpk in Handlers.Keys)
             {
-                List<CsStmt> branchType = new List<CsStmt>();
+                List<C.CsStmt> branchType = new List<C.CsStmt>();
                 if (Handlers[hpk].Count == 1)
                 {
                     foreach (var action in Handlers[hpk][0].Recipe)
@@ -112,11 +110,11 @@ namespace Engage.mid
                 }
                 else
                 {
-                    var swLex = new CsSwitchCase();
+                    var swLex = new C.CsSwitchCase();
                     swLex.Expression = "lexeme";
                     foreach (var hp in Handlers[hpk])
                     {
-                        List<CsStmt> branchLex = new List<CsStmt>();
+                        List<C.CsStmt> branchLex = new List<C.CsStmt>();
                         //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
                         foreach (var action in hp.Recipe)
                         {
@@ -133,7 +131,7 @@ namespace Engage.mid
             }
 
             pl.AddCode(swType);
-            var abend = new CsComplexStmt();
+            var abend = new C.CsComplexStmt();
             abend.Before = "if (!System.String.IsNullOrEmpty(ERROR))";
             abend.AddCode("Console.WriteLine(\"Parser error: \" + ERROR);");
             abend.AddCode("return null;");
@@ -152,15 +150,15 @@ namespace Engage.mid
             return p;
         }
 
-        private void GenerateAsync(CsClass cls)
+        private void GenerateAsync(C.CsClass cls)
         {
-            var wait = new CsMethod();
+            var wait = new C.CsMethod();
             wait.IsPublic = false;
             wait.Name = "LetWait";
             wait.RetType = "void";
             wait.AddArgument("type", "System.Type");
             wait.AddArgument("action", "Action<object>");
-            var ifst = new CsComplexStmt("if (Main.Peek().GetType() == _type)", "_action(Main.Pop());");
+            var ifst = new C.CsComplexStmt("if (Main.Peek().GetType() == _type)", "_action(Main.Pop());");
             ifst.AddCode("return");
             wait.AddCode(ifst);
             wait.AddCode("if (!Pending.ContainsKey(_type))", "Pending[_type] = new Queue<Action<object>>();");
@@ -168,24 +166,24 @@ namespace Engage.mid
             cls.AddMethod(wait);
         }
 
-        private void GeneratePusher(CsClass cls)
+        private void GeneratePusher(C.CsClass cls)
         {
-            var push = new CsMethod();
+            var push = new C.CsMethod();
             push.IsPublic = false;
             push.Name = "Push";
             push.RetType = "void";
             push.AddArgument("x", "object");
             push.AddCode("System.Type _t = _x.GetType()");
-            var ifst = new CsComplexStmt("if (Pending.ContainsKey(_t) && Pending[_t].Count > 0)", "Action<object> _a = Pending[_t].Dequeue();");
+            var ifst = new C.CsComplexStmt("if (Pending.ContainsKey(_t) && Pending[_t].Count > 0)", "Action<object> _a = Pending[_t].Dequeue();");
             ifst.AddCode("_a(_x)");
             push.AddCode(ifst);
             push.AddCode("else", "Main.Push(_x)");
             cls.AddMethod(push);
         }
 
-        private void GenerateTokeniser(CsClass cls)
+        private void GenerateTokeniser(C.CsClass cls)
         {
-            var tok = new CsMethod();
+            var tok = new C.CsMethod();
             tok.IsPublic = false;
             tok.Name = "NextToken";
             tok.RetType = "Tuple<TokenType, string>";
@@ -194,17 +192,17 @@ namespace Engage.mid
             tok.AddCode("TokenType t = TokenType.TUndefined;");
             tok.AddCode("string s = \"\";");
             // EOF phase
-            tok.AddCode(new CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            tok.AddCode(new C.CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
             // skip
             if (Tokens.ContainsKey("skip"))
             {
                 string cond = String.Join(" || ", Tokens["skip"].Select(t => $"input[pos] == '{t.Value}'"));
-                tok.AddCode(new CsComplexStmt($"while ({cond} && pos < input.Length)", "pos++"));
+                tok.AddCode(new C.CsComplexStmt($"while ({cond} && pos < input.Length)", "pos++"));
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
             // EOF after skip
-            tok.AddCode(new CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            tok.AddCode(new C.CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
             // reserved
             if (Tokens.ContainsKey("reserved"))
                 GenerateBranches("reserved", tok);
@@ -225,7 +223,7 @@ namespace Engage.mid
         }
 
         // Precondition: Tokens.Contains(token_name)
-        private void GenerateBranches(string token_name, CsMethod method)
+        private void GenerateBranches(string token_name, C.CsMethod method)
         {
             if (!Tokens.ContainsKey(token_name))
                 return;
@@ -236,7 +234,7 @@ namespace Engage.mid
                     method.AddCode(GenerateBranchPreciseMatch(tm.Value, token_name));
         }
 
-        private CsComplexStmt GenerateBranchSpecialMatch(string value, string type)
+        private C.CsComplexStmt GenerateBranchSpecialMatch(string value, string type)
         {
             switch (value)
             {
@@ -252,22 +250,22 @@ namespace Engage.mid
             }
         }
 
-        private CsComplexStmt GenerateBranchStringMatch(string type)
+        private C.CsComplexStmt GenerateBranchStringMatch(string type)
         {
             string cond = "";
             if (Tokens.ContainsKey("skip"))
                 foreach (var t in Tokens["skip"])
                     cond += $" && input[pos] != '{t.Value}'";
-            CsComplexStmt ifst = new CsComplexStmt();
+            C.CsComplexStmt ifst = new C.CsComplexStmt();
             ifst.Before = "else";
             ifst.AddCode($"t = TokenType.T{type}");
             ifst.AddCode($"while (pos < input.Length{cond})", "s += input[pos++]");
             return ifst;
         }
 
-        private CsComplexStmt GenerateBranchNumberMatch(string type)
+        private C.CsComplexStmt GenerateBranchNumberMatch(string type)
         {
-            CsComplexStmt ifst = new CsComplexStmt();
+            C.CsComplexStmt ifst = new C.CsComplexStmt();
             string cond = string.Join(" || ", "0123456789".Select(c => $"input[pos] == '{c}'"));
             ifst.Before = $"else if ({cond})";
             ifst.AddCode($"t = TokenType.T{type}");
@@ -275,10 +273,10 @@ namespace Engage.mid
             return ifst;
         }
 
-        private CsComplexStmt GenerateBranchPreciseMatch(string value, string type)
+        private C.CsComplexStmt GenerateBranchPreciseMatch(string value, string type)
         {
             int len = value.Length;
-            CsComplexStmt ifst = new CsComplexStmt();
+            C.CsComplexStmt ifst = new C.CsComplexStmt();
             string cond;
             if (len > 1)
                 cond = $"pos + {len - 1} < input.Length";
@@ -297,204 +295,6 @@ namespace Engage.mid
             else
                 ifst.AddCode("pos++");
             return ifst;
-        }
-    }
-
-    public class TokenPlan
-    {
-        public bool Special = false;
-        public string Value;
-
-        public override bool Equals(object obj)
-        {
-            if (obj is TokenPlan other)
-                return other.Value == this.Value && other.Special == this.Special;
-            return false;
-        }
-
-        public override int GetHashCode()
-            => Value.GetHashCode() + Special.GetHashCode();
-    }
-
-    public class TypePlan
-    {
-        public string Name;
-        public string Super;
-        public bool IsList = false;
-        public List<ConstPlan> Constructors = new List<ConstPlan>();
-
-        public TypePlan Copy(bool turnIntoList = false)
-        {
-            TypePlan plan = new TypePlan();
-            plan.Name = Name;
-            plan.Super = Super;
-            plan.IsList = IsList || turnIntoList;
-            // do not copy constructors!
-            return plan;
-        }
-
-        public override string ToString()
-            => IsList ? $"List<{Name}>" : Name;
-
-        internal CsClass GenerateClass(string ns)
-        {
-            var result = new CsClass();
-            result.NS = ns;
-            result.Name = Name;
-            result.Super = Super;
-            foreach (var c in Constructors)
-            {
-                var cc = new CsConstructor();
-                foreach (var a in c.Args)
-                {
-                    result.AddField(a.Item1, a.Item2.ToString());
-                    cc.AddArgument(a.Item1, a.Item2.ToString());
-                }
-                result.AddConstructor(cc);
-            }
-            return result;
-        }
-    }
-
-    public class ConstPlan
-    {
-        public List<Tuple<string, TypePlan>> Args = new List<Tuple<string, TypePlan>>();
-
-        public string ToString(string name, string super)
-        {
-            string result = name;
-            if (!String.IsNullOrEmpty(super))
-                result += ":" + super;
-            if (Args.Count > 0)
-            {
-                result += "(";
-                result += String.Join(",", Args.Select(a => $"{a.Item1}:{a.Item2.ToString()}"));
-                result += ")";
-            }
-            return result;
-        }
-    }
-
-    public class HandlerPlan
-    {
-        public TokenPlan ReactOn;
-        public string GuardFlag;
-        public List<HandleAction> Recipe = new List<HandleAction>();
-    }
-
-    public abstract class HandleAction
-    {
-        public abstract void GenerateAbstractCode(List<CsStmt> code);
-    }
-
-    public class LiftFlag : HandleAction
-    {
-        public string Flag;
-
-        public override void GenerateAbstractCode(List<CsStmt> code)
-        {
-            if (Flag.EndsWith('#'))
-                code.Add(new CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
-            else
-                code.Add(new CsSimpleStmt($"{Flag} = true"));
-        }
-    }
-
-    public class DropFlag : HandleAction
-    {
-        public string Flag;
-
-        public override void GenerateAbstractCode(List<CsStmt> code)
-        {
-            if (Flag.EndsWith('#'))
-                code.Add(new CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
-            else
-                code.Add(new CsSimpleStmt($"{Flag} = false"));
-        }
-    }
-
-    public class PushNew : HandleAction
-    {
-        public string Name;
-        public List<string> Args = new List<string>();
-
-        public PushNew()
-        {
-        }
-
-        public PushNew(string name, IEnumerable<string> args)
-        {
-            Name = name;
-            Args.AddRange(args);
-        }
-
-        public override void GenerateAbstractCode(List<CsStmt> code)
-        {
-            code.Add(new CsSimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
-        }
-    }
-
-    public class PopOne : HandleAction
-    {
-        public string Name;
-        public string Target;
-
-        public override void GenerateAbstractCode(List<CsStmt> code)
-        {
-            code.Add(new CsSimpleStmt($"{Name} {Target}"));
-            var tmp = new CsComplexStmt($"if (Main.Peek() is {Name})", $"{Target} = Main.Pop() as {Name}");
-            code.Add(tmp);
-            tmp = new CsComplexStmt($"else", $"ERROR = \"the top of the stack is not of type {Name}\"");
-            tmp.AddCode($"{Target} = null");
-            code.Add(tmp);
-        }
-    }
-
-    public class PopAll : HandleAction
-    {
-        public string Name;
-        public string Target;
-
-        public override void GenerateAbstractCode(List<CsStmt> code)
-        {
-            code.Add(new CsSimpleStmt($"var {Target} = new List<{Name}>()"));
-            var tmp = new CsComplexStmt($"while (Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
-            code.Add(tmp);
-        }
-    }
-
-    public class AwaitOne : HandleAction
-    {
-        public string Name;
-        public string Flag;
-        public string Target;
-        public string ExtraFlag;
-
-        public HandleAction BaseAction = null;
-
-        public override void GenerateAbstractCode(List<CsStmt> code)
-        {
-            HandleAction tmp;
-            if (!String.IsNullOrEmpty(Flag))
-            {
-                tmp = new LiftFlag() { Flag = Flag };
-                tmp.GenerateAbstractCode(code);
-            }
-            // TODO: check for "extra flag"
-            var lambda = new CsComplexStmt();
-            lambda.Before = $"LetWait(typeof({Name}), _{Target} =>";
-            lambda.After = ");";
-            lambda.AddCode($"var {Target} = _{Target} as {Name};");
-            if (!String.IsNullOrEmpty(Flag))
-            {
-                tmp = new DropFlag() { Flag = Flag };
-                tmp.GenerateAbstractCode(lambda.Code);
-            }
-            if (!String.IsNullOrEmpty(ExtraFlag))
-                lambda.AddCode($"if (!{ExtraFlag})", $"ERROR = \"flag {ExtraFlag} was not raised when expected\"");
-            if (BaseAction != null)
-                BaseAction.GenerateAbstractCode(lambda.Code);
-            code.Add(lambda);
         }
     }
 }

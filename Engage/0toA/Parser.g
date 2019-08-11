@@ -1,6 +1,6 @@
 ﻿[namespace Engage.front]
 [class public Parser]
-[using Engage.mid]
+[using Engage.A]
 
 EngSpec ::= i:s?
 	"namespace" i:s NS=Id i:s?

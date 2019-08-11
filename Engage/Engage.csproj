@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)lib\StandaloneGenerator.exe&quot; &quot;$(ProjectDir)front\Parser.g&quot; &quot;$(ProjectDir)front\GeneratedParser.cs&quot;" />
+    <Exec Command="&quot;$(SolutionDir)lib\StandaloneGenerator.exe&quot; &quot;$(ProjectDir)0toA\Parser.g&quot; &quot;$(ProjectDir)0toA\GeneratedParser.cs&quot;" />
   </Target>
 
 </Project>
