@@ -48,6 +48,8 @@ namespace AB
                             else
                                 break;
                         }
+                        code.Reverse();
+                        data.Reverse();
                         Push(new ABProgram(data, code));
                         break;
 

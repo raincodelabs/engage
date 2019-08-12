@@ -94,6 +94,7 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<CsStmt> code)
         {
+            // initialise lists
             GenerateInitialisationCode(code);
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
@@ -107,6 +108,14 @@ namespace Engage.B
                     loop.AddCode($"else if (Main.Peek() is {ps.Name})", $"{ps.Target}.Add(Main.Pop() as {ps.Name})");
             loop.AddCode("else", "break");
             code.Add(loop);
+
+            // reverse the order because of stack vs list differences
+            code.Add(new CsSimpleStmt($"{Target}.Reverse()"));
+            foreach (var sa in SiblingActions)
+                if (sa is PopSeveral ps)
+                    code.Add(new CsSimpleStmt($"{ps.Target}.Reverse()"));
+
+            // produce the rest of the code (usually push new)
             foreach (var sa in SiblingActions)
                 if (!(sa is PopSeveral))
                     sa.GenerateAbstractCode(code);
