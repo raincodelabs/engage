@@ -35,6 +35,17 @@ namespace Engage.B
         }
     }
 
+    public class TrimStream : HandleAction
+    {
+        public string Type;
+        public bool Starred;
+
+        public override void GenerateAbstractCode(List<CsStmt> code)
+        {
+            code.Add(new CsSimpleStmt($"Trim(typeof({Type}))"));
+        }
+    }
+
     public class PushNew : HandleAction
     {
         public string Name;
@@ -144,7 +155,6 @@ namespace Engage.B
                 tmp = new LiftFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
-            // TODO: check for "extra flag"
             var lambda = new CsComplexStmt();
             lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
             lambda.After = ");";
@@ -159,6 +169,46 @@ namespace Engage.B
             if (BaseAction != null)
                 BaseAction.GenerateAbstractCode(lambda.Code);
             lambda.AddCode("return Message.Perfect");
+            code.Add(lambda);
+        }
+    }
+
+    public class AwaitMany : HandleAction
+    {
+        public string Name;
+        public string Flag;
+        public string Target;
+
+        public HandleAction BaseAction = null;
+
+        public override void GenerateAbstractCode(List<CsStmt> code)
+        {
+            HandleAction tmp;
+            if (!String.IsNullOrEmpty(Flag))
+            {
+                tmp = new LiftFlag() { Flag = Flag };
+                tmp.GenerateAbstractCode(code);
+            }
+            code.Add(new CsSimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
+            var lambda = new CsComplexStmt();
+            lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
+            lambda.After = ");";
+            var ifst = new CsComplexStmt();
+            ifst.Before = $"if (_{Target} == null)";
+            ifst.AddCode("exec = true"); // do not accidentally trigger yourself
+            if (BaseAction != null)
+                BaseAction.GenerateAbstractCode(ifst.Code);
+            if (!String.IsNullOrEmpty(Flag))
+            {
+                tmp = new DropFlag() { Flag = Flag };
+                tmp.GenerateAbstractCode(lambda.Code);
+            }
+            ifst.AddCode("exec = false");
+            ifst.AddCode("return Message.Perfect");
+            lambda.AddCode(ifst);
+            lambda.AddCode($"var {Target}1 = _{Target} as {Name};");
+            lambda.AddCode($"{Target}.Add({Target}1)");
+            lambda.AddCode("return Message.Consume");
             code.Add(lambda);
         }
     }

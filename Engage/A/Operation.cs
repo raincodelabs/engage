@@ -54,5 +54,12 @@
     {
         public string Name;
         public string TmpContext;
+
+        internal override B.HandleAction ToHandleAction(string target, B.HandleAction prev = null)
+        {
+            var a = new B.AwaitMany() { Name = Name, Target = target, Flag = TmpContext };
+            a.BaseAction = prev;
+            return a;
+        }
     }
 }

@@ -8,7 +8,7 @@ namespace EngageRuntime
         protected string input;
         protected int pos;
 
-        private bool exec = false;
+        protected bool exec = false;
 
         protected List<Message> Pending = new List<Message>();
         protected Stack<object> Main = new Stack<object>();
@@ -24,9 +24,10 @@ namespace EngageRuntime
 
         protected void Push(object _x)
         {
-            Log($"        push {_x} :: {_x.GetType()}");
+            //Log($"        push {_x} :: {_x.GetType()}");
             Main.Push(_x);
-            Trigger();
+            if (!exec)
+                Trigger();
         }
 
         protected void Schedule(Type _type, Func<object, int> _action)
@@ -34,13 +35,34 @@ namespace EngageRuntime
             //Log($"SCHEDULE for {_type}");
             Message message = new Message(_type, _action);
             Pending.Add(message);
-            Trigger();
+            if (!exec)
+                Trigger();
+        }
+
+        protected void Trim(Type _type)
+        {
+            // reverse order to remove latest added handlers first
+            // (cf. dangling else)
+            //for (int i = Pending.Count - 1; i >= 0; i--)
+            for (int i = 0; i < Pending.Count; i++)
+                if (Pending[i].IsWanted(_type))
+                {
+                    var p = Pending[i];
+                    var code = p.Handler(null);
+                    //Log($"TRIM for {_type} returned the code {Convert.ToString(code, 2)}");
+                    Pending.Remove(p);
+                    if (!exec)
+                        Trigger();
+                    return;
+                }
+            //Log($"TRIM for {_type} unsuccessful!");
         }
 
         protected void Flush()
         {
             //Log("FLUSH");
-            Trigger();
+            if (!exec)
+                Trigger();
             exec = true;
             foreach (var msg in Pending.ToArray())
                 Log($"forced a {msg.ExpectedType} handler: return code {Convert.ToString(msg.Handler(null), 2)}");
@@ -49,11 +71,6 @@ namespace EngageRuntime
 
         protected void Trigger()
         {
-            if (exec)
-            {
-                //Log("TRIGGER FAILED");
-                return;
-            }
             //Log("TRIGGER");
             exec = true;
             while (Main.Count > 0)

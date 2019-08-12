@@ -25,6 +25,7 @@ Reaction ::=
 	  PushReaction := "push" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?
 	/ LiftReaction := "lift" i:s Flag=Id
 	/ DropReaction := "drop" i:s Flag=Id
+	/ TrimReaction := "trim" i:s Type=Id (i:s? "*" Starred = $true)?
 	;
 
 Assignment ::= i:s? LHS=Id i:s? ":=" i:s? RHS=Operation;

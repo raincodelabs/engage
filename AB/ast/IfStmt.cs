@@ -6,12 +6,12 @@ namespace AB
     public class IfStmt : Stmt
     {
         public Expr cond;
-        public List<Stmt> code = new List<Stmt>();
+        public List<Stmt> branch = new List<Stmt>();
 
-        public IfStmt(Expr _cond, List<Stmt> _code)
+        public IfStmt(Expr _cond, List<Stmt> _branch)
         {
             cond = _cond;
-            code.AddRange(_code);
+            branch.AddRange(_branch);
         }
 
     }

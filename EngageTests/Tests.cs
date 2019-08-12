@@ -20,8 +20,8 @@ namespace EngageTests
             Assert.AreEqual(1, spec.code.Count);
             var if1 = spec.code[0] as AB.IfStmt;
             Assert.IsNotNull(if1);
-            Assert.AreEqual(1, if1.code.Count);
-            var map1 = if1.code[0] as AB.MapStmt;
+            Assert.AreEqual(1, if1.branch.Count);
+            var map1 = if1.branch[0] as AB.MapStmt;
             Assert.IsNotNull(map1);
         }
 
@@ -35,10 +35,10 @@ namespace EngageTests
             Assert.AreEqual(1, spec.code.Count);
             var if1 = spec.code[0] as AB.IfStmt;
             Assert.IsNotNull(if1);
-            Assert.AreEqual(2, if1.code.Count);
-            var map1 = if1.code[0] as AB.MapStmt;
+            Assert.AreEqual(2, if1.branch.Count);
+            var map1 = if1.branch[0] as AB.MapStmt;
             Assert.IsNotNull(map1);
-            var map2 = if1.code[1] as AB.MapStmt;
+            var map2 = if1.branch[1] as AB.MapStmt;
             Assert.IsNotNull(map2);
         }
 
@@ -53,10 +53,10 @@ namespace EngageTests
             Console.WriteLine($"[AB] : {spec.code[0]} + {spec.code[1]}");
             var if1 = spec.code[0] as AB.IfStmt;
             Assert.IsNotNull(if1);
-            Assert.AreEqual(2, if1.code.Count);
-            var map1 = if1.code[0] as AB.MapStmt;
+            Assert.AreEqual(2, if1.branch.Count);
+            var map1 = if1.branch[0] as AB.MapStmt;
             Assert.IsNotNull(map1);
-            var map2 = if1.code[1] as AB.MapStmt;
+            var map2 = if1.branch[1] as AB.MapStmt;
             Assert.IsNotNull(map2);
             var map3 = spec.code[1] as AB.MapStmt;
             Assert.IsNotNull(map3);
@@ -73,13 +73,13 @@ namespace EngageTests
             Console.WriteLine($"[(1)] : {spec.code[0]}");
             var if1 = spec.code[0] as AB.IfStmt; // if a
             Assert.IsNotNull(if1);
-            Assert.AreEqual(1, if1.code.Count);
-            Console.WriteLine($"[(2)] : {if1.code[0]}");
-            var if2 = if1.code[0] as AB.IfStmt; // if b
+            Assert.AreEqual(1, if1.branch.Count);
+            Console.WriteLine($"[(2)] : {if1.branch[0]}");
+            var if2 = if1.branch[0] as AB.IfStmt; // if b
             Assert.IsNotNull(if2);
-            Assert.AreEqual(1, if2.code.Count);
-            Console.WriteLine($"[(3)] : {if2.code[0]}");
-            var ret1 = if2.code[0] as AB.ReturnStmt;
+            Assert.AreEqual(1, if2.branch.Count);
+            Console.WriteLine($"[(3)] : {if2.branch[0]}");
+            var ret1 = if2.branch[0] as AB.ReturnStmt;
             Assert.IsNotNull(ret1);
         }
 
@@ -90,17 +90,18 @@ namespace EngageTests
             AB.ABProgram spec = parser.Parse() as AB.ABProgram;
             Assert.IsNotNull(spec);
             Assert.AreEqual(0, spec.data.Count);
+            //Console.WriteLine($"[(1)] : {spec.code[0]} + {spec.code[1]}");
             Assert.AreEqual(1, spec.code.Count);
             Console.WriteLine($"[(1)] : {spec.code[0]}");
             var if1 = spec.code[0] as AB.IfStmt; // if a
             Assert.IsNotNull(if1);
-            Assert.AreEqual(1, if1.code.Count);
-            Console.WriteLine($"[(2)] : {if1.code[0]}");
-            var if2 = if1.code[0] as AB.IfStmt; // if b
+            Assert.AreEqual(1, if1.branch.Count);
+            Console.WriteLine($"[(2)] : {if1.branch[0]}");
+            var if2 = if1.branch[0] as AB.IfStmt; // if b
             Assert.IsNotNull(if2);
-            Assert.AreEqual(1, if2.code.Count);
-            Console.WriteLine($"[(3)] : {if2.code[0]}");
-            var map1 = if2.code[0] as AB.MapStmt; // map c to d
+            Assert.AreEqual(1, if2.branch.Count);
+            Console.WriteLine($"[(3)] : {if2.branch[0]}");
+            var map1 = if2.branch[0] as AB.MapStmt; // map c to d
             Assert.IsNotNull(map1);
         }
 
@@ -115,17 +116,17 @@ namespace EngageTests
             Console.WriteLine($"[(1)] : {spec.code[0]}");
             var if1 = spec.code[0] as AB.IfStmt; // if a
             Assert.IsNotNull(if1);
-            Assert.AreEqual(2, if1.code.Count);
-            Console.WriteLine($"[(2)] : {if1.code[0]} + {if1.code[1]}");
-            var if2 = if1.code[0] as AB.IfStmt; // if b
+            Assert.AreEqual(2, if1.branch.Count);
+            Console.WriteLine($"[(2)] : {if1.branch[0]} + {if1.branch[1]}");
+            var if2 = if1.branch[0] as AB.IfStmt; // if b
             Assert.IsNotNull(if2);
-            Assert.AreEqual(2, if2.code.Count);
-            Console.WriteLine($"[(3)] : {if2.code[0]} + {if2.code[1]}");
-            var map1 = if2.code[0] as AB.MapStmt; // map c to d
+            Assert.AreEqual(2, if2.branch.Count);
+            Console.WriteLine($"[(3)] : {if2.branch[0]} + {if2.branch[1]}");
+            var map1 = if2.branch[0] as AB.MapStmt; // map c to d
             Assert.IsNotNull(map1);
-            var map2 = if2.code[1] as AB.MapStmt; // map e to f
+            var map2 = if2.branch[1] as AB.MapStmt; // map e to f
             Assert.IsNotNull(map2);
-            var map3 = if1.code[1] as AB.MapStmt; // map g to h
+            var map3 = if1.branch[1] as AB.MapStmt; // map g to h
             Assert.IsNotNull(map3);
         }
 

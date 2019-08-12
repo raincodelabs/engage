@@ -28,10 +28,10 @@ handlers
                            where n := await (Num given BRACKET) with CHAR
     '(' given CHAR      -> lift BRACKET
     ')' given CHAR      -> drop BRACKET
-    'if'                -> push IfStmt(cond,code)
-                           where cond := await Expr with IF#,
-                                 code := await* Stmt with IF#
-    'endif'             -> drop IF#
+    'if'                -> push IfStmt(cond,branch)
+                           where cond   := await Expr,
+                                 branch := await* Stmt
+    'endif'             -> trim Stmt*
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP

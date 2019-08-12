@@ -17,7 +17,6 @@ namespace AB
         }
 
         private bool DCL, BRACKET, CHAR, MAP;
-        private int IF;
 
         public Parser(string _input) : base(_input)
         {
@@ -71,7 +70,7 @@ namespace AB
                                 break;
 
                             case "endif":
-                                IF--;
+                                Trim(typeof(Stmt));
                                 break;
 
                             case "clear":
@@ -125,11 +124,24 @@ namespace AB
                                 break;
 
                             case "if":
-                                IF++;
                                 Schedule(typeof(Expr), _cond =>
                                 {
                                     var cond = _cond as Expr;
-                                    IF--;
+                                    List<Stmt> branch = new List<Stmt>();
+                                    Schedule(typeof(Stmt), _branch =>
+                                    {
+                                        if (_branch == null)
+                                        {
+                                            exec = true;
+                                            Push(new IfStmt(cond, branch));
+                                            exec = false;
+                                            return Message.Perfect;
+                                        }
+                                        var branch1 = _branch as Stmt;
+                                        branch.Add(branch1);
+                                        return Message.Consume;
+                                    }
+                                    );
                                     return Message.Perfect;
                                 }
                                 );

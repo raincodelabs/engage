@@ -32,4 +32,13 @@ namespace Engage.A
         public override B.HandleAction ToHandleAction()
             => new B.DropFlag() { Flag = Flag };
     }
+
+    public partial class TrimReaction : Reaction
+    {
+        public string Type;
+        public bool Starred;
+
+        public override B.HandleAction ToHandleAction()
+            => new B.TrimStream() { Type = Type, Starred = Starred };
+    }
 }
