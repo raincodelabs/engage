@@ -115,7 +115,7 @@ namespace Engage.B
                 else
                 {
                     var swLex = new C.CsSwitchCase();
-                    swLex.Expression = "lexeme";
+                    swLex.Expression = "lexeme.ToLower()";
                     var list = Handlers[hpk];
                     list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
                     foreach (var hp in list)

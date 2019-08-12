@@ -6,7 +6,7 @@ namespace Engage
 {
     internal class Program
     {
-        private const string AppBuilderSpec = @"..\..\..\..\test\appbuilder.eng";
+        private const string AppBuilderSpec = @"..\..\..\..\example\appbuilder.eng";
         private const string Output = @"..\..\..\..\AB";
 
         private static void Main(string[] args)
