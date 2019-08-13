@@ -11,7 +11,8 @@ namespace AB
         {
             TUndefined,
             TEOF,
-            Treserved,
+            Tmark,
+            Tword,
             TNum,
             TVar,
         }
@@ -52,7 +53,7 @@ namespace AB
                         Push(new ABProgram(data, code));
                         break;
 
-                    case TokenType.Treserved:
+                    case TokenType.Tword:
                         switch (lexeme.ToLower())
                         {
                             case "integer":
@@ -145,7 +146,13 @@ namespace AB
                                 );
                                 break;
 
-                            case ";":
+                        }
+                        break;
+
+                    case TokenType.Tmark:
+                        switch (lexeme[0])
+                        {
+                            case ';':
                                 if (!DCL)
                                     ERROR = "flag DCL not lifted when expected";
                                 Type t;
@@ -167,13 +174,13 @@ namespace AB
                                 Push(new Decl(v, t));
                                 break;
 
-                            case "(":
+                            case '(':
                                 if (!CHAR)
                                     ERROR = "flag CHAR not lifted when expected";
                                 BRACKET = true;
                                 break;
 
-                            case ")":
+                            case ')':
                                 if (!CHAR)
                                     ERROR = "flag CHAR not lifted when expected";
                                 BRACKET = false;
@@ -215,79 +222,79 @@ namespace AB
                 return new Tuple<TokenType, string>(TokenType.TEOF, "");
             else if (pos + 2 < input.Length && input[pos] == 'd' && input[pos + 1] == 'c' && input[pos + 2] == 'l')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "dcl";
                 pos += 3;
             }
             else if (pos + 5 < input.Length && input[pos] == 'e' && input[pos + 1] == 'n' && input[pos + 2] == 'd' && input[pos + 3] == 'd' && input[pos + 4] == 'c' && input[pos + 5] == 'l')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "enddcl";
                 pos += 6;
             }
             else if (pos + 6 < input.Length && input[pos] == 'i' && input[pos + 1] == 'n' && input[pos + 2] == 't' && input[pos + 3] == 'e' && input[pos + 4] == 'g' && input[pos + 5] == 'e' && input[pos + 6] == 'r')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "integer";
                 pos += 7;
             }
             else if (pos + 3 < input.Length && input[pos] == 'c' && input[pos + 1] == 'h' && input[pos + 2] == 'a' && input[pos + 3] == 'r')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "char";
                 pos += 4;
             }
             else if (pos + 1 < input.Length && input[pos] == 'i' && input[pos + 1] == 'f')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "if";
                 pos += 2;
             }
             else if (pos + 4 < input.Length && input[pos] == 'e' && input[pos + 1] == 'n' && input[pos + 2] == 'd' && input[pos + 3] == 'i' && input[pos + 4] == 'f')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "endif";
                 pos += 5;
             }
             else if (pos + 2 < input.Length && input[pos] == 'm' && input[pos + 1] == 'a' && input[pos + 2] == 'p')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "map";
                 pos += 3;
             }
             else if (pos + 1 < input.Length && input[pos] == 't' && input[pos + 1] == 'o')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "to";
                 pos += 2;
             }
             else if (pos + 4 < input.Length && input[pos] == 'c' && input[pos + 1] == 'l' && input[pos + 2] == 'e' && input[pos + 3] == 'a' && input[pos + 4] == 'r')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "clear";
                 pos += 5;
             }
             else if (pos + 5 < input.Length && input[pos] == 'r' && input[pos + 1] == 'e' && input[pos + 2] == 't' && input[pos + 3] == 'u' && input[pos + 4] == 'r' && input[pos + 5] == 'n')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tword;
                 s = "return";
                 pos += 6;
             }
             else if (input[pos] == ';')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tmark;
                 s = ";";
                 pos++;
             }
             else if (input[pos] == '(')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tmark;
                 s = "(";
                 pos++;
             }
             else if (input[pos] == ')')
             {
-                t = TokenType.Treserved;
+                t = TokenType.Tmark;
                 s = ")";
                 pos++;
             }

@@ -115,7 +115,12 @@ namespace Engage.B
                 else
                 {
                     var swLex = new C.CsSwitchCase();
-                    swLex.Expression = "lexeme.ToLower()";
+                    // much faster to switch-case on a char than on a string
+                    bool matchChar = Handlers[hpk].Select(hp => hp.ReactOn.Value).All(v => v.Length == 1);
+                    if (matchChar)
+                        swLex.Expression = "lexeme[0]";
+                    else
+                        swLex.Expression = "lexeme.ToLower()";
                     var list = Handlers[hpk];
                     list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
                     foreach (var hp in list)
@@ -136,7 +141,10 @@ namespace Engage.B
                             else
                                 Console.WriteLine($"[IR] Warning: no action to handle '{hpk}'/{hp.ReactOn.Value}");
                         }
-                        swLex.Branches['"' + hp.ReactOn.Value + '"'] = branchLex;
+                        if (matchChar)
+                            swLex.Branches["'" + hp.ReactOn.Value + "'"] = branchLex;
+                        else
+                            swLex.Branches['"' + hp.ReactOn.Value + '"'] = branchLex;
                     }
                     branchType.Add(swLex);
                 }
@@ -207,17 +215,20 @@ namespace Engage.B
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
             // EOF after skip
             tok.AddCode(new C.CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
-            // reserved
-            if (Tokens.ContainsKey("reserved"))
-                GenerateBranches("reserved", tok);
+            // word
+            if (Tokens.ContainsKey("word"))
+                GenerateBranches("word", tok);
             else
-                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'reserved'");
-            // number
+                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
+            // mark
+            if (Tokens.ContainsKey("mark"))
+                GenerateBranches("mark", tok);
+            else
+                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
+            // number etc
             foreach (var tt in Tokens.Keys)
             {
-                if (tt == "skip")
-                    continue;
-                if (tt == "reserved")
+                if (tt == "skip" || tt == "word" || tt == "mark")
                     continue;
                 GenerateBranches(tt, tok);
             }

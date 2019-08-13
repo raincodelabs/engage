@@ -91,7 +91,7 @@ namespace Engage
                 }
             foreach (var t in plan.Tokens.Keys)
             {
-                if (t == "skip" || t == "reserved")
+                if (t == "mark" || t == "skip" || t == "word")
                     continue;
                 if (!plan.Types.ContainsKey(t))
                     plan.AddType(t, null);

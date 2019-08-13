@@ -10,7 +10,8 @@ types
 
 tokens
 	' ', '\r', '\n' :: skip
-	'dcl', 'enddcl', 'integer', 'char', 'if', 'endif', 'map', 'to', 'clear', 'return', ';', '(', ')' :: reserved
+  ';', '(', ')' :: mark
+	'dcl', 'enddcl', 'integer', 'char', 'if', 'endif', 'map', 'to', 'clear', 'return' :: word
 	number :: Num
 	string :: Var
 
