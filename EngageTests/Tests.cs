@@ -1,6 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace EngageTests
 {
@@ -12,17 +15,157 @@ namespace EngageTests
         private const string AppBuilderCode = @"..\..\..\..\tests";
 
         [TestMethod]
+        public void TryAllStackedTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            List<long> measures = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < 100; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"stack{i}.ab");
+                sw.Start();
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+                sw.Stop();
+                Assert.IsNotNull(spec);
+                Assert.AreEqual(0, spec.data.Count);
+                Assert.AreEqual(i + 1 + i, spec.code.Count);
+                var if1 = spec.code[i ] as AB.IfStmt;
+                Assert.IsNotNull(if1);
+                Assert.AreEqual(i + 1 + i, if1.branch.Count);
+                var if2 = if1.branch[i] as AB.IfStmt;
+                Assert.IsNotNull(if2);
+                Assert.AreEqual(i, if2.branch.Count);
+                Console.WriteLine($"Tested 'stack{i}.ab': OK in {sw.ElapsedTicks} ticks");
+                measures.Add(sw.ElapsedTicks);
+                sw.Reset();
+            }
+            Console.WriteLine($"AVERAGE time: {measures.Average()}");
+        }
+
+        [TestMethod]
+        public void TryAllDeepTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            List<long> measures = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < 100; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"deep{i}.ab");
+                sw.Start();
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+                sw.Stop();
+                Assert.IsNotNull(spec);
+                Assert.AreEqual(0, spec.data.Count);
+                Assert.AreEqual(1, spec.code.Count);
+                Console.WriteLine($"Tested 'deep{i}.ab': OK in {sw.ElapsedTicks} ticks");
+                measures.Add(sw.ElapsedTicks);
+                sw.Reset();
+            }
+            Console.WriteLine($"AVERAGE time: {measures.Average()}");
+        }
+
+        [TestMethod]
+        public void TryAllDeepExpTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < 5; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"deep10e{i}.ab");
+                sw.Start();
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+                sw.Stop();
+                Assert.IsNotNull(spec);
+                Assert.AreEqual(0, spec.data.Count);
+                Assert.AreEqual(1, spec.code.Count);
+                Console.WriteLine($"Tested 'deep10e{i}.ab': OK in {sw.ElapsedTicks} ticks");
+                sw.Reset();
+            }
+        }
+
+        [TestMethod]
         public void TryAllLongTests()
         {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            List<long> measures = new List<long>();
+            Stopwatch sw = new Stopwatch();
             for (int i = 0; i < 100; i++)
             {
                 string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
+                sw.Start();
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
+                sw.Stop();
                 Assert.IsNotNull(spec);
                 Assert.AreEqual(0, spec.data.Count);
                 Assert.AreEqual(i, spec.code.Count);
-                Console.WriteLine($"Tested 'long{i}.ab': OK");
+                Console.WriteLine($"Tested 'long{i}.ab': OK in {sw.ElapsedTicks} ticks");
+                measures.Add(sw.ElapsedTicks);
+                sw.Reset();
+            }
+            Console.WriteLine($"AVERAGE time: {measures.Average()}");
+        }
+
+        [TestMethod]
+        public void TryAllLongExpTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < 8; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long10e{i}.ab");
+                sw.Start();
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+                sw.Stop();
+                Assert.IsNotNull(spec);
+                Assert.AreEqual(0, spec.data.Count);
+                Assert.AreEqual((int)Math.Pow(10, i), spec.code.Count);
+                Console.WriteLine($"Tested 'long10e{i}.ab': OK in {sw.ElapsedTicks} ticks");
+                sw.Reset();
             }
         }
 
@@ -65,6 +208,34 @@ namespace EngageTests
             Assert.IsInstanceOfType(spec.code[3], typeof(AB.MapStmt));
             Assert.IsInstanceOfType(spec.code[4], typeof(AB.ReturnStmt));
             Assert.IsInstanceOfType(spec.code[5], typeof(AB.ReturnStmt));
+        }
+
+        [TestMethod]
+        public void TryFailingExample3()
+        {
+            var parser = new AB.Parser(@"
+                return
+                if COND1
+                    clear mvgdm
+                    if COND2
+                        clear btiyxe
+                    endif
+                    clear gq
+                endif
+                if gwv return endif");
+            AB.ABProgram spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(0, spec.data.Count);
+            Assert.AreEqual(3, spec.code.Count);
+            Assert.IsInstanceOfType(spec.code[0], typeof(AB.ReturnStmt));
+            Assert.IsInstanceOfType(spec.code[1], typeof(AB.IfStmt));
+            Assert.IsInstanceOfType(spec.code[2], typeof(AB.IfStmt));
+            var if1 = spec.code[1] as AB.IfStmt;
+            Assert.IsInstanceOfType(if1.branch[0], typeof(AB.ClearStmt));
+            Assert.IsInstanceOfType(if1.branch[1], typeof(AB.IfStmt));
+            Assert.IsInstanceOfType(if1.branch[2], typeof(AB.ClearStmt));
+            var if2 = if1.branch[1] as AB.IfStmt;
+            Assert.IsInstanceOfType(if1.branch[0], typeof(AB.ClearStmt));
         }
 
         [TestMethod]
@@ -238,6 +409,18 @@ namespace EngageTests
         {
             var spec = Engage.Parser.ParseQuoted("'foo'");
             Assert.AreEqual("foo", spec);
+        }
+
+        [TestMethod]
+        public void TryDeep0()
+        {
+            string fname = Path.Combine(AppBuilderCode, $"deep0.ab");
+            var parser = new AB.Parser(File.ReadAllText(fname));
+            Console.WriteLine($"Parsing '{File.ReadAllText(fname)}'");
+            var spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(0, spec.data.Count);
+            Assert.AreEqual(1, spec.code.Count);
         }
 
         [TestMethod]

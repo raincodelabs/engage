@@ -120,7 +120,7 @@ namespace Engage.B
                     if (matchChar)
                         swLex.Expression = "lexeme[0]";
                     else
-                        swLex.Expression = "lexeme.ToLower()";
+                        swLex.Expression = "lexeme";
                     var list = Handlers[hpk];
                     list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
                     foreach (var hp in list)

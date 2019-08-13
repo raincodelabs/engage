@@ -54,7 +54,7 @@ namespace AB
                         break;
 
                     case TokenType.Tword:
-                        switch (lexeme.ToLower())
+                        switch (lexeme)
                         {
                             case "integer":
                                 if (!DCL)
