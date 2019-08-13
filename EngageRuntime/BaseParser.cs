@@ -36,7 +36,7 @@ namespace EngageRuntime
 
         protected void Trim(Type _type)
         {
-            for (int i = 0; i < Pending.Count; i++)
+            for (int i = Pending.Count - 1; i >= 0; i--)
                 if (Pending[i].IsWanted(_type))
                 {
                     var p = Pending[i];
@@ -59,8 +59,9 @@ namespace EngageRuntime
         {
             //Log($"APPLY to {_x} :: {_x.GetType()}");
             Type _t = _x.GetType();
-            foreach (var candidate in Pending)
+            for (int i = Pending.Count - 1; i >= 0; i--)
             {
+                var candidate = Pending[i];
                 if (candidate.IsWanted(_t))
                 {
                     int code = candidate.Handler(_x);
