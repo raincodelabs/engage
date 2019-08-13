@@ -6,7 +6,7 @@ types
     Decl;
     ClearStmt, ConverseStmt, HandlerStmt, IfStmt, MapStmt, OverlayStmt, PrintStmt, ReturnStmt
                         <: Stmt;
-    Var, Num            <: Expr;
+    Var, Lit            <: Expr;
 
 tokens
   ' ', '\r', '\n' :: skip
@@ -14,12 +14,13 @@ tokens
   'dcl', 'enddcl', 'integer', 'char',
   'clear', 'converse', 'handler', 'if', 'endif', 'map', 'to', 'overlay', 'print', 'return' :: word
   number :: Num
-  string :: Var
+  string :: Id
 
 handlers
     EOF                 -> push ABProgram(data,code)
                            where code := pop# Stmt,
                                  data := pop# Decl
+
     'dcl'               -> lift DCL
     'enddcl'            -> drop DCL
     ';' given DCL       -> push Decl(v,t)
@@ -31,10 +32,19 @@ handlers
     '(' given CHAR      -> lift BRACKET
     ')' given CHAR      -> drop BRACKET
 
+%    Id                  -> push Var(ids)
+%                           %where ids := await* Id split by 'of'
+%                           where ids := await Id
+
     'clear'             -> push ClearStmt(view)
                            where view := await Var
     'converse'          -> push ConverseStmt(win)
                            where win := await Var with CONVERSE
+    % ----------------- begin DO ------------------------------------------------------------------------
+    %'do'                -> push DoStmt(doFrom,doTo,doBy,doIndex,block1,doWhile,block2)
+    %                       where ...
+    %'from' given DO     -> next Expr push 
+    % -----------------  end  DO ------------------------------------------------------------------------
     'handler'           -> push HandlerStmt(obj,proc)
                            where obj  := await Var,
                                  proc := await (Var given BRACKET) with HANDLER
@@ -47,6 +57,10 @@ handlers
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
+    'to' given MAP      -> wrap Lit(x)
+                           where x := pop Num
+    'to' given MAP      -> wrap Var(name)
+                           where name := pop Id
     'overlay'           -> push OverlayStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP

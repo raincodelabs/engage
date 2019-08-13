@@ -4,11 +4,11 @@ namespace AB
 {
     public class Var : Expr
     {
-        public System.String s;
+        public System.String name;
 
-        public Var(System.String _s)
+        public Var(System.String _name)
         {
-            s = _s;
+            name = _name;
         }
 
     }

@@ -14,7 +14,7 @@ namespace AB
             Tmark,
             Tword,
             TNum,
-            TVar,
+            TId,
         }
 
         private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, MAP;
@@ -151,9 +151,9 @@ namespace AB
                                 if (DCL)
                                 {
                                     CHAR = true;
-                                    Schedule(typeof(Num), _n =>
+                                    Schedule(typeof(System.Int32), _n =>
                                     {
-                                        var n = _n as Num;
+                                        var n = (System.Int32)_n;
                                         CHAR = false;
                                         if (!BRACKET)
                                             return Message.Misfire;
@@ -212,6 +212,21 @@ namespace AB
                                 );
                                 break;
 
+                            case "to":
+                                if (MAP)
+                                    if (Main.Peek() is System.Int32)
+                                    {
+                                        System.Int32 x = (System.Int32)Main.Pop();
+                                        Push(new Lit(x));
+                                    }
+                                else if (MAP)
+                                    if (Main.Peek() is System.String)
+                                    {
+                                        System.String name = Main.Pop() as System.String;
+                                        Push(new Var(name));
+                                    }
+                                break;
+
                         }
                         break;
 
@@ -265,11 +280,11 @@ namespace AB
                         break;
 
                     case TokenType.TNum:
-                        Push(new Num(System.Int32.Parse(lexeme)));
+                        Push(System.Int32.Parse(lexeme));
                         break;
 
-                    case TokenType.TVar:
-                        Push(new Var(lexeme));
+                    case TokenType.TId:
+                        Push(lexeme);
                         break;
 
                 }
@@ -405,7 +420,7 @@ namespace AB
             }
             else
             {
-                t = TokenType.TVar;
+                t = TokenType.TId;
                 while (pos < input.Length && input[pos] != ' ' && input[pos] != '\r' && input[pos] != '\n')
                     s += input[pos++];
             }

@@ -7,6 +7,16 @@ namespace Engage.B
     public abstract class HandleAction
     {
         public abstract void GenerateAbstractCode(List<CsStmt> code);
+
+        protected string CastAs(string expr, string type)
+            => type == "System.Int32"
+            ? $"({type}){expr}"
+            : $"{expr} as {type}";
+
+        protected string DefaultValue(string type)
+            => type == "System.Int32"
+            ? "0"
+            : "null";
     }
 
     public class LiftFlag : HandleAction
@@ -75,11 +85,33 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<CsStmt> code)
         {
             code.Add(new CsSimpleStmt($"{Name} {Target}"));
-            var tmp = new CsComplexStmt($"if (Main.Peek() is {Name})", $"{Target} = Main.Pop() as {Name}");
+            var tmp = new CsComplexStmt($"if (Main.Peek() is {Name})", $"{Target} = {CastAs("Main.Pop()", Name)}");
             code.Add(tmp);
             tmp = new CsComplexStmt($"else", $"ERROR = \"the top of the stack is not of type {Name}\"");
-            tmp.AddCode($"{Target} = null");
+            tmp.AddCode($"{Target} = {DefaultValue(Name)}");
             code.Add(tmp);
+        }
+    }
+
+    public class WrapOne : HandleAction
+    {
+        public string Name;
+        public string Type;
+        public string Target;
+
+        public WrapOne(string name, string type, string target)
+        {
+            Name = name;
+            Type = type;
+            Target = target;
+        }
+
+        public override void GenerateAbstractCode(List<CsStmt> code)
+        {
+            var guard = new CsComplexStmt($"if (Main.Peek() is {Type})",
+                $"{Type} {Target} = {CastAs("Main.Pop()", Type)}");
+            guard.AddCode($"Push(new {Name}({Target}))");
+            code.Add(guard);
         }
     }
 
@@ -93,6 +125,7 @@ namespace Engage.B
             code.Add(new CsSimpleStmt($"var {Target} = new List<{Name}>()"));
             var tmp = new CsComplexStmt($"while (Main.Count > 0 && Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
             code.Add(tmp);
+            code.Add(new CsSimpleStmt($"{Target}.Reverse()"));
         }
     }
 
@@ -158,7 +191,10 @@ namespace Engage.B
             var lambda = new CsComplexStmt();
             lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
             lambda.After = ");";
-            lambda.AddCode($"var {Target} = _{Target} as {Name};");
+            if (Name == "System.Int32") // corner case - "as" doesn't work on ints in C#
+                lambda.AddCode($"var {Target} = ({Name})_{Target};");
+            else
+                lambda.AddCode($"var {Target} = _{Target} as {Name};");
             if (!String.IsNullOrEmpty(Flag))
             {
                 tmp = new DropFlag() { Flag = Flag };

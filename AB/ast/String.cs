@@ -4,9 +4,9 @@ namespace AB
 {
     public class String : Type
     {
-        public Num n;
+        public System.Int32 n;
 
-        public String(Num _n)
+        public String(System.Int32 _n)
         {
             n = _n;
         }

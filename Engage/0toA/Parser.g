@@ -23,6 +23,7 @@ Trigger ::= (Terminal=Quoted / "EOF" EOF=$true / NonTerminal=Id) (i:s "given" i:
 
 Reaction ::=
 	  PushReaction := "push" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?
+	/ WrapReaction := "wrap" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?
 	/ LiftReaction := "lift" i:s Flag=Id
 	/ DropReaction := "drop" i:s Flag=Id
 	/ TrimReaction := "trim" i:s Type=Id (i:s? "*" Starred = $true)?

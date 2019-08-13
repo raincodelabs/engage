@@ -7,9 +7,16 @@ namespace Engage.B
 {
     public class SystemPlan
     {
+        private static readonly Dictionary<string, string> RealNames = new Dictionary<string, string>()
+        {
+            {"string","System.String" },
+            {"number","System.Int32" },
+        };
+
         public string NS;
         public string TopType;
-        public Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
+        private Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
+        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>();
         public HashSet<string> BoolFlags = new HashSet<string>();
         public HashSet<string> IntFlags = new HashSet<string>();
         public Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
@@ -19,6 +26,24 @@ namespace Engage.B
         {
             NS = ns;
         }
+
+        public static string Dealias(string name)
+            => TypeAliases.ContainsKey(name) ? RealNames[TypeAliases[name]] : name;
+
+        internal TypePlan GetTypePlan(string name)
+        {
+            if (Types.ContainsKey(name))
+                return Types[name];
+            if (TypeAliases.ContainsKey(name))
+                return GetTypePlan(TypeAliases[name]);
+            if (RealNames.ContainsKey(name))
+                return new TypePlan() { Name = RealNames[name] };
+            Console.WriteLine($"[ B ] Failed to get a type plan for '{name}'");
+            return null;
+        }
+
+        internal bool HasType(string name)
+            => Types.ContainsKey(name);
 
         internal void AddType(string n, string super, bool silent = false)
         {
@@ -41,8 +66,6 @@ namespace Engage.B
             Console.WriteLine($"[IR] Added type '{n}' to the plan");
             Types[tp.Name] = tp;
         }
-
-        internal bool IsType(string n) => Types.ContainsKey(n);
 
         public IEnumerable<C.CsClass> GenerateDataClasses()
             => Types.Values
@@ -160,11 +183,11 @@ namespace Engage.B
                     switch (tok.Value)
                     {
                         case "number":
-                            branchType.Add(new C.CsSimpleStmt($"Push(new {t}(System.Int32.Parse(lexeme)));"));
+                            branchType.Add(new C.CsSimpleStmt($"Push(System.Int32.Parse(lexeme));"));
                             break;
 
                         case "string":
-                            branchType.Add(new C.CsSimpleStmt($"Push(new {t}(lexeme));"));
+                            branchType.Add(new C.CsSimpleStmt($"Push(lexeme);"));
                             break;
                     }
                     swType.Branches["TokenType.T" + t] = branchType;
@@ -195,6 +218,7 @@ namespace Engage.B
             List<C.CsStmt> branchLex = new List<C.CsStmt>();
             //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
             var kwd = "if";
+            bool onlyWraps = true;
             for (int i = 0; i < guardFlags.Count; i++)
             {
                 CsComplexStmt ifst = new C.CsComplexStmt();
@@ -202,6 +226,8 @@ namespace Engage.B
                 List<CsStmt> target = String.IsNullOrEmpty(guardFlags[i]) ? branchLex : ifst.Code;
                 foreach (var action in recipes[i])
                 {
+                    if (!(action is WrapOne))
+                        onlyWraps = false;
                     if (action != null)
                         action.GenerateAbstractCode(target);
                     else
@@ -216,6 +242,7 @@ namespace Engage.B
                 flags = "flag " + guardFlags[0] + " is not";
             else
                 flags = "neither of the flags " + String.Join(", ", guardFlags) + " are";
+            if (!onlyWraps)
             if (guardFlags.Any(f => !String.IsNullOrEmpty(f)))
                 branchLex.Add(new CsComplexStmt("else", $"ERROR = \"{flags} lifted when expected\""));
             if (matchChar)

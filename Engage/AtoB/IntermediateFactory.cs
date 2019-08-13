@@ -46,6 +46,20 @@ namespace Engage
                 // add *one* action!
                 hp.Recipe.Add(act);
             }
+            else if (hd.RHS is A.WrapReaction)
+            {
+                if (hd.Context.Count > 1 || !(hd.Context[0].RHS is A.PopAction))
+                    Console.WriteLine($"[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
+
+                var tmp1 = hd.RHS.ToHandleAction();
+                var tmp2 = hd.Context[0].RHS.ToHandleAction(hd.Context[0].LHS);
+                var tmp3 = hd.RHS.ToHandleAction(prev: tmp2);
+                var tmp4 = hd.RHS.ToHandleAction(B.SystemPlan.Dealias((hd.Context[0].RHS as A.PopAction).Name));
+
+                // add one composite action
+                //hp.Recipe.Add(hd.RHS.ToHandleAction("TMP", hd.Context[0].RHS.ToHandleAction(hd.Context[0].LHS)));
+                hp.Recipe.Add(tmp4);
+            }
             else
             {
                 // Synchronously: just get it from the stack one by one
@@ -58,6 +72,14 @@ namespace Engage
 
         private static void InferTypes(B.SystemPlan plan, A.EngSpec spec)
         {
+            foreach (var t in plan.Tokens.Keys)
+            {
+                if (t == "mark" || t == "skip" || t == "word")
+                    continue;
+                foreach (B.TokenPlan tok in plan.Tokens[t])
+                    if (tok.Special)
+                        B.SystemPlan.TypeAliases[t] = tok.Value;
+            }
             foreach (var t in spec.Types)
             {
                 foreach (var n in t.Names)
@@ -67,63 +89,43 @@ namespace Engage
             foreach (var h in spec.Handlers)
                 if (h.RHS is A.PushReaction pr)
                 {
-                    if (plan.Types.ContainsKey(pr.Name))
+                    if (plan.HasType(pr.Name))
                     {
-                        var tp = plan.Types[pr.Name];
+                        var tp = plan.GetTypePlan(pr.Name);
                         var cp = new B.ConstPlan();
                         foreach (var a in pr.Args)
-                        {
-                            A.Operation c = h.GetContext(a);
-                            if (c is A.PopAction pa)
-                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[pa.Name]));
-                            else if (c is A.PopStarAction psa)
-                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[psa.Name].Copy(true)));
-                            else if (c is A.PopHashAction pha)
-                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[pha.Name].Copy(true)));
-                            else if (c is A.AwaitAction aa)
-                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[aa.Name]));
-                            else if (c is A.AwaitStarAction asa)
-                                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.Types[asa.Name].Copy(true)));
-                        }
+                            AddConstructorArguments(h, a, cp, plan);
                         tp.Constructors.Add(cp);
-                        Console.WriteLine($"[IR] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
+                        Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
                     }
                 }
-            foreach (var t in plan.Tokens.Keys)
-            {
-                if (t == "mark" || t == "skip" || t == "word")
-                    continue;
-                if (!plan.Types.ContainsKey(t))
-                    plan.AddType(t, null);
-                B.TypePlan tp = plan.Types[t];
-                foreach (B.TokenPlan tok in plan.Tokens[t])
+                else if (h.RHS is A.WrapReaction wr)
                 {
-                    if (!tok.Special)
-                        continue;
-                    B.ConstPlan cp = new B.ConstPlan();
-                    switch (tok.Value)
+                    if (plan.HasType(wr.Name))
                     {
-                        case "number":
-                            cp.Args.Add(new Tuple<string, B.TypePlan>("n", new B.TypePlan() { Name = "System.Int32" }));
-                            break;
-
-                        case "string":
-                            cp.Args.Add(new Tuple<string, B.TypePlan>("s", new B.TypePlan() { Name = "System.String" }));
-                            break;
-
-                        default:
-                            cp = null;
-                            break;
-                    }
-                    if (cp != null)
-                    {
+                        var tp = plan.GetTypePlan(wr.Name);
+                        var cp = new B.ConstPlan();
+                        foreach (var a in wr.Args)
+                            AddConstructorArguments(h, a, cp, plan);
                         tp.Constructors.Add(cp);
-                        Console.WriteLine($"[IR] Inferred trivial constructor {cp.ToString(tp.Name, null)}");
+                        Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(wr.Name, tp.Super)}");
                     }
                 }
+        }
 
-                Console.WriteLine($"[DEBUG] token {String.Join("; ", plan.Tokens[t])} - {tp}");
-            }
+        private static void AddConstructorArguments(A.HandlerDecl h, string a, B.ConstPlan cp, B.SystemPlan plan)
+        {
+            A.Reaction c = h.GetContext(a);
+            if (c is A.PopAction pa)
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(pa.Name)));
+            else if (c is A.PopStarAction psa)
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(psa.Name).Copy(true)));
+            else if (c is A.PopHashAction pha)
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(pha.Name).Copy(true)));
+            else if (c is A.AwaitAction aa)
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(aa.Name)));
+            else if (c is A.AwaitStarAction asa)
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(asa.Name).Copy(true)));
         }
 
         private static void InferFlags(B.SystemPlan plan, A.EngSpec spec)
