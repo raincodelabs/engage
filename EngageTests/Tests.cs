@@ -46,6 +46,61 @@ namespace EngageTests
         }
 
         [TestMethod]
+        public void TryFailingExample2()
+        {
+            var parser = new AB.Parser(@"
+                if abzhnyfsobo return endif
+                if 99773466 return endif
+                if iwksk return endif
+                map ifnaqtipf to bqnl
+                return
+                return");
+            AB.ABProgram spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(0, spec.data.Count);
+            Assert.AreEqual(6, spec.code.Count);
+            Assert.IsInstanceOfType(spec.code[0], typeof(AB.IfStmt));
+            Assert.IsInstanceOfType(spec.code[1], typeof(AB.IfStmt));
+            Assert.IsInstanceOfType(spec.code[2], typeof(AB.IfStmt));
+            Assert.IsInstanceOfType(spec.code[3], typeof(AB.MapStmt));
+            Assert.IsInstanceOfType(spec.code[4], typeof(AB.ReturnStmt));
+            Assert.IsInstanceOfType(spec.code[5], typeof(AB.ReturnStmt));
+        }
+
+        [TestMethod]
+        public void TryAlmostBadTokens()
+        {
+            var parser = new AB.Parser(@"map mapper to iffer");
+            AB.ABProgram spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(0, spec.data.Count);
+            Assert.AreEqual(1, spec.code.Count);
+            var map = spec.code[0] as AB.MapStmt;
+            Assert.IsNotNull(map);
+            var src = map.source as AB.Var;
+            Assert.IsNotNull(src);
+            Assert.AreEqual("mapper", src.s);
+            var tgt = map.target as AB.Var;
+            Assert.IsNotNull(src);
+            Assert.AreEqual("iffer", tgt.s);
+        }
+
+        [TestMethod]
+        public void TryExperimental1()
+        {
+            var parser = new AB.Parser("if x map y to z endif");
+            AB.ABProgram spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(0, spec.data.Count);
+            Assert.AreEqual(1, spec.code.Count);
+            var if1 = spec.code[0] as AB.IfStmt;
+            Assert.IsNotNull(if1);
+            Assert.AreEqual(1, if1.branch.Count);
+            var map1 = if1.branch[0] as AB.MapStmt;
+            Assert.IsNotNull(map1);
+        }
+
+        [TestMethod]
         public void TryExperimental2()
         {
             var parser = new AB.Parser("if a map b to c map d to e endif");
@@ -183,6 +238,19 @@ namespace EngageTests
         {
             var spec = Engage.Parser.ParseQuoted("'foo'");
             Assert.AreEqual("foo", spec);
+        }
+
+        [TestMethod]
+        public void TryTokeniser()
+        {
+            //var parser = new AB.Parser(@"map mapper to iffer");
+            //Tuple<AB.Parser.TokenType, string> token = null;
+            //do
+            //{
+            //    token = parser.NextToken();
+            //    Console.WriteLine($"'{token.Item2}' :: {token.Item1}");
+            //}
+            //while (token.Item1 != AB.Parser.TokenType.TEOF);
         }
     }
 }

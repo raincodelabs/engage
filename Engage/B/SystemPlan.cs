@@ -195,6 +195,8 @@ namespace Engage.B
 
         private void GenerateTokeniser(C.CsClass cls)
         {
+            var skipmark = new List<string>();
+
             var tok = new C.CsMethod();
             tok.IsPublic = false;
             tok.Name = "NextToken";
@@ -210,19 +212,23 @@ namespace Engage.B
             {
                 string cond = String.Join(" || ", Tokens["skip"].Select(t => $"input[pos] == '{t.Value}'"));
                 tok.AddCode(new C.CsComplexStmt($"while (pos < input.Length && ({cond}))", "pos++"));
+                Tokens["skip"].ForEach(t => skipmark.Add(t.Value));
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
             // EOF after skip
             tok.AddCode(new C.CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
-            // word
-            if (Tokens.ContainsKey("word"))
-                GenerateBranches("word", tok);
-            else
-                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
             // mark
             if (Tokens.ContainsKey("mark"))
-                GenerateBranches("mark", tok);
+            {
+                Tokens["mark"].ForEach(t => skipmark.Add(t.Value));
+                GenerateBranches("mark", tok, null);
+            }
+            else
+                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
+            // word
+            if (Tokens.ContainsKey("word"))
+                GenerateBranches("word", tok, skipmark);
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
             // number etc
@@ -230,7 +236,7 @@ namespace Engage.B
             {
                 if (tt == "skip" || tt == "word" || tt == "mark")
                     continue;
-                GenerateBranches(tt, tok);
+                GenerateBranches(tt, tok, skipmark);
             }
             tok.AddCode("return new Tuple<TokenType, string>(t, s);");
 
@@ -238,7 +244,7 @@ namespace Engage.B
         }
 
         // Precondition: Tokens.Contains(token_name)
-        private void GenerateBranches(string token_name, C.CsMethod method)
+        private void GenerateBranches(string token_name, C.CsMethod method, List<string> skipmark)
         {
             if (!Tokens.ContainsKey(token_name))
                 return;
@@ -246,7 +252,7 @@ namespace Engage.B
                 if (tm.Special)
                     method.AddCode(GenerateBranchSpecialMatch(tm.Value, token_name));
                 else
-                    method.AddCode(GenerateBranchPreciseMatch(tm.Value, token_name));
+                    method.AddCode(GenerateBranchPreciseMatch(tm.Value, token_name, skipmark));
         }
 
         private C.CsComplexStmt GenerateBranchSpecialMatch(string value, string type)
@@ -288,7 +294,7 @@ namespace Engage.B
             return ifst;
         }
 
-        private C.CsComplexStmt GenerateBranchPreciseMatch(string value, string type)
+        private C.CsComplexStmt GenerateBranchPreciseMatch(string value, string type, List<string> skipmark)
         {
             int len = value.Length;
             C.CsComplexStmt ifst = new C.CsComplexStmt();
@@ -301,6 +307,11 @@ namespace Engage.B
                 cond += $" && input[pos + {i}] == '{value[i]}'";
             if (cond.StartsWith(" && "))
                 cond = cond.Substring(4);
+
+            // either EOF or next is skip or mark
+            if (skipmark != null && skipmark.Count > 0)
+                cond = $"({cond}) && (pos + {len} == input.Length || {String.Join(" || ", skipmark.Select(c => $"input[pos + {len}] == '{c}'"))})";
+
             cond = cond.Replace(" + 0", "");
             ifst.Before = $"else if ({cond})";
             ifst.AddCode($"t = TokenType.T{type}");
