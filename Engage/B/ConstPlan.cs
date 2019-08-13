@@ -16,7 +16,7 @@ namespace Engage.B
             if (Args.Count > 0)
             {
                 result += "(";
-                result += String.Join(",", Args.Select(a => $"{a.Item1}:{a.Item2.ToString()}"));
+                result += String.Join(",", Args.Select(a => $"{a.Item1}:{(a.Item2 == null ? "object" : a.Item2.ToString())}"));
                 result += ")";
             }
             return result;

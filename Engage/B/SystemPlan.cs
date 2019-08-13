@@ -52,18 +52,18 @@ namespace Engage.B
             if (Types.Count == 0)
             {
                 TopType = n;
-                Console.WriteLine($"[IR] Top type is assumed to be {TopType}");
+                Console.WriteLine($"[A2B] Top type is assumed to be {TopType}");
             }
             if (Types.ContainsKey(n))
             {
                 if (!silent)
-                    Console.WriteLine($"[IR] Cannot add type '{n}' the second time");
+                    Console.WriteLine($"[A2B] Cannot add type '{n}' the second time");
                 return;
             }
             TypePlan tp = new TypePlan();
             tp.Name = n;
             tp.Super = super;
-            Console.WriteLine($"[IR] Added type '{n}' to the plan");
+            Console.WriteLine($"[A2B] Added type '{n}' to the plan");
             Types[tp.Name] = tp;
         }
 

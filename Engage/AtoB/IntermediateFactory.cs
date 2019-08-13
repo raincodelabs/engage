@@ -51,14 +51,8 @@ namespace Engage
                 if (hd.Context.Count > 1 || !(hd.Context[0].RHS is A.PopAction))
                     Console.WriteLine($"[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
 
-                var tmp1 = hd.RHS.ToHandleAction();
-                var tmp2 = hd.Context[0].RHS.ToHandleAction(hd.Context[0].LHS);
-                var tmp3 = hd.RHS.ToHandleAction(prev: tmp2);
-                var tmp4 = hd.RHS.ToHandleAction(B.SystemPlan.Dealias((hd.Context[0].RHS as A.PopAction).Name));
-
                 // add one composite action
-                //hp.Recipe.Add(hd.RHS.ToHandleAction("TMP", hd.Context[0].RHS.ToHandleAction(hd.Context[0].LHS)));
-                hp.Recipe.Add(tmp4);
+                hp.Recipe.Add(hd.RHS.ToHandleAction(B.SystemPlan.Dealias((hd.Context[0].RHS as A.PopAction).Name)));
             }
             else
             {
@@ -153,7 +147,7 @@ namespace Engage
                     plan.BoolFlags.Remove(f);
                 }
 
-            Console.WriteLine($"[IR] Inferred flags: Boolean {String.Join(", ", plan.BoolFlags)}; counter {String.Join(", ", plan.IntFlags)}");
+            Console.WriteLine($"[A2B] Inferred flags: Boolean {String.Join(", ", plan.BoolFlags)}; counter {String.Join(", ", plan.IntFlags)}");
         }
 
         private static void InferTokens(B.SystemPlan plan, A.EngSpec spec)
