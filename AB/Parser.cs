@@ -17,7 +17,7 @@ namespace AB
             TVar,
         }
 
-        private bool DCL, BRACKET, CHAR, HANDLER, MAP;
+        private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, MAP;
 
         public Parser(string _input) : base(_input)
         {
@@ -56,6 +56,18 @@ namespace AB
                     case TokenType.Tword:
                         switch (lexeme)
                         {
+                            case "converse":
+                                CONVERSE = true;
+                                Schedule(typeof(Var), _win =>
+                                {
+                                    var win = _win as Var;
+                                    CONVERSE = false;
+                                    Push(new ConverseStmt(win));
+                                    return Message.Perfect;
+                                }
+                                );
+                                break;
+
                             case "integer":
                                 if (DCL)
                                     Push(new Integer());
@@ -123,6 +135,16 @@ namespace AB
 
                             case "endif":
                                 Trim(typeof(Stmt));
+                                break;
+
+                            case "print":
+                                Schedule(typeof(Expr), _message =>
+                                {
+                                    var message = _message as Expr;
+                                    Push(new PrintStmt(message));
+                                    return Message.Perfect;
+                                }
+                                );
                                 break;
 
                             case "char":
@@ -321,6 +343,12 @@ namespace AB
                 s = "clear";
                 pos += 5;
             }
+            else if ((pos + 7 < input.Length && input[pos] == 'c' && input[pos + 1] == 'o' && input[pos + 2] == 'n' && input[pos + 3] == 'v' && input[pos + 4] == 'e' && input[pos + 5] == 'r' && input[pos + 6] == 's' && input[pos + 7] == 'e') && (pos + 8 == input.Length || input[pos + 8] == ' ' || input[pos + 8] == '\r' || input[pos + 8] == '\n' || input[pos + 8] == ';' || input[pos + 8] == '(' || input[pos + 8] == ')'))
+            {
+                t = TokenType.Tword;
+                s = "converse";
+                pos += 8;
+            }
             else if ((pos + 6 < input.Length && input[pos] == 'h' && input[pos + 1] == 'a' && input[pos + 2] == 'n' && input[pos + 3] == 'd' && input[pos + 4] == 'l' && input[pos + 5] == 'e' && input[pos + 6] == 'r') && (pos + 7 == input.Length || input[pos + 7] == ' ' || input[pos + 7] == '\r' || input[pos + 7] == '\n' || input[pos + 7] == ';' || input[pos + 7] == '(' || input[pos + 7] == ')'))
             {
                 t = TokenType.Tword;
@@ -356,6 +384,12 @@ namespace AB
                 t = TokenType.Tword;
                 s = "overlay";
                 pos += 7;
+            }
+            else if ((pos + 4 < input.Length && input[pos] == 'p' && input[pos + 1] == 'r' && input[pos + 2] == 'i' && input[pos + 3] == 'n' && input[pos + 4] == 't') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
+            {
+                t = TokenType.Tword;
+                s = "print";
+                pos += 5;
             }
             else if ((pos + 5 < input.Length && input[pos] == 'r' && input[pos + 1] == 'e' && input[pos + 2] == 't' && input[pos + 3] == 'u' && input[pos + 4] == 'r' && input[pos + 5] == 'n') && (pos + 6 == input.Length || input[pos + 6] == ' ' || input[pos + 6] == '\r' || input[pos + 6] == '\n' || input[pos + 6] == ';' || input[pos + 6] == '(' || input[pos + 6] == ')'))
             {

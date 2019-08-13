@@ -4,7 +4,7 @@ types
     ABProgram;
     Integer, String     <: Type;
     Decl;
-    ClearStmt, HandlerStmt, IfStmt, MapStmt, OverlayStmt, ReturnStmt
+    ClearStmt, ConverseStmt, HandlerStmt, IfStmt, MapStmt, OverlayStmt, PrintStmt, ReturnStmt
                         <: Stmt;
     Var, Num            <: Expr;
 
@@ -12,7 +12,7 @@ tokens
   ' ', '\r', '\n' :: skip
   ';', '(', ')' :: mark
   'dcl', 'enddcl', 'integer', 'char',
-  'clear', 'handler', 'if', 'endif', 'map', 'to', 'overlay', 'return' :: word
+  'clear', 'converse', 'handler', 'if', 'endif', 'map', 'to', 'overlay', 'print', 'return' :: word
   number :: Num
   string :: Var
 
@@ -33,6 +33,8 @@ handlers
 
     'clear'             -> push ClearStmt(view)
                            where view := await Var
+    'converse'          -> push ConverseStmt(win)
+                           where win := await Var with CONVERSE
     'handler'           -> push HandlerStmt(obj,proc)
                            where obj  := await Var,
                                  proc := await (Var given BRACKET) with HANDLER
@@ -48,6 +50,8 @@ handlers
     'overlay'           -> push OverlayStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
+    'print'             -> push PrintStmt(message)
+                           where message := await Expr
     'return'            -> push ReturnStmt
 
 %    V given MAP         -> assert exists Decl(v,t) such that v == this
