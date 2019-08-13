@@ -68,7 +68,7 @@ namespace AB
 
         private string RandomStmtHelper(int start)
         {
-            switch (r.Next(start, 5))
+            switch (r.Next(start, 6))
             {
                 case 0:
                     return RandomIf();
@@ -77,7 +77,13 @@ namespace AB
                     return RandomClear();
 
                 case 2:
+                    return RandomHandler();
+
+                case 3:
                     return RandomMap();
+
+                case 4:
+                    return RandomOverlay();
 
                 default:
                     return "return";
@@ -90,8 +96,14 @@ namespace AB
         private string RandomClear()
             => $"clear {RandomVar()}";
 
+        private string RandomHandler()
+            => $"handler {RandomVar()} ({RandomVar()})";
+
         private string RandomMap()
             => $"map {RandomExpr()} to {RandomVar()}";
+
+        private string RandomOverlay()
+            => $"overlay {RandomVar()} to {RandomVar()}";
 
         private string RandomExpr()
             => r.Next(0, 2) == 0 ? RandomVar() : RandomNum();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Engage.C;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -121,31 +122,27 @@ namespace Engage.B
                         swLex.Expression = "lexeme[0]";
                     else
                         swLex.Expression = "lexeme";
-                    var list = Handlers[hpk];
-                    list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
-                    foreach (var hp in list)
+                    // Need this dance because there may be different actions for the same token with different guards
+                    Dictionary<TokenPlan, Tuple<List<string>, List<List<HandleAction>>>> resortedHandlers = new Dictionary<TokenPlan, Tuple<List<string>, List<List<HandleAction>>>>();
+                    foreach (var hp in Handlers[hpk])
                     {
-                        List<C.CsStmt> branchLex = new List<C.CsStmt>();
-                        //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
-                        if (!String.IsNullOrEmpty(hp.GuardFlag))
-                        {
-                            var tmp = new C.CsComplexStmt();
-                            tmp.Before = $"if (!{hp.GuardFlag})";
-                            tmp.AddCode($"ERROR = \"flag {hp.GuardFlag} not lifted when expected\"");
-                            branchLex.Add(tmp);
-                        }
-                        foreach (var action in hp.Recipe)
-                        {
-                            if (action != null)
-                                action.GenerateAbstractCode(branchLex);
-                            else
-                                Console.WriteLine($"[IR] Warning: no action to handle '{hpk}'/{hp.ReactOn.Value}");
-                        }
-                        if (matchChar)
-                            swLex.Branches["'" + hp.ReactOn.Value + "'"] = branchLex;
-                        else
-                            swLex.Branches['"' + hp.ReactOn.Value + '"'] = branchLex;
+                        if (!resortedHandlers.ContainsKey(hp.ReactOn))
+                            resortedHandlers[hp.ReactOn] = new Tuple<List<string>, List<List<HandleAction>>>(new List<string>(), new List<List<HandleAction>>());
+                        resortedHandlers[hp.ReactOn].Item1.Add(hp.GuardFlag);
+                        resortedHandlers[hp.ReactOn].Item2.Add(hp.Recipe);
                     }
+                    List<TokenPlan> resortedKeys = resortedHandlers.Keys.ToList();
+                    resortedKeys.Sort((x, y) => y.Value.Length - x.Value.Length);
+                    foreach (var key in resortedKeys)
+                        GenerateLexBranch(swLex, hpk, resortedHandlers[key].Item1, resortedHandlers[key].Item2, key, matchChar);
+
+                    //var list = Handlers[hpk];
+                    //list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
+                    //foreach (var hp in list)
+                    //{
+                    //    GenerateLexBranch(swLex, hpk, hp.GuardFlag, hp.Recipe, hp.ReactOn, matchChar);
+
+                    //}
                     branchType.Add(swLex);
                 }
                 swType.Branches["TokenType.T" + hpk] = branchType;
@@ -191,6 +188,40 @@ namespace Engage.B
             GenerateTokeniser(p);
 
             return p;
+        }
+
+        private void GenerateLexBranch(CsSwitchCase swLex, string hpk, List<string> guardFlags, List<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
+        {
+            List<C.CsStmt> branchLex = new List<C.CsStmt>();
+            //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
+            var kwd = "if";
+            for (int i = 0; i < guardFlags.Count; i++)
+            {
+                CsComplexStmt ifst = new C.CsComplexStmt();
+                ifst.Before = $"{kwd} ({guardFlags[i]})";
+                List<CsStmt> target = String.IsNullOrEmpty(guardFlags[i]) ? branchLex : ifst.Code;
+                foreach (var action in recipes[i])
+                {
+                    if (action != null)
+                        action.GenerateAbstractCode(target);
+                    else
+                        Console.WriteLine($"[IR] Warning: no action to handle '{hpk}'/{reactOn.Value}");
+                }
+                kwd = "else if";
+                if (!String.IsNullOrEmpty(guardFlags[i]))
+                    branchLex.Add(ifst);
+            }
+            string flags;
+            if (guardFlags.Count == 1)
+                flags = "flag " + guardFlags[0] + " is not";
+            else
+                flags = "neither of the flags " + String.Join(", ", guardFlags) + " are";
+            if (guardFlags.Any(f => !String.IsNullOrEmpty(f)))
+                branchLex.Add(new CsComplexStmt("else", $"ERROR = \"{flags} lifted when expected\""));
+            if (matchChar)
+                swLex.Branches["'" + reactOn.Value + "'"] = branchLex;
+            else
+                swLex.Branches['"' + reactOn.Value + '"'] = branchLex;
         }
 
         private void GenerateTokeniser(C.CsClass cls)

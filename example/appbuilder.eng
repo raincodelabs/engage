@@ -4,16 +4,17 @@ types
     ABProgram;
     Integer, String     <: Type;
     Decl;
-    IfStmt, MapStmt, ClearStmt, ReturnStmt
+    ClearStmt, HandlerStmt, IfStmt, MapStmt, OverlayStmt, ReturnStmt
                         <: Stmt;
     Var, Num            <: Expr;
 
 tokens
-	' ', '\r', '\n' :: skip
+  ' ', '\r', '\n' :: skip
   ';', '(', ')' :: mark
-	'dcl', 'enddcl', 'integer', 'char', 'if', 'endif', 'map', 'to', 'clear', 'return' :: word
-	number :: Num
-	string :: Var
+  'dcl', 'enddcl', 'integer', 'char',
+  'clear', 'handler', 'if', 'endif', 'map', 'to', 'overlay', 'return' :: word
+  number :: Num
+  string :: Var
 
 handlers
     EOF                 -> push ABProgram(data,code)
@@ -29,6 +30,14 @@ handlers
                            where n := await (Num given BRACKET) with CHAR
     '(' given CHAR      -> lift BRACKET
     ')' given CHAR      -> drop BRACKET
+
+    'clear'             -> push ClearStmt(view)
+                           where view := await Var
+    'handler'           -> push HandlerStmt(obj,proc)
+                           where obj  := await Var,
+                                 proc := await (Var given BRACKET) with HANDLER
+    '(' given HANDLER   -> lift BRACKET
+    ')' given HANDLER   -> drop BRACKET
     'if'                -> push IfStmt(cond,branch)
                            where cond   := await Expr,
                                  branch := await* Stmt
@@ -36,8 +45,9 @@ handlers
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
-    'clear'             -> push ClearStmt(view)
-                           where view := await Var
+    'overlay'           -> push OverlayStmt(source,target)
+                           where source := await Expr with MAP,
+                                 target := await Var with MAP
     'return'            -> push ReturnStmt
 
 %    V given MAP         -> assert exists Decl(v,t) such that v == this

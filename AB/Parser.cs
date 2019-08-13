@@ -17,7 +17,7 @@ namespace AB
             TVar,
         }
 
-        private bool DCL, BRACKET, CHAR, MAP;
+        private bool DCL, BRACKET, CHAR, HANDLER, MAP;
 
         public Parser(string _input) : base(_input)
         {
@@ -57,9 +57,50 @@ namespace AB
                         switch (lexeme)
                         {
                             case "integer":
-                                if (!DCL)
-                                    ERROR = "flag DCL not lifted when expected";
-                                Push(new Integer());
+                                if (DCL)
+                                    Push(new Integer());
+                                else
+                                    ERROR = "flag DCL is not lifted when expected";
+                                break;
+
+                            case "handler":
+                                Schedule(typeof(Var), _obj =>
+                                {
+                                    var obj = _obj as Var;
+                                    HANDLER = true;
+                                    Schedule(typeof(Var), _proc =>
+                                    {
+                                        var proc = _proc as Var;
+                                        HANDLER = false;
+                                        if (!BRACKET)
+                                            return Message.Misfire;
+                                        Push(new HandlerStmt(obj, proc));
+                                        return Message.Perfect;
+                                    }
+                                    );
+                                    return Message.Perfect;
+                                }
+                                );
+                                break;
+
+                            case "overlay":
+                                MAP = true;
+                                Schedule(typeof(Expr), _source =>
+                                {
+                                    var source = _source as Expr;
+                                    MAP = false;
+                                    MAP = true;
+                                    Schedule(typeof(Var), _target =>
+                                    {
+                                        var target = _target as Var;
+                                        MAP = false;
+                                        Push(new OverlayStmt(source, target));
+                                        return Message.Perfect;
+                                    }
+                                    );
+                                    return Message.Perfect;
+                                }
+                                );
                                 break;
 
                             case "enddcl":
@@ -68,10 +109,6 @@ namespace AB
 
                             case "return":
                                 Push(new ReturnStmt());
-                                break;
-
-                            case "endif":
-                                Trim(typeof(Stmt));
                                 break;
 
                             case "clear":
@@ -84,20 +121,27 @@ namespace AB
                                 );
                                 break;
 
+                            case "endif":
+                                Trim(typeof(Stmt));
+                                break;
+
                             case "char":
-                                if (!DCL)
-                                    ERROR = "flag DCL not lifted when expected";
-                                CHAR = true;
-                                Schedule(typeof(Num), _n =>
+                                if (DCL)
                                 {
-                                    var n = _n as Num;
-                                    CHAR = false;
-                                    if (!BRACKET)
-                                        return Message.Misfire;
-                                    Push(new String(n));
-                                    return Message.Perfect;
+                                    CHAR = true;
+                                    Schedule(typeof(Num), _n =>
+                                    {
+                                        var n = _n as Num;
+                                        CHAR = false;
+                                        if (!BRACKET)
+                                            return Message.Misfire;
+                                        Push(new String(n));
+                                        return Message.Perfect;
+                                    }
+                                    );
                                 }
-                                );
+                                else
+                                    ERROR = "flag DCL is not lifted when expected";
                                 break;
 
                             case "dcl":
@@ -153,37 +197,46 @@ namespace AB
                         switch (lexeme[0])
                         {
                             case ';':
-                                if (!DCL)
-                                    ERROR = "flag DCL not lifted when expected";
-                                Type t;
-                                if (Main.Peek() is Type)
-                                    t = Main.Pop() as Type;
-                                else
+                                if (DCL)
                                 {
-                                    ERROR = "the top of the stack is not of type Type";
-                                    t = null;
+                                    Type t;
+                                    if (Main.Peek() is Type)
+                                        t = Main.Pop() as Type;
+                                    else
+                                    {
+                                        ERROR = "the top of the stack is not of type Type";
+                                        t = null;
+                                    }
+                                    Var v;
+                                    if (Main.Peek() is Var)
+                                        v = Main.Pop() as Var;
+                                    else
+                                    {
+                                        ERROR = "the top of the stack is not of type Var";
+                                        v = null;
+                                    }
+                                    Push(new Decl(v, t));
                                 }
-                                Var v;
-                                if (Main.Peek() is Var)
-                                    v = Main.Pop() as Var;
                                 else
-                                {
-                                    ERROR = "the top of the stack is not of type Var";
-                                    v = null;
-                                }
-                                Push(new Decl(v, t));
+                                    ERROR = "flag DCL is not lifted when expected";
                                 break;
 
                             case '(':
-                                if (!CHAR)
-                                    ERROR = "flag CHAR not lifted when expected";
-                                BRACKET = true;
+                                if (CHAR)
+                                    BRACKET = true;
+                                else if (HANDLER)
+                                    BRACKET = true;
+                                else
+                                    ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
                                 break;
 
                             case ')':
-                                if (!CHAR)
-                                    ERROR = "flag CHAR not lifted when expected";
-                                BRACKET = false;
+                                if (CHAR)
+                                    BRACKET = false;
+                                else if (HANDLER)
+                                    BRACKET = false;
+                                else
+                                    ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
                                 break;
 
                         }
@@ -262,6 +315,18 @@ namespace AB
                 s = "char";
                 pos += 4;
             }
+            else if ((pos + 4 < input.Length && input[pos] == 'c' && input[pos + 1] == 'l' && input[pos + 2] == 'e' && input[pos + 3] == 'a' && input[pos + 4] == 'r') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
+            {
+                t = TokenType.Tword;
+                s = "clear";
+                pos += 5;
+            }
+            else if ((pos + 6 < input.Length && input[pos] == 'h' && input[pos + 1] == 'a' && input[pos + 2] == 'n' && input[pos + 3] == 'd' && input[pos + 4] == 'l' && input[pos + 5] == 'e' && input[pos + 6] == 'r') && (pos + 7 == input.Length || input[pos + 7] == ' ' || input[pos + 7] == '\r' || input[pos + 7] == '\n' || input[pos + 7] == ';' || input[pos + 7] == '(' || input[pos + 7] == ')'))
+            {
+                t = TokenType.Tword;
+                s = "handler";
+                pos += 7;
+            }
             else if ((pos + 1 < input.Length && input[pos] == 'i' && input[pos + 1] == 'f') && (pos + 2 == input.Length || input[pos + 2] == ' ' || input[pos + 2] == '\r' || input[pos + 2] == '\n' || input[pos + 2] == ';' || input[pos + 2] == '(' || input[pos + 2] == ')'))
             {
                 t = TokenType.Tword;
@@ -286,11 +351,11 @@ namespace AB
                 s = "to";
                 pos += 2;
             }
-            else if ((pos + 4 < input.Length && input[pos] == 'c' && input[pos + 1] == 'l' && input[pos + 2] == 'e' && input[pos + 3] == 'a' && input[pos + 4] == 'r') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
+            else if ((pos + 6 < input.Length && input[pos] == 'o' && input[pos + 1] == 'v' && input[pos + 2] == 'e' && input[pos + 3] == 'r' && input[pos + 4] == 'l' && input[pos + 5] == 'a' && input[pos + 6] == 'y') && (pos + 7 == input.Length || input[pos + 7] == ' ' || input[pos + 7] == '\r' || input[pos + 7] == '\n' || input[pos + 7] == ';' || input[pos + 7] == '(' || input[pos + 7] == ')'))
             {
                 t = TokenType.Tword;
-                s = "clear";
-                pos += 5;
+                s = "overlay";
+                pos += 7;
             }
             else if ((pos + 5 < input.Length && input[pos] == 'r' && input[pos + 1] == 'e' && input[pos + 2] == 't' && input[pos + 3] == 'u' && input[pos + 4] == 'r' && input[pos + 5] == 'n') && (pos + 6 == input.Length || input[pos + 6] == ' ' || input[pos + 6] == '\r' || input[pos + 6] == '\n' || input[pos + 6] == ';' || input[pos + 6] == '(' || input[pos + 6] == ')'))
             {
