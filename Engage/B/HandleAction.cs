@@ -195,7 +195,6 @@ namespace Engage.B
             lambda.After = ");";
             var ifst = new CsComplexStmt();
             ifst.Before = $"if (_{Target} == null)";
-            ifst.AddCode("exec = true"); // do not accidentally trigger yourself
             if (BaseAction != null)
                 BaseAction.GenerateAbstractCode(ifst.Code);
             if (!String.IsNullOrEmpty(Flag))
@@ -203,7 +202,6 @@ namespace Engage.B
                 tmp = new DropFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(lambda.Code);
             }
-            ifst.AddCode("exec = false");
             ifst.AddCode("return Message.Perfect");
             lambda.AddCode(ifst);
             lambda.AddCode($"var {Target}1 = _{Target} as {Name};");

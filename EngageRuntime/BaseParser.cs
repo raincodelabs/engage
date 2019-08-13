@@ -8,8 +8,6 @@ namespace EngageRuntime
         protected string input;
         protected int pos;
 
-        protected bool exec = false;
-
         protected List<Message> Pending = new List<Message>();
         protected Stack<object> Main = new Stack<object>();
 
@@ -25,9 +23,8 @@ namespace EngageRuntime
         protected void Push(object _x)
         {
             //Log($"        push {_x} :: {_x.GetType()}");
-            Main.Push(_x);
-            if (!exec)
-                Trigger();
+            if (!Trigger(_x))
+                Main.Push(_x);
         }
 
         protected void Schedule(Type _type, Func<object, int> _action)
@@ -35,24 +32,17 @@ namespace EngageRuntime
             //Log($"SCHEDULE for {_type}");
             Message message = new Message(_type, _action);
             Pending.Add(message);
-            if (!exec)
-                Trigger();
         }
 
         protected void Trim(Type _type)
         {
-            // reverse order to remove latest added handlers first
-            // (cf. dangling else)
-            //for (int i = Pending.Count - 1; i >= 0; i--)
             for (int i = 0; i < Pending.Count; i++)
                 if (Pending[i].IsWanted(_type))
                 {
                     var p = Pending[i];
+                    Pending.Remove(p);
                     var code = p.Handler(null);
                     //Log($"TRIM for {_type} returned the code {Convert.ToString(code, 2)}");
-                    Pending.Remove(p);
-                    if (!exec)
-                        Trigger();
                     return;
                 }
             //Log($"TRIM for {_type} unsuccessful!");
@@ -61,32 +51,11 @@ namespace EngageRuntime
         protected void Flush()
         {
             //Log("FLUSH");
-            if (!exec)
-                Trigger();
-            exec = true;
             foreach (var msg in Pending.ToArray())
                 Log($"forced a {msg.ExpectedType} handler: return code {Convert.ToString(msg.Handler(null), 2)}");
-            exec = false;
         }
 
-        protected void Trigger()
-        {
-            //Log("TRIGGER");
-            exec = true;
-            while (Main.Count > 0)
-            {
-                var top = Main.Pop();
-                if (!ApplyOne(top))
-                {
-                    Main.Push(top); // put it back
-                    exec = false;
-                    return; // all currently pending actions fail at the moment
-                }
-            }
-            exec = false;
-        }
-
-        private bool ApplyOne(object _x)
+        private bool Trigger(object _x)
         {
             //Log($"APPLY to {_x} :: {_x.GetType()}");
             Type _t = _x.GetType();
@@ -97,10 +66,8 @@ namespace EngageRuntime
                     int code = candidate.Handler(_x);
                     if (code == Message.Misfire)
                         continue;
-                    if (code == Message.Perfect || code == Message.Neglect)
+                    if (code == Message.Perfect)
                         Pending.Remove(candidate);
-                    if (code == Message.Neglect)
-                        return ApplyOne(_x); // better luck next time?
                     //Log($"APPLY to {_x} :: {_x.GetType()} SUCCESS");
                     return true; // Consume or Perfect
                 }

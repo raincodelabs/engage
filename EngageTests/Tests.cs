@@ -7,22 +7,42 @@ namespace EngageTests
     [TestClass]
     public class Tests
     {
-        private const string AppBuilderSpec = @"..\..\..\..\test\appbuilder.eng";
-        private const string AppBuilderRule = @"..\..\..\..\test\simple.ab";
+        private const string AppBuilderSpec = @"..\..\..\..\example\appbuilder.eng";
+        private const string AppBuilderRule = @"..\..\..\..\example\simple.ab";
+        private const string AppBuilderCode = @"..\..\..\..\tests";
 
         [TestMethod]
-        public void TryExperimental1()
+        public void TryAllLongTests()
         {
-            var parser = new AB.Parser("if x map y to z endif");
+            for (int i = 0; i < 100; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+                Assert.IsNotNull(spec);
+                Assert.AreEqual(0, spec.data.Count);
+                Assert.AreEqual(i, spec.code.Count);
+                Console.WriteLine($"Tested 'long{i}.ab': OK");
+            }
+        }
+
+        [TestMethod]
+        public void TryFailingExample1()
+        {
+            var parser = new AB.Parser(@"
+                clear akpjke
+                map pwrmgtq to hjturvlsikt
+                map 1519307387 to ejxegwgv
+                if 1880563650 return endif");
             AB.ABProgram spec = parser.Parse() as AB.ABProgram;
             Assert.IsNotNull(spec);
             Assert.AreEqual(0, spec.data.Count);
-            Assert.AreEqual(1, spec.code.Count);
-            var if1 = spec.code[0] as AB.IfStmt;
-            Assert.IsNotNull(if1);
-            Assert.AreEqual(1, if1.branch.Count);
-            var map1 = if1.branch[0] as AB.MapStmt;
-            Assert.IsNotNull(map1);
+            Assert.AreEqual(4, spec.code.Count);
+            Assert.IsInstanceOfType(spec.code[0], typeof(AB.ClearStmt));
+            Assert.IsInstanceOfType(spec.code[1], typeof(AB.MapStmt));
+            Assert.IsInstanceOfType(spec.code[2], typeof(AB.MapStmt));
+            Assert.IsInstanceOfType(spec.code[3], typeof(AB.IfStmt));
+            Assert.IsInstanceOfType((spec.code[3] as AB.IfStmt).branch[0], typeof(AB.ReturnStmt));
         }
 
         [TestMethod]

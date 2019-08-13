@@ -53,7 +53,7 @@ namespace AB
                         break;
 
                     case TokenType.Treserved:
-                        switch (lexeme)
+                        switch (lexeme.ToLower())
                         {
                             case "integer":
                                 if (!DCL)
@@ -132,9 +132,7 @@ namespace AB
                                     {
                                         if (_branch == null)
                                         {
-                                            exec = true;
                                             Push(new IfStmt(cond, branch));
-                                            exec = false;
                                             return Message.Perfect;
                                         }
                                         var branch1 = _branch as Stmt;
