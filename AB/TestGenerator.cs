@@ -24,15 +24,15 @@ namespace AB
         internal List<string> GenerateStackedIfs(ulong n)
         {
             List<string> lines = new List<string>();
-            RandomStmtBlock(lines, n);
+            RandomStmtBlock(lines, n, false);
             lines.Add("if COND1");
-            RandomStmtBlock(lines, n);
+            RandomStmtBlock(lines, n, false);
             lines.Add("if COND2");
-            RandomStmtBlock(lines, n);
+            RandomStmtBlock(lines, n, false);
             lines.Add("endif"); // cond2
-            RandomStmtBlock(lines, n);
+            RandomStmtBlock(lines, n, false);
             lines.Add("endif"); // cond1
-            RandomStmtBlock(lines, n);
+            RandomStmtBlock(lines, n, false);
             return lines;
         }
 
@@ -54,15 +54,21 @@ namespace AB
             return lines;
         }
 
-        private void RandomStmtBlock(List<string> lines, ulong size)
+        private void RandomStmtBlock(List<string> lines, ulong size, bool isIfAllowed = true)
         {
             for (ulong i = 0; i < size; i++)
-                lines.Add(RandomStmt());
+                lines.Add(isIfAllowed ? RandomStmt() : RandomStmtNoIf());
         }
 
         private string RandomStmt()
+            => RandomStmtHelper(0);
+
+        private string RandomStmtNoIf()
+            => RandomStmtHelper(1);
+
+        private string RandomStmtHelper(int start)
         {
-            switch (r.Next(0, 5))
+            switch (r.Next(start, 5))
             {
                 case 0:
                     return RandomIf();

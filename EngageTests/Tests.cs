@@ -14,21 +14,73 @@ namespace EngageTests
         private const string AppBuilderRule = @"..\..\..\..\example\simple.ab";
         private const string AppBuilderCode = @"..\..\..\..\tests";
 
+        private const int LimitLongTests = 101;
+        private const int LimitLongExpTests = 8;
+        private const int LimitDeepTests = 101;
+        private const int LimitDeepExpTests = 5;
+        private const int LimitStackTests = 101;
+        private const int LimitStackExpTests = 7;
+
+        private const int WarmUp = 10;
+        private const int RunsToAverage = 100;
+        private const int RunsSkip = 10;
+
         [TestMethod]
-        public void TryAllStackedTests()
+        public void MeasureAllExpTests()
         {
             // warmup
             Random r = new Random();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            Dictionary<string, int> TestPlan = new Dictionary<string, int>()
+            {
+                {"long", LimitLongExpTests },
+                {"deep", LimitDeepExpTests },
+                {"stack", LimitStackExpTests},
+            };
+            foreach (var name in TestPlan.Keys)
+            {
+                List<long> runs = new List<long>();
+                Stopwatch sw = new Stopwatch();
+                for (int i = 0; i < TestPlan[name]; i++)
+                {
+                    string fname = Path.Combine(AppBuilderCode, $"{name}10e{i}.ab");
+                    for (int j = 0; j < RunsToAverage; j++)
+                    {
+                        sw.Start();
+                        var parser = new AB.Parser(File.ReadAllText(fname));
+                        var spec = parser.Parse() as AB.ABProgram;
+                        sw.Stop();
+                        runs.Add(sw.ElapsedTicks);
+                        sw.Reset();
+                    }
+                    runs.Sort();
+                    var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                    Console.WriteLine($"Measured '{name}10e{i}.ab': OK in {result} ticks");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void RunAllStackedTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < WarmUp; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
             // actual measurement
             List<long> measures = new List<long>();
             Stopwatch sw = new Stopwatch();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < LimitStackTests; i++)
             {
                 string fname = Path.Combine(AppBuilderCode, $"stack{i}.ab");
                 sw.Start();
@@ -38,7 +90,7 @@ namespace EngageTests
                 Assert.IsNotNull(spec);
                 Assert.AreEqual(0, spec.data.Count);
                 Assert.AreEqual(i + 1 + i, spec.code.Count);
-                var if1 = spec.code[i ] as AB.IfStmt;
+                var if1 = spec.code[i] as AB.IfStmt;
                 Assert.IsNotNull(if1);
                 Assert.AreEqual(i + 1 + i, if1.branch.Count);
                 var if2 = if1.branch[i] as AB.IfStmt;
@@ -52,20 +104,55 @@ namespace EngageTests
         }
 
         [TestMethod]
-        public void TryAllDeepTests()
+        public void MeasureAllStackedTests()
         {
             // warmup
             Random r = new Random();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            List<long> measures = new List<long>();
+            List<long> runs = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < LimitStackTests; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"stack{i}.ab");
+                for (int j = 0; j < RunsToAverage; j++)
+                {
+                    sw.Start();
+                    var parser = new AB.Parser(File.ReadAllText(fname));
+                    var spec = parser.Parse() as AB.ABProgram;
+                    sw.Stop();
+                    runs.Add(sw.ElapsedTicks);
+                    sw.Reset();
+                }
+                runs.Sort();
+                var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                Console.WriteLine($"Measured 'stack{i}.ab': OK in {result} ticks");
+                measures.Add(result);
+            }
+            Console.WriteLine($"AVERAGE time: {measures.Average()}");
+        }
+
+        [TestMethod]
+        public void RunAllDeepTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < WarmUp; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
             // actual measurement
             List<long> measures = new List<long>();
             Stopwatch sw = new Stopwatch();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < LimitDeepTests; i++)
             {
                 string fname = Path.Combine(AppBuilderCode, $"deep{i}.ab");
                 sw.Start();
@@ -83,19 +170,54 @@ namespace EngageTests
         }
 
         [TestMethod]
-        public void TryAllDeepExpTests()
+        public void MeasureAllDeepTests()
         {
             // warmup
             Random r = new Random();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            List<long> measures = new List<long>();
+            List<long> runs = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < LimitDeepTests; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"deep{i}.ab");
+                for (int j = 0; j < RunsToAverage; j++)
+                {
+                    sw.Start();
+                    var parser = new AB.Parser(File.ReadAllText(fname));
+                    var spec = parser.Parse() as AB.ABProgram;
+                    sw.Stop();
+                    runs.Add(sw.ElapsedTicks);
+                    sw.Reset();
+                }
+                runs.Sort();
+                var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                Console.WriteLine($"Measured 'deep{i}.ab': OK in {result} ticks");
+                measures.Add(result);
+            }
+            Console.WriteLine($"AVERAGE time: {measures.Average()}");
+        }
+
+        [TestMethod]
+        public void RunAllDeepExpTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < WarmUp; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
             // actual measurement
             Stopwatch sw = new Stopwatch();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < LimitDeepExpTests; i++)
             {
                 string fname = Path.Combine(AppBuilderCode, $"deep10e{i}.ab");
                 sw.Start();
@@ -111,20 +233,20 @@ namespace EngageTests
         }
 
         [TestMethod]
-        public void TryAllLongTests()
+        public void RunAllLongTests()
         {
             // warmup
             Random r = new Random();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
             // actual measurement
             List<long> measures = new List<long>();
             Stopwatch sw = new Stopwatch();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < LimitLongTests; i++)
             {
                 string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
                 sw.Start();
@@ -142,19 +264,54 @@ namespace EngageTests
         }
 
         [TestMethod]
-        public void TryAllLongExpTests()
+        public void MeasureAllLongTests()
         {
             // warmup
             Random r = new Random();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, 100)}.ab");
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                var parser = new AB.Parser(File.ReadAllText(fname));
+                var spec = parser.Parse() as AB.ABProgram;
+            }
+            // actual measurement
+            List<long> measures = new List<long>();
+            List<long> runs = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < LimitLongTests; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
+                for (int j = 0; j < RunsToAverage; j++)
+                {
+                    sw.Start();
+                    var parser = new AB.Parser(File.ReadAllText(fname));
+                    var spec = parser.Parse() as AB.ABProgram;
+                    sw.Stop();
+                    runs.Add(sw.ElapsedTicks);
+                    sw.Reset();
+                }
+                runs.Sort();
+                var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                Console.WriteLine($"Measured 'long{i}.ab': OK in {result} ticks");
+                measures.Add(result);
+            }
+            Console.WriteLine($"AVERAGE time: {measures.Average()}");
+        }
+
+        [TestMethod]
+        public void RunAllLongExpTests()
+        {
+            // warmup
+            Random r = new Random();
+            for (int i = 0; i < WarmUp; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
             // actual measurement
             Stopwatch sw = new Stopwatch();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < LimitLongExpTests; i++)
             {
                 string fname = Path.Combine(AppBuilderCode, $"long10e{i}.ab");
                 sw.Start();
