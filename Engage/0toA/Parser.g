@@ -30,7 +30,7 @@ Reaction ::=
 
 Assignment ::= i:s? LHS=Id i:s? ":=" i:s? RHS=Operation;
 
-Operation ::=
+Reaction Operation ::=
 	  PopAction       := "pop"    i:s Name=Id
 	/ PopStarAction   := "pop*"   i:s Name=Id
 	/ PopHashAction   := "pop#"   i:s Name=Id

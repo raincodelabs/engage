@@ -3,6 +3,6 @@
     public partial class Assignment
     {
         public string LHS;
-        public Operation RHS;
+        public Reaction RHS;
     }
 }

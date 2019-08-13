@@ -8,7 +8,7 @@ namespace Engage.A
         public Reaction RHS;
         public List<Assignment> Context = new List<Assignment>();
 
-        internal Operation GetContext(string name)
+        internal Reaction GetContext(string name)
         {
             foreach (var a in Context)
                 if (a.LHS == name)
