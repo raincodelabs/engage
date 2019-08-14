@@ -1,14 +1,14 @@
 ﻿namespace Engage.C
 {
-    public class CsSimpleStmt : CsStmt
+    public class SimpleStmt : CsStmt
     {
         public string Code;
 
-        public CsSimpleStmt()
+        public SimpleStmt()
         {
         }
 
-        public CsSimpleStmt(string code)
+        public SimpleStmt(string code)
         {
             Code = code;
         }

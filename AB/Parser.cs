@@ -245,10 +245,10 @@ namespace AB
                         var code = new List<Stmt>();
                         var data = new List<Decl>();
                         while (Main.Count > 0)
-                            if (Main.Peek() is Decl)
-                                data.Add(Main.Pop() as Decl);
-                            else if (Main.Peek() is Stmt)
+                            if (Main.Peek() is Stmt)
                                 code.Add(Main.Pop() as Stmt);
+                            else if (Main.Peek() is Decl)
+                                data.Add(Main.Pop() as Decl);
                             else
                                 break;
                         code.Reverse();

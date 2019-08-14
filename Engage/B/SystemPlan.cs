@@ -123,7 +123,7 @@ namespace Engage.B
             {
                 List<C.CsStmt> branchType = new List<C.CsStmt>();
                 if (hpk == "EOF")
-                    branchType.Add(new C.CsSimpleStmt("Flush()"));
+                    branchType.Add(new C.SimpleStmt("Flush()"));
                 if (Handlers[hpk].Count == 1)
                 {
                     foreach (var action in Handlers[hpk][0].Recipe)
@@ -181,11 +181,11 @@ namespace Engage.B
                     switch (tok.Value)
                     {
                         case "number":
-                            branchType.Add(new C.CsSimpleStmt($"Push(System.Int32.Parse(lexeme));"));
+                            branchType.Add(new C.SimpleStmt($"Push(System.Int32.Parse(lexeme));"));
                             break;
 
                         case "string":
-                            branchType.Add(new C.CsSimpleStmt($"Push(lexeme);"));
+                            branchType.Add(new C.SimpleStmt($"Push(lexeme);"));
                             break;
                     }
                     swType.Branches["TokenType.T" + t] = branchType;
@@ -235,10 +235,7 @@ namespace Engage.B
                             if (fake.Count == 1 && fake[0] is IfThenElse ite2)
                             {
                                 var newcond = guardFlags[i] + " && " + ite2.ThenBranches.Keys.First();
-                                ite.AddBranch(newcond);
-                                foreach (CsStmt stmt in ite.ThenBranches[guardFlags[i]])
-                                    ite.AddToBranch(newcond, stmt);
-                                ite.ThenBranches.Remove(guardFlags[i]);
+                                ite.RenameBranch(guardFlags[i], newcond);
                                 foreach (CsStmt stmt in ite2.ThenBranches.Values.First())
                                     ite.AddToBranch(newcond, stmt);
                             }
@@ -280,29 +277,30 @@ namespace Engage.B
             tok.AddCode("TokenType t = TokenType.TUndefined;");
             tok.AddCode("string s = \"\";");
             // EOF phase
-            tok.AddCode(new C.CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            tok.AddCode(new C.IfThenElse("pos >= input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
             // skip
             if (Tokens.ContainsKey("skip"))
             {
                 string cond = String.Join(" || ", Tokens["skip"].Select(t => $"input[pos] == '{t.Value}'"));
-                tok.AddCode(new C.CsComplexStmt($"while (pos < input.Length && ({cond}))", "pos++"));
+                tok.AddCode(new C.WhileStmt($"pos < input.Length && ({cond})", "pos++"));
                 Tokens["skip"].ForEach(t => skipmark.Add(t.Value));
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
             // EOF after skip
-            tok.AddCode(new C.CsComplexStmt("if (pos >= input.Length)", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            var MegaIf = new C.IfThenElse("pos >= input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
+            tok.AddCode(MegaIf);
             // mark
             if (Tokens.ContainsKey("mark"))
             {
                 Tokens["mark"].ForEach(t => skipmark.Add(t.Value));
-                GenerateBranches("mark", tok, null);
+                GenerateBranches("mark", MegaIf, null);
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
             // word
             if (Tokens.ContainsKey("word"))
-                GenerateBranches("word", tok, skipmark);
+                GenerateBranches("word", MegaIf, skipmark);
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
             // number etc
@@ -310,7 +308,7 @@ namespace Engage.B
             {
                 if (tt == "skip" || tt == "word" || tt == "mark")
                     continue;
-                GenerateBranches(tt, tok, skipmark);
+                GenerateBranches(tt, MegaIf, skipmark);
             }
             tok.AddCode("return new Tuple<TokenType, string>(t, s);");
 
@@ -318,18 +316,23 @@ namespace Engage.B
         }
 
         // Precondition: Tokens.Contains(token_name)
-        private void GenerateBranches(string token_name, C.CsMethod method, List<string> skipmark)
+        private void GenerateBranches(string token_name, C.IfThenElse ite, List<string> skipmark)
         {
             if (!Tokens.ContainsKey(token_name))
                 return;
             foreach (var tm in Tokens[token_name])
+            {
+                Tuple<string, IEnumerable<CsStmt>> res;
                 if (tm.Special)
-                    method.AddCode(GenerateBranchSpecialMatch(tm.Value, token_name));
+                    res = GenerateBranchSpecialMatch(tm.Value, token_name);
                 else
-                    method.AddCode(GenerateBranchPreciseMatch(tm.Value, token_name, skipmark));
+                    res = GenerateBranchPreciseMatch(tm.Value, token_name, skipmark);
+                if (res != null)
+                    ite.AddToBranch(res.Item1, res.Item2);
+            }
         }
 
-        private C.CsComplexStmt GenerateBranchSpecialMatch(string value, string type)
+        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchSpecialMatch(string value, string type)
         {
             switch (value)
             {
@@ -345,33 +348,31 @@ namespace Engage.B
             }
         }
 
-        private C.CsComplexStmt GenerateBranchStringMatch(string type)
+        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchStringMatch(string type)
         {
             string cond = "";
             if (Tokens.ContainsKey("skip"))
                 foreach (var t in Tokens["skip"])
                     cond += $" && input[pos] != '{t.Value}'";
-            C.CsComplexStmt ifst = new C.CsComplexStmt();
-            ifst.Before = "else";
-            ifst.AddCode($"t = TokenType.T{type}");
-            ifst.AddCode($"while (pos < input.Length{cond})", "s += input[pos++]");
-            return ifst;
+            var block = new List<CsStmt>();
+            block.Add(new SimpleStmt($"t = TokenType.T{type}"));
+            block.Add(new C.WhileStmt($"pos < input.Length{cond}", "s += input[pos++]"));
+            return new Tuple<string, IEnumerable<CsStmt>> (null, block); // null condition means the ELSE branch
         }
 
-        private C.CsComplexStmt GenerateBranchNumberMatch(string type)
+        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchNumberMatch(string type)
         {
-            C.CsComplexStmt ifst = new C.CsComplexStmt();
+            var block = new List<CsStmt>();
             string cond = string.Join(" || ", "0123456789".Select(c => $"input[pos] == '{c}'"));
-            ifst.Before = $"else if ({cond})";
-            ifst.AddCode($"t = TokenType.T{type}");
-            ifst.AddCode($"while (pos < input.Length && ({cond}))", "s += input[pos++]");
-            return ifst;
+            block.Add(new SimpleStmt($"t = TokenType.T{type}"));
+            block.Add(new C.WhileStmt($"pos < input.Length && ({cond})", "s += input[pos++]"));
+            return new Tuple<string, IEnumerable<CsStmt>>(cond,block);
         }
 
-        private C.CsComplexStmt GenerateBranchPreciseMatch(string value, string type, List<string> skipmark)
+        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchPreciseMatch(string value, string type, List<string> skipmark)
         {
             int len = value.Length;
-            C.CsComplexStmt ifst = new C.CsComplexStmt();
+            var block = new List<CsStmt>();
             string cond;
             if (len > 1)
                 cond = $"pos + {len - 1} < input.Length";
@@ -387,14 +388,10 @@ namespace Engage.B
                 cond = $"({cond}) && (pos + {len} == input.Length || {String.Join(" || ", skipmark.Select(c => $"input[pos + {len}] == '{c}'"))})";
 
             cond = cond.Replace(" + 0", "");
-            ifst.Before = $"else if ({cond})";
-            ifst.AddCode($"t = TokenType.T{type}");
-            ifst.AddCode($"s = \"{value}\"");
-            if (len > 1)
-                ifst.AddCode($"pos += {len}");
-            else
-                ifst.AddCode("pos++");
-            return ifst;
+            block.Add(new SimpleStmt($"t = TokenType.T{type}"));
+            block.Add(new SimpleStmt($"s = \"{value}\""));
+            block.Add(new SimpleStmt(len > 1 ? $"pos += {len}" : "pos++"));
+            return new Tuple<string, IEnumerable<CsStmt>>(cond,block);
         }
     }
 }

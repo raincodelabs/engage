@@ -17,10 +17,7 @@ namespace Engage.C
         }
 
         public void AddCode(string line)
-            => AddCode(new CsSimpleStmt(line));
-
-        public void AddCode(string cond, string line)
-            => AddCode(new CsComplexStmt(cond, line));
+            => AddCode(new SimpleStmt(line));
 
         public void AddCode(CsStmt line)
         {

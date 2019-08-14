@@ -15,9 +15,9 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             if (Flag.EndsWith('#'))
-                code.Add(new C.CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
+                code.Add(new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
             else
-                code.Add(new C.CsSimpleStmt($"{Flag} = true"));
+                code.Add(new C.SimpleStmt($"{Flag} = true"));
         }
     }
 
@@ -28,9 +28,9 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             if (Flag.EndsWith('#'))
-                code.Add(new C.CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
+                code.Add(new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
             else
-                code.Add(new C.CsSimpleStmt($"{Flag} = false"));
+                code.Add(new C.SimpleStmt($"{Flag} = false"));
         }
     }
 
@@ -41,7 +41,7 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new C.CsSimpleStmt($"Trim(typeof({Type}))"));
+            code.Add(new C.SimpleStmt($"Trim(typeof({Type}))"));
         }
     }
 
@@ -62,7 +62,7 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new C.CsSimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
+            code.Add(new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
         }
     }
 
@@ -73,7 +73,7 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new C.CsSimpleStmt($"{Name} {Target}"));
+            code.Add(new C.SimpleStmt($"{Name} {Target}"));
             var ite = new C.IfThenElse($"Main.Peek() is {Name}", $"{Target} = {"Main.Pop()".CastAs(Name)}");
             ite.AddElse($"ERROR = \"the top of the stack is not of type {Name}\"");
             ite.AddElse($"{Target} = {Name.DefaultValue()}");
@@ -111,9 +111,9 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new C.CsSimpleStmt($"var {Target} = new List<{Name}>()"));
+            code.Add(new C.SimpleStmt($"var {Target} = new List<{Name}>()"));
             code.Add(new C.WhileStmt($"Main.Count > 0 && Main.Peek() is {Name}", $"{Target}.Add(Main.Pop() as {Name})"));
-            code.Add(new C.CsSimpleStmt($"{Target}.Reverse()"));
+            code.Add(new C.SimpleStmt($"{Target}.Reverse()"));
         }
     }
 
@@ -138,15 +138,15 @@ namespace Engage.B
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
                     ite.AddBranch($"Main.Peek() is {ps.Name}", $"{ps.Target}.Add(Main.Pop() as {ps.Name})");
-            ite.ElseBranch.Add(new C.CsSimpleStmt("break"));
+            ite.ElseBranch.Add(new C.SimpleStmt("break"));
             loop.Code.Add(ite);
             code.Add(loop);
 
             // reverse the order because of stack vs list differences
-            code.Add(new C.CsSimpleStmt($"{Target}.Reverse()"));
+            code.Add(new C.SimpleStmt($"{Target}.Reverse()"));
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
-                    code.Add(new C.CsSimpleStmt($"{ps.Target}.Reverse()"));
+                    code.Add(new C.SimpleStmt($"{ps.Target}.Reverse()"));
 
             // produce the rest of the code (usually push new)
             foreach (var sa in SiblingActions)
@@ -156,7 +156,7 @@ namespace Engage.B
 
         public void GenerateInitialisationCode(List<C.CsStmt> code)
         {
-            code.Add(new C.CsSimpleStmt($"var {Target} = new List<{Name}>()"));
+            code.Add(new C.SimpleStmt($"var {Target} = new List<{Name}>()"));
         }
     }
 
@@ -209,7 +209,7 @@ namespace Engage.B
                 tmp = new LiftFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
-            code.Add(new C.CsSimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
+            code.Add(new C.SimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
             var lambda = new C.ScheduleStmt(Name, "_" + Target);
             var ite = new C.IfThenElse();
             var cond = $"_{Target} == null";

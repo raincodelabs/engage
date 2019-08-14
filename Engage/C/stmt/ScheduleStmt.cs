@@ -21,7 +21,7 @@ namespace Engage.C
 
         public void AddCode(string stmt)
         {
-            Code.Add(new CsSimpleStmt(stmt));
+            Code.Add(new SimpleStmt(stmt));
         }
 
         public void AddCode(CsStmt stmt)
