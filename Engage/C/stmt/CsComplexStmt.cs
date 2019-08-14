@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Engage.C
 {
@@ -33,22 +33,7 @@ namespace Engage.C
         public void AddCode(CsStmt stmt)
             => Code.Add(stmt);
 
-        public override void GenerateCode(List<string> lines, int level)
-        {
-            if (!String.IsNullOrEmpty(Before))
-                lines.Add(level, Before);
-            if (Code.Count > 1)
-                lines.Open(level);
-            foreach (var stmt in Code)
-                stmt.GenerateCode(lines, level + 1);
-            if (Code.Count > 1)
-                lines.Close(level);
-            if (!String.IsNullOrEmpty(After))
-            {
-                if (!After.EndsWith(";"))
-                    After += ";";
-                lines.Add(level, After);
-            }
-        }
+        public override D.CsStmt Concretize()
+            => new D.CsComplexStmt(Before, Code.Select(x => x.Concretize()), After);
     }
 }

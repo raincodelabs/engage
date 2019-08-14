@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Engage.C
+﻿namespace Engage.C
 {
     public class CsSimpleStmt : CsStmt
     {
@@ -15,11 +13,7 @@ namespace Engage.C
             Code = code;
         }
 
-        public override void GenerateCode(List<string> lines, int level)
-        {
-            if (!Code.EndsWith(";"))
-                Code += ";";
-            lines.Add(level, Code);
-        }
+        public override D.CsStmt Concretize()
+            => new D.CsSimpleStmt(Code);
     }
 }

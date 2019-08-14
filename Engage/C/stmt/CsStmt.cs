@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace Engage.C
+﻿namespace Engage.C
 {
     public abstract class CsStmt
     {
-        public abstract void GenerateCode(List<string> lines, int level);
+        public abstract D.CsStmt Concretize();
     }
 }

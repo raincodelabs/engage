@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Engage.C
+﻿namespace Engage.C
 {
     /// <summary>
     /// Almost code / abstract code
@@ -10,6 +8,6 @@ namespace Engage.C
     {
         public string Name;
 
-        public abstract void GenerateCode(List<string> lines, int level);
+        public abstract D.CsTop Concretize();
     }
 }

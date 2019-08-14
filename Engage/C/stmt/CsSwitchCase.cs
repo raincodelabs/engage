@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Engage.C
 {
@@ -8,27 +9,15 @@ namespace Engage.C
         public Dictionary<string, List<CsStmt>> Branches = new Dictionary<string, List<CsStmt>>();
         public List<CsStmt> DefaultBranch = new List<CsStmt>();
 
-        public override void GenerateCode(List<string> lines, int level)
+        public override D.CsStmt Concretize()
         {
-            lines.Add(level, $"switch ({Expression})");
-            lines.Open(level);
-            foreach (var cond in Branches.Keys)
+            Dictionary<string, List<D.CsStmt>> DBranches = new Dictionary<string, List<D.CsStmt>>();
+            foreach (var k in Branches.Keys)
             {
-                lines.Add(level + 1, $"case {cond}:");
-                foreach (var line in Branches[cond])
-                    line.GenerateCode(lines, level + 2);
-                lines.Add(level + 2, "break;");
-                lines.Empty();
+                DBranches[k] = new List<D.CsStmt>();
+                Branches[k].ForEach(x => DBranches[k].Add(x.Concretize()));
             }
-            if (DefaultBranch.Count > 0)
-            {
-                lines.Add(level + 1, "default:");
-                foreach (var line in DefaultBranch)
-                    line.GenerateCode(lines, level + 2);
-                lines.Add(level + 2, "break;");
-                lines.Empty();
-            }
-            lines.Close(level);
+            return new D.CsSwitchCase(Expression, DBranches, DefaultBranch.Select(x => x.Concretize()));
         }
     }
 }

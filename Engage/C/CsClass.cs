@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Engage.C
 {
@@ -12,6 +13,9 @@ namespace Engage.C
         private HashSet<CsExeField> Methods = new HashSet<CsExeField>();
         private HashSet<string> Usings = new HashSet<string>();
         private List<CsTop> Inners = new List<CsTop>();
+
+        public override D.CsTop Concretize()
+            => new D.CsClass(Name, NS, Super, PublicFields, PrivateFields, Methods.Select(m => m.Concretize()), Usings, Inners.Select(x => x.Concretize()));
 
         public void AddUsing(string name)
             => Usings.Add(name);
@@ -35,61 +39,7 @@ namespace Engage.C
         public void AddMethod(CsMethod c)
             => Methods.Add(c);
 
-        public List<string> GenerateFileCode()
-        {
-            List<string> lines = new List<string>();
-            GenerateFileCode(lines);
-            return lines;
-        }
+        
 
-        public void GenerateFileCode(List<string> lines)
-        {
-            lines.Comment("Engage! generated this file, please do not edit manually");
-            foreach (var u in Usings)
-                lines.Add($"using {u};");
-            lines.Empty();
-            if (String.IsNullOrEmpty(NS))
-                GenerateCode(lines, 0);
-            else
-            {
-                lines.Add($"namespace {NS}");
-                lines.Open();
-                GenerateCode(lines, 1);
-                lines.Close();
-            }
-        }
-
-        public override void GenerateCode(List<string> lines, int level)
-        {
-            lines.Add(level, $"public class {Name}" + (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
-            lines.Open(level);
-            foreach (var inner in Inners)
-            {
-                inner.GenerateCode(lines, level + 1);
-                lines.Empty();
-            }
-            foreach (var fn in PublicFields.Keys)
-                GenerateCodeForField(lines, level + 1, fn, PublicFields[fn]);
-            foreach (var fn in PrivateFields.Keys)
-                GenerateCodeForField(lines, level + 1, fn, PrivateFields[fn], isPublic: false);
-            lines.Empty();
-            foreach (var m in Methods)
-            {
-                m.GenerateCode(lines, level + 1, Name);
-                lines.Empty();
-            }
-            //lines.Comment(level + 1, "TODO");
-            lines.Close(level);
-        }
-
-        private void GenerateCodeForField(List<string> lines, int level, string name, string type, bool isPublic = true)
-        {
-            string mod = isPublic ? "public" : "private";
-            bool col = isPublic ? PublicFields[name].IsCollection() : PrivateFields[name].IsCollection();
-            if (col)
-                lines.Add(level, $"{mod} {type} {name} = new {type}();");
-            else
-                lines.Add(level, $"{mod} {type} {name};");
-        }
     }
 }

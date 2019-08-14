@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Engage.C
+namespace Engage.D
 {
     public abstract class CsExeField
     {
         public bool IsPublic = true;
         protected List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
         protected List<CsStmt> Code = new List<CsStmt>();
-
-        public abstract D.CsExeField Concretize();
 
         public void AddArgument(string name, string type)
         {
@@ -27,5 +25,7 @@ namespace Engage.C
             if (line != null)
                 Code.Add(line);
         }
+
+        public abstract void GenerateCode(List<string> lines, int level, string className);
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Engage
 {
@@ -17,15 +18,20 @@ namespace Engage
             Console.WriteLine("A-level spec read!");
             B.SystemPlan plan = IntermediateFactory.Ast2ir(spec);
             Console.WriteLine("B-level plan made!");
-            IEnumerable<C.CsClass> css = plan.GenerateDataClasses();
+            IEnumerable<C.CsClass> data = plan.GenerateDataClasses();
             Console.WriteLine("C-level abstract code for data classes generated!");
-            C.CsClass p = plan.GenerateParser();
+            C.CsClass cp = plan.GenerateParser();
             Console.WriteLine("C-level abstract code for the parser generated!");
-            foreach (C.CsClass cs in css)
+
+            IEnumerable<D.CsTop> css = data.Select(c => c.Concretize());
+            Console.WriteLine("D-level abstract code for data classes generated!");
+            D.CsClass dp = cp.Concretize() as D.CsClass;
+            Console.WriteLine("D-level abstract code for the parser generated!");
+
+            foreach (D.CsClass cs in css)
                 File.WriteAllLines(Path.Combine(Output, $"ast\\{cs.Name}.cs"), cs.GenerateFileCode());
-            Console.WriteLine("Concrete code generated and saved!");
-            File.WriteAllLines(Path.Combine(Output, "Parser.cs"), p.GenerateFileCode());
-            Console.WriteLine("Parser generated and saved!");
+            File.WriteAllLines(Path.Combine(Output, "Parser.cs"), dp.GenerateFileCode());
+            Console.WriteLine("Final code generated and saved!");
         }
     }
 }
