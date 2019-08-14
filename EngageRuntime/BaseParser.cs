@@ -13,6 +13,7 @@ namespace EngageRuntime
 
         public BaseParser(string _input)
         {
+            //Log($"init with '{_input}'");
             input = _input;
             pos = 0;
         }
@@ -69,7 +70,7 @@ namespace EngageRuntime
                         continue;
                     if (code == Message.Perfect)
                         Pending.Remove(candidate);
-                    //Log($"APPLY to {_x} :: {_x.GetType()} SUCCESS");
+                    //Log($"trigger {_x} :: {_x.GetType()} with return code 0b{code}");
                     return true; // Consume or Perfect
                 }
             }

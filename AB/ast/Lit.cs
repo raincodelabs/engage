@@ -4,11 +4,11 @@ namespace AB
 {
     public class Lit : Expr
     {
-        public System.Int32 x;
+        public System.Int32 value;
 
-        public Lit(System.Int32 _x)
+        public Lit(System.Int32 _value)
         {
-            x = _x;
+            value = _value;
         }
 
     }

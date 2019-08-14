@@ -17,7 +17,7 @@ namespace AB
             TId,
         }
 
-        private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, MAP;
+        private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, IF, MAP;
 
         public Parser(string _input) : base(_input)
         {
@@ -161,9 +161,11 @@ namespace AB
                                 );
                                 break;
                             case "if":
+                                IF = true;
                                 Schedule(typeof(Expr), _cond =>
                                 {
                                     var cond = _cond as Expr;
+                                    IF = false;
                                     List<Stmt> branch = new List<Stmt>();
                                     Schedule(typeof(Stmt), _branch =>
                                     {
@@ -180,18 +182,6 @@ namespace AB
                                     return Message.Perfect;
                                 }
                                 );
-                                break;
-                            case "to":
-                                if (MAP && Main.Peek() is System.Int32)
-                                {
-                                    System.Int32 x = (System.Int32)Main.Pop();
-                                    Push(new Lit(x));
-                                }
-                                else if (MAP && Main.Peek() is System.String)
-                                {
-                                    System.String name = Main.Pop() as System.String;
-                                    Push(new Var(name));
-                                }
                                 break;
                         }
                         break;
@@ -256,10 +246,10 @@ namespace AB
                         Push(new ABProgram(data, code));
                         break;
                     case TokenType.TNum:
-                        Push(System.Int32.Parse(lexeme));
+                        Push(new Lit(System.Int32.Parse(lexeme)));
                         break;
                     case TokenType.TId:
-                        Push(lexeme);
+                        Push(new Var(lexeme));
                         break;
                 }
                 if (!System.String.IsNullOrEmpty(ERROR))

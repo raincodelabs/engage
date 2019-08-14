@@ -21,5 +21,18 @@ namespace Engage.B
             }
             return result;
         }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as ConstPlan;
+            if (other == null)
+                return false;
+            if (this.Args.Count != other.Args.Count)
+                return false;
+            for (int i = 0; i < Args.Count; i++)
+                if (this.Args[i].Item1 != other.Args[i].Item1 || this.Args[i].Item2 != this.Args[i].Item2)
+                    return false;
+            return true;
+        }
     }
 }

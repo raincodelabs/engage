@@ -33,6 +33,8 @@ namespace Engage
             B.HandlerPlan hp = new B.HandlerPlan();
             if (hd.LHS.EOF)
                 hp.ReactOn = new B.TokenPlan() { Special = true, Value = "EOF" };
+            else if (!(String.IsNullOrEmpty(hd.LHS.NonTerminal)))
+                hp.ReactOn = new B.TokenPlan() { Special = true, Value = hd.LHS.NonTerminal };
             else
                 hp.ReactOn = new B.TokenPlan() { Special = false, Value = hd.LHS.Terminal };
             if (!String.IsNullOrEmpty(hd.LHS.Flag))
@@ -88,7 +90,7 @@ namespace Engage
                         var cp = new B.ConstPlan();
                         foreach (var a in pr.Args)
                             AddConstructorArguments(h, a, cp, plan);
-                        tp.Constructors.Add(cp);
+                        tp.AddConstructor(cp);
                         Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
                     }
                 }
@@ -100,7 +102,7 @@ namespace Engage
                         var cp = new B.ConstPlan();
                         foreach (var a in wr.Args)
                             AddConstructorArguments(h, a, cp, plan);
-                        tp.Constructors.Add(cp);
+                        tp.AddConstructor(cp);
                         Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(wr.Name, tp.Super)}");
                     }
                 }
@@ -119,6 +121,8 @@ namespace Engage
                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(aa.Name)));
             else if (c is A.AwaitStarAction asa)
                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(asa.Name).Copy(true)));
+            else if (c == null && a == "this")
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, new B.TypePlan() { Name = B.SystemPlan.TypeAliases[h.LHS.NonTerminal] }));
         }
 
         private static void InferFlags(B.SystemPlan plan, A.EngSpec spec)

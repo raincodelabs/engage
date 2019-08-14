@@ -7,7 +7,7 @@ namespace Engage.B
 {
     public class SystemPlan
     {
-        private static readonly Dictionary<string, string> RealNames = new Dictionary<string, string>()
+        internal static readonly Dictionary<string, string> RealNames = new Dictionary<string, string>()
         {
             {"string","System.String" },
             {"number","System.Int32" },
@@ -139,10 +139,7 @@ namespace Engage.B
                     var swLex = new C.SwitchCaseStmt();
                     // much faster to switch-case on a char than on a string
                     bool matchChar = Handlers[hpk].Select(hp => hp.ReactOn.Value).All(v => v.Length == 1);
-                    if (matchChar)
-                        swLex.Expression = "lexeme[0]";
-                    else
-                        swLex.Expression = "lexeme";
+                    swLex.Expression = "lexeme" + (matchChar ? "[0]" : "");
                     // Need this dance because there may be different actions for the same token with different guards
                     Dictionary<TokenPlan, Tuple<List<string>, List<List<HandleAction>>>> resortedHandlers = new Dictionary<TokenPlan, Tuple<List<string>, List<List<HandleAction>>>>();
                     foreach (var hp in Handlers[hpk])
@@ -156,14 +153,6 @@ namespace Engage.B
                     resortedKeys.Sort((x, y) => y.Value.Length - x.Value.Length);
                     foreach (var key in resortedKeys)
                         GenerateLexBranch(swLex, hpk, resortedHandlers[key].Item1, resortedHandlers[key].Item2, key, matchChar);
-
-                    //var list = Handlers[hpk];
-                    //list.Sort((x, y) => y.ReactOn.Value.Length - x.ReactOn.Value.Length);
-                    //foreach (var hp in list)
-                    //{
-                    //    GenerateLexBranch(swLex, hpk, hp.GuardFlag, hp.Recipe, hp.ReactOn, matchChar);
-
-                    //}
                     branchType.Add(swLex);
                 }
                 swType.Branches["TokenType.T" + hpk] = branchType;
@@ -178,16 +167,20 @@ namespace Engage.B
                     if (!tok.Special)
                         continue;
                     List<C.CsStmt> branchType = new List<C.CsStmt>();
+                    string todo = "";
                     switch (tok.Value)
                     {
                         case "number":
-                            branchType.Add(new C.SimpleStmt($"Push(System.Int32.Parse(lexeme));"));
+                            todo = "System.Int32.Parse(lexeme)";
                             break;
 
                         case "string":
-                            branchType.Add(new C.SimpleStmt($"Push(lexeme);"));
+                            todo = "lexeme";
                             break;
                     }
+                    todo = PossiblyWrap(todo, tok.Value);
+                    branchType.Add(new C.SimpleStmt($"Push({todo})"));
+
                     swType.Branches["TokenType.T" + t] = branchType;
                 }
             }
@@ -209,6 +202,24 @@ namespace Engage.B
             GenerateTokeniser(p);
 
             return p;
+        }
+
+        private string PossiblyWrap(string v, string key)
+        {
+            foreach (var t in TypeAliases.Keys)
+                if (TypeAliases[t] == key)
+                {
+                    if (Handlers.ContainsKey(t))
+                    {
+                        // NB: there can be only one
+                        var x = Handlers[t][0].Recipe[0];
+                        if (x is PushNew px)
+                            return $"new {px.Name}({v})";
+                        else
+                            Console.WriteLine("[B2C] some unsupported functionality found");
+                    }
+                }
+            return v;
         }
 
         private void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, List<string> guardFlags, List<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
@@ -357,7 +368,7 @@ namespace Engage.B
             var block = new List<CsStmt>();
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
             block.Add(new C.WhileStmt($"pos < input.Length{cond}", "s += input[pos++]"));
-            return new Tuple<string, IEnumerable<CsStmt>> (null, block); // null condition means the ELSE branch
+            return new Tuple<string, IEnumerable<CsStmt>>(null, block); // null condition means the ELSE branch
         }
 
         private Tuple<string, IEnumerable<CsStmt>> GenerateBranchNumberMatch(string type)
@@ -366,7 +377,7 @@ namespace Engage.B
             string cond = string.Join(" || ", "0123456789".Select(c => $"input[pos] == '{c}'"));
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
             block.Add(new C.WhileStmt($"pos < input.Length && ({cond})", "s += input[pos++]"));
-            return new Tuple<string, IEnumerable<CsStmt>>(cond,block);
+            return new Tuple<string, IEnumerable<CsStmt>>(cond, block);
         }
 
         private Tuple<string, IEnumerable<CsStmt>> GenerateBranchPreciseMatch(string value, string type, List<string> skipmark)
@@ -391,7 +402,7 @@ namespace Engage.B
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
             block.Add(new SimpleStmt($"s = \"{value}\""));
             block.Add(new SimpleStmt(len > 1 ? $"pos += {len}" : "pos++"));
-            return new Tuple<string, IEnumerable<CsStmt>>(cond,block);
+            return new Tuple<string, IEnumerable<CsStmt>>(cond, block);
         }
     }
 }

@@ -20,6 +20,8 @@ handlers
     EOF                 -> push ABProgram(data,code)
                            where code := pop# Stmt,
                                  data := pop# Decl
+    Num                 -> push Lit(this)
+    Id                  -> push Var(this)
 
     'dcl'               -> lift DCL
     'enddcl'            -> drop DCL
@@ -51,16 +53,12 @@ handlers
     '(' given HANDLER   -> lift BRACKET
     ')' given HANDLER   -> drop BRACKET
     'if'                -> push IfStmt(cond,branch)
-                           where cond   := await Expr,
+                           where cond   := await Expr with IF,
                                  branch := await* Stmt
     'endif'             -> trim Stmt*
     'map'               -> push MapStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
-    'to' given MAP      -> wrap Lit(x)
-                           where x := pop Num
-    'to' given MAP      -> wrap Var(name)
-                           where name := pop Id
     'overlay'           -> push OverlayStmt(source,target)
                            where source := await Expr with MAP,
                                  target := await Var with MAP
