@@ -7,6 +7,7 @@ namespace Engage.D
     {
         public string Before, After;
         public List<CsStmt> Code = new List<CsStmt>();
+        public bool Embrace = true;
 
         public CsComplexStmt()
         {
@@ -44,11 +45,11 @@ namespace Engage.D
         {
             if (!String.IsNullOrEmpty(Before))
                 lines.Add(level, Before);
-            if (Code.Count > 1)
+            if (Embrace && Code.Count > 1)
                 lines.Open(level);
             foreach (var stmt in Code)
                 stmt.GenerateCode(lines, level + 1);
-            if (Code.Count > 1)
+            if (Embrace && Code.Count > 1)
                 lines.Close(level);
             if (!String.IsNullOrEmpty(After))
             {

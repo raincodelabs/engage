@@ -35,24 +35,6 @@ namespace AB
                 type = _token.Item1;
                 switch (type)
                 {
-                    case TokenType.TEOF:
-                        Flush();
-                        var code = new List<Stmt>();
-                        var data = new List<Decl>();
-                        while (Main.Count > 0)
-                        {
-                            if (Main.Peek() is Stmt)
-                                code.Add(Main.Pop() as Stmt);
-                            else if (Main.Peek() is Decl)
-                                data.Add(Main.Pop() as Decl);
-                            else
-                                break;
-                        }
-                        code.Reverse();
-                        data.Reverse();
-                        Push(new ABProgram(data, code));
-                        break;
-
                     case TokenType.Tword:
                         switch (lexeme)
                         {
@@ -67,14 +49,12 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "integer":
                                 if (DCL)
                                     Push(new Integer());
                                 else
                                     ERROR = "flag DCL is not lifted when expected";
                                 break;
-
                             case "handler":
                                 Schedule(typeof(Var), _obj =>
                                 {
@@ -94,7 +74,6 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "overlay":
                                 MAP = true;
                                 Schedule(typeof(Expr), _source =>
@@ -114,15 +93,12 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "enddcl":
                                 DCL = false;
                                 break;
-
                             case "return":
                                 Push(new ReturnStmt());
                                 break;
-
                             case "clear":
                                 Schedule(typeof(Var), _view =>
                                 {
@@ -132,11 +108,9 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "endif":
                                 Trim(typeof(Stmt));
                                 break;
-
                             case "print":
                                 Schedule(typeof(Expr), _message =>
                                 {
@@ -146,7 +120,6 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "char":
                                 if (DCL)
                                 {
@@ -165,11 +138,9 @@ namespace AB
                                 else
                                     ERROR = "flag DCL is not lifted when expected";
                                 break;
-
                             case "dcl":
                                 DCL = true;
                                 break;
-
                             case "map":
                                 MAP = true;
                                 Schedule(typeof(Expr), _source =>
@@ -189,7 +160,6 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "if":
                                 Schedule(typeof(Expr), _cond =>
                                 {
@@ -211,7 +181,6 @@ namespace AB
                                 }
                                 );
                                 break;
-
                             case "to":
                                 if (MAP)
                                     if (Main.Peek() is System.Int32)
@@ -226,10 +195,8 @@ namespace AB
                                         Push(new Var(name));
                                     }
                                 break;
-
                         }
                         break;
-
                     case TokenType.Tmark:
                         switch (lexeme[0])
                         {
@@ -257,7 +224,6 @@ namespace AB
                                 else
                                     ERROR = "flag DCL is not lifted when expected";
                                 break;
-
                             case '(':
                                 if (CHAR)
                                     BRACKET = true;
@@ -266,7 +232,6 @@ namespace AB
                                 else
                                     ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
                                 break;
-
                             case ')':
                                 if (CHAR)
                                     BRACKET = false;
@@ -275,18 +240,31 @@ namespace AB
                                 else
                                     ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
                                 break;
-
                         }
                         break;
-
+                    case TokenType.TEOF:
+                        Flush();
+                        var code = new List<Stmt>();
+                        var data = new List<Decl>();
+                        while (Main.Count > 0)
+                        {
+                            if (Main.Peek() is Stmt)
+                                code.Add(Main.Pop() as Stmt);
+                            else if (Main.Peek() is Decl)
+                                data.Add(Main.Pop() as Decl);
+                            else
+                                break;
+                        }
+                        code.Reverse();
+                        data.Reverse();
+                        Push(new ABProgram(data, code));
+                        break;
                     case TokenType.TNum:
                         Push(System.Int32.Parse(lexeme));
                         break;
-
                     case TokenType.TId:
                         Push(lexeme);
                         break;
-
                 }
                 if (!System.String.IsNullOrEmpty(ERROR))
                 {
