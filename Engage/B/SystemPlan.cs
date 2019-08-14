@@ -115,7 +115,7 @@ namespace Engage.B
             pl.AddCode("lexeme = _token.Item2;");
             pl.AddCode("type = _token.Item1;");
 
-            var swType = new C.CsSwitchCase();
+            var swType = new C.SwitchCaseStmt();
             swType.Expression = "type";
 
             var UsedTokens = new HashSet<string>();
@@ -138,7 +138,7 @@ namespace Engage.B
                 }
                 else
                 {
-                    var swLex = new C.CsSwitchCase();
+                    var swLex = new C.SwitchCaseStmt();
                     // much faster to switch-case on a char than on a string
                     bool matchChar = Handlers[hpk].Select(hp => hp.ReactOn.Value).All(v => v.Length == 1);
                     if (matchChar)
@@ -213,7 +213,7 @@ namespace Engage.B
             return p;
         }
 
-        private void GenerateLexBranch(CsSwitchCase swLex, string hpk, List<string> guardFlags, List<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
+        private void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, List<string> guardFlags, List<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
         {
             List<C.CsStmt> branchLex = new List<C.CsStmt>();
             //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");

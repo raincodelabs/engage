@@ -1,12 +1,11 @@
-﻿using Engage.C;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Engage.B
 {
     public abstract class HandleAction
     {
-        public abstract void GenerateAbstractCode(List<CsStmt> code);
+        public abstract void GenerateAbstractCode(List<C.CsStmt> code);
 
         protected string CastAs(string expr, string type)
             => type == "System.Int32"
@@ -23,12 +22,12 @@ namespace Engage.B
     {
         public string Flag;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             if (Flag.EndsWith('#'))
-                code.Add(new CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
+                code.Add(new C.CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
             else
-                code.Add(new CsSimpleStmt($"{Flag} = true"));
+                code.Add(new C.CsSimpleStmt($"{Flag} = true"));
         }
     }
 
@@ -36,12 +35,12 @@ namespace Engage.B
     {
         public string Flag;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             if (Flag.EndsWith('#'))
-                code.Add(new CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
+                code.Add(new C.CsSimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
             else
-                code.Add(new CsSimpleStmt($"{Flag} = false"));
+                code.Add(new C.CsSimpleStmt($"{Flag} = false"));
         }
     }
 
@@ -50,9 +49,9 @@ namespace Engage.B
         public string Type;
         public bool Starred;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new CsSimpleStmt($"Trim(typeof({Type}))"));
+            code.Add(new C.CsSimpleStmt($"Trim(typeof({Type}))"));
         }
     }
 
@@ -71,9 +70,9 @@ namespace Engage.B
             Args.AddRange(args);
         }
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new CsSimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
+            code.Add(new C.CsSimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
         }
     }
 
@@ -82,12 +81,12 @@ namespace Engage.B
         public string Name;
         public string Target;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new CsSimpleStmt($"{Name} {Target}"));
-            var tmp = new CsComplexStmt($"if (Main.Peek() is {Name})", $"{Target} = {CastAs("Main.Pop()", Name)}");
+            code.Add(new C.CsSimpleStmt($"{Name} {Target}"));
+            var tmp = new C.CsComplexStmt($"if (Main.Peek() is {Name})", $"{Target} = {CastAs("Main.Pop()", Name)}");
             code.Add(tmp);
-            tmp = new CsComplexStmt($"else", $"ERROR = \"the top of the stack is not of type {Name}\"");
+            tmp = new C.CsComplexStmt($"else", $"ERROR = \"the top of the stack is not of type {Name}\"");
             tmp.AddCode($"{Target} = {DefaultValue(Name)}");
             code.Add(tmp);
         }
@@ -106,9 +105,9 @@ namespace Engage.B
             Target = target;
         }
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            var guard = new CsComplexStmt($"if (Main.Peek() is {Type})",
+            var guard = new C.CsComplexStmt($"if (Main.Peek() is {Type})",
                 $"{Type} {Target} = {CastAs("Main.Pop()", Type)}");
             guard.AddCode($"Push(new {Name}({Target}))");
             code.Add(guard);
@@ -120,12 +119,12 @@ namespace Engage.B
         public string Name;
         public string Target;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new CsSimpleStmt($"var {Target} = new List<{Name}>()"));
-            var tmp = new CsComplexStmt($"while (Main.Count > 0 && Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
+            code.Add(new C.CsSimpleStmt($"var {Target} = new List<{Name}>()"));
+            var tmp = new C.CsComplexStmt($"while (Main.Count > 0 && Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
             code.Add(tmp);
-            code.Add(new CsSimpleStmt($"{Target}.Reverse()"));
+            code.Add(new C.CsSimpleStmt($"{Target}.Reverse()"));
         }
     }
 
@@ -136,7 +135,7 @@ namespace Engage.B
 
         public List<HandleAction> SiblingActions = new List<HandleAction>();
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             // initialise lists
             GenerateInitialisationCode(code);
@@ -144,20 +143,21 @@ namespace Engage.B
                 if (sa is PopSeveral ps)
                     ps.GenerateInitialisationCode(code);
 
-            var loop = new CsComplexStmt();
-            loop.Before = "while (Main.Count > 0)";
-            loop.AddCode($"if (Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
+            var loop = new C.WhileStmt();
+            loop.Condition = "Main.Count > 0";
+            var ite = new C.IfThenElse($"Main.Peek() is {Name}", $"{Target}.Add(Main.Pop() as {Name})");
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
-                    loop.AddCode($"else if (Main.Peek() is {ps.Name})", $"{ps.Target}.Add(Main.Pop() as {ps.Name})");
-            loop.AddCode("else", "break");
+                    ite.AddBranch($"Main.Peek() is {ps.Name}", $"{ps.Target}.Add(Main.Pop() as {ps.Name})");
+            ite.ElseBranch.Add(new C.CsSimpleStmt("break"));
+            loop.Code.Add(ite);
             code.Add(loop);
 
             // reverse the order because of stack vs list differences
-            code.Add(new CsSimpleStmt($"{Target}.Reverse()"));
+            code.Add(new C.CsSimpleStmt($"{Target}.Reverse()"));
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
-                    code.Add(new CsSimpleStmt($"{ps.Target}.Reverse()"));
+                    code.Add(new C.CsSimpleStmt($"{ps.Target}.Reverse()"));
 
             // produce the rest of the code (usually push new)
             foreach (var sa in SiblingActions)
@@ -165,9 +165,9 @@ namespace Engage.B
                     sa.GenerateAbstractCode(code);
         }
 
-        public void GenerateInitialisationCode(List<CsStmt> code)
+        public void GenerateInitialisationCode(List<C.CsStmt> code)
         {
-            code.Add(new CsSimpleStmt($"var {Target} = new List<{Name}>()"));
+            code.Add(new C.CsSimpleStmt($"var {Target} = new List<{Name}>()"));
         }
     }
 
@@ -180,7 +180,7 @@ namespace Engage.B
 
         public HandleAction BaseAction = null;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
@@ -188,7 +188,7 @@ namespace Engage.B
                 tmp = new LiftFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
-            var lambda = new CsComplexStmt();
+            var lambda = new C.CsComplexStmt();
             lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
             lambda.After = ");";
             if (Name == "System.Int32") // corner case - "as" doesn't work on ints in C#
@@ -217,7 +217,7 @@ namespace Engage.B
 
         public HandleAction BaseAction = null;
 
-        public override void GenerateAbstractCode(List<CsStmt> code)
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
@@ -225,11 +225,11 @@ namespace Engage.B
                 tmp = new LiftFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
-            code.Add(new CsSimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
-            var lambda = new CsComplexStmt();
+            code.Add(new C.CsSimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
+            var lambda = new C.CsComplexStmt();
             lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
             lambda.After = ");";
-            var ifst = new CsComplexStmt();
+            var ifst = new C.CsComplexStmt();
             ifst.Before = $"if (_{Target} == null)";
             if (BaseAction != null)
                 BaseAction.GenerateAbstractCode(ifst.Code);

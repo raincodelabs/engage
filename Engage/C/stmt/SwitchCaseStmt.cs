@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Engage.C
 {
-    public class CsSwitchCase : CsStmt
+    public class SwitchCaseStmt : CsStmt
     {
         public string Expression;
         public Dictionary<string, List<CsStmt>> Branches = new Dictionary<string, List<CsStmt>>();
