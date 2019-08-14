@@ -106,9 +106,7 @@ namespace Engage.B
             pf.AddCode("TokenType type");
             pf.AddCode("string lexeme");
             List<C.CsStmt> loop = new List<C.CsStmt>();
-            var pl = new C.CsComplexStmt();
-            pl.Before = "do";
-            pl.After = "while (type != TokenType.TEOF)";
+            var pl = new C.WhileStmt("type != TokenType.TEOF", reversed: true);
 
             // main parsing loop: begin
             pl.AddCode("var _token = NextToken();");
@@ -195,15 +193,15 @@ namespace Engage.B
             }
 
             pl.AddCode(swType);
-            var abend = new C.CsComplexStmt();
-            abend.Before = "if (!System.String.IsNullOrEmpty(ERROR))";
-            abend.AddCode("Console.WriteLine(\"Parser error: \" + ERROR);");
-            abend.AddCode("return null;");
+            var cond = "!System.String.IsNullOrEmpty(ERROR)";
+            var abend = new C.IfThenElse();
+            abend.AddToBranch(cond, "Console.WriteLine(\"Parser error: \" + ERROR);");
+            abend.AddToBranch(cond, "return null;");
             pl.AddCode(abend);
             // main parsing loop: end
 
             pf.AddCode(pl);
-            pf.AddCode($"if (Main.Peek() is {TopType})", "return Main.Pop()");
+            pf.AddCode(new C.IfThenElse($"Main.Peek() is {TopType}", "return Main.Pop()"));
             pf.AddCode("return null"); // TODO!!!
             p.AddMethod(pf);
 
@@ -217,34 +215,52 @@ namespace Engage.B
         {
             List<C.CsStmt> branchLex = new List<C.CsStmt>();
             //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
-            var kwd = "if";
             bool onlyWraps = true;
+            var ite = new C.IfThenElse();
             for (int i = 0; i < guardFlags.Count; i++)
             {
-                CsComplexStmt ifst = new C.CsComplexStmt();
-                ifst.Before = $"{kwd} ({guardFlags[i]})";
-                List<CsStmt> target = String.IsNullOrEmpty(guardFlags[i]) ? branchLex : ifst.Code;
+                if (!String.IsNullOrEmpty(guardFlags[i]))
+                    ite.AddBranch(guardFlags[i]);
+                var target = String.IsNullOrEmpty(guardFlags[i]) ? branchLex : ite.ThenBranches[guardFlags[i]];
                 foreach (var action in recipes[i])
                 {
                     if (!(action is WrapOne))
                         onlyWraps = false;
                     if (action != null)
-                        action.GenerateAbstractCode(target);
+                    {
+                        if (action is WrapOne waction)
+                        {
+                            List<CsStmt> fake = new List<CsStmt>();
+                            action.GenerateAbstractCode(fake);
+                            if (fake.Count == 1 && fake[0] is IfThenElse ite2)
+                            {
+                                var newcond = guardFlags[i] + " && " + ite2.ThenBranches.Keys.First();
+                                ite.AddBranch(newcond);
+                                foreach (CsStmt stmt in ite.ThenBranches[guardFlags[i]])
+                                    ite.AddToBranch(newcond, stmt);
+                                ite.ThenBranches.Remove(guardFlags[i]);
+                                foreach (CsStmt stmt in ite2.ThenBranches.Values.First())
+                                    ite.AddToBranch(newcond, stmt);
+                            }
+                            else
+                                Console.WriteLine("[ERR] This particular usage of WRAP is not supported yet");
+                        }
+                        else
+                            action.GenerateAbstractCode(target);
+                    }
                     else
-                        Console.WriteLine($"[IR] Warning: no action to handle '{hpk}'/{reactOn.Value}");
+                        Console.WriteLine($"[B2C] Warning: no action to handle '{hpk}'/{reactOn.Value}");
                 }
-                kwd = "else if";
-                if (!String.IsNullOrEmpty(guardFlags[i]))
-                    branchLex.Add(ifst);
             }
             string flags;
             if (guardFlags.Count == 1)
                 flags = "flag " + guardFlags[0] + " is not";
             else
                 flags = "neither of the flags " + String.Join(", ", guardFlags) + " are";
+            branchLex.Add(ite);
             if (!onlyWraps)
-            if (guardFlags.Any(f => !String.IsNullOrEmpty(f)))
-                branchLex.Add(new CsComplexStmt("else", $"ERROR = \"{flags} lifted when expected\""));
+                if (guardFlags.Any(f => !String.IsNullOrEmpty(f)))
+                    ite.AddElse($"ERROR = \"{flags} lifted when expected\"");
             if (matchChar)
                 swLex.Branches["'" + reactOn.Value + "'"] = branchLex;
             else

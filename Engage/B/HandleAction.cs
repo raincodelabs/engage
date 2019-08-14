@@ -6,16 +6,6 @@ namespace Engage.B
     public abstract class HandleAction
     {
         public abstract void GenerateAbstractCode(List<C.CsStmt> code);
-
-        protected string CastAs(string expr, string type)
-            => type == "System.Int32"
-            ? $"({type}){expr}"
-            : $"{expr} as {type}";
-
-        protected string DefaultValue(string type)
-            => type == "System.Int32"
-            ? "0"
-            : "null";
     }
 
     public class LiftFlag : HandleAction
@@ -84,11 +74,10 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             code.Add(new C.CsSimpleStmt($"{Name} {Target}"));
-            var tmp = new C.CsComplexStmt($"if (Main.Peek() is {Name})", $"{Target} = {CastAs("Main.Pop()", Name)}");
-            code.Add(tmp);
-            tmp = new C.CsComplexStmt($"else", $"ERROR = \"the top of the stack is not of type {Name}\"");
-            tmp.AddCode($"{Target} = {DefaultValue(Name)}");
-            code.Add(tmp);
+            var ite = new C.IfThenElse($"Main.Peek() is {Name}", $"{Target} = {"Main.Pop()".CastAs(Name)}");
+            ite.AddElse($"ERROR = \"the top of the stack is not of type {Name}\"");
+            ite.AddElse($"{Target} = {Name.DefaultValue()}");
+            code.Add(ite);
         }
     }
 
@@ -107,9 +96,10 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            var guard = new C.CsComplexStmt($"if (Main.Peek() is {Type})",
-                $"{Type} {Target} = {CastAs("Main.Pop()", Type)}");
-            guard.AddCode($"Push(new {Name}({Target}))");
+            var cond = $"Main.Peek() is {Type}";
+            var guard = new C.IfThenElse();
+            guard.AddToBranch(cond, $"{Type} {Target} = {"Main.Pop()".CastAs(Type)}");
+            guard.AddToBranch(cond, $"Push(new {Name}({Target}))");
             code.Add(guard);
         }
     }
@@ -122,8 +112,7 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             code.Add(new C.CsSimpleStmt($"var {Target} = new List<{Name}>()"));
-            var tmp = new C.CsComplexStmt($"while (Main.Count > 0 && Main.Peek() is {Name})", $"{Target}.Add(Main.Pop() as {Name})");
-            code.Add(tmp);
+            code.Add(new C.WhileStmt($"Main.Count > 0 && Main.Peek() is {Name}", $"{Target}.Add(Main.Pop() as {Name})"));
             code.Add(new C.CsSimpleStmt($"{Target}.Reverse()"));
         }
     }
@@ -188,20 +177,15 @@ namespace Engage.B
                 tmp = new LiftFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
-            var lambda = new C.CsComplexStmt();
-            lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
-            lambda.After = ");";
-            if (Name == "System.Int32") // corner case - "as" doesn't work on ints in C#
-                lambda.AddCode($"var {Target} = ({Name})_{Target};");
-            else
-                lambda.AddCode($"var {Target} = _{Target} as {Name};");
+            var lambda = new C.ScheduleStmt(Name, "_" + Target);
+            lambda.AddCode($"var {Target} = {$"_{Target}".CastAs(Name)};");
             if (!String.IsNullOrEmpty(Flag))
             {
                 tmp = new DropFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(lambda.Code);
             }
             if (!String.IsNullOrEmpty(ExtraFlag))
-                lambda.AddCode($"if (!{ExtraFlag})", "return Message.Misfire");
+                lambda.AddCode(new C.IfThenElse($"!{ExtraFlag}", "return Message.Misfire"));
             if (BaseAction != null)
                 BaseAction.GenerateAbstractCode(lambda.Code);
             lambda.AddCode("return Message.Perfect");
@@ -226,20 +210,19 @@ namespace Engage.B
                 tmp.GenerateAbstractCode(code);
             }
             code.Add(new C.CsSimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
-            var lambda = new C.CsComplexStmt();
-            lambda.Before = $"Schedule(typeof({Name}), _{Target} =>";
-            lambda.After = ");";
-            var ifst = new C.CsComplexStmt();
-            ifst.Before = $"if (_{Target} == null)";
+            var lambda = new C.ScheduleStmt(Name, "_" + Target);
+            var ite = new C.IfThenElse();
+            var cond = $"_{Target} == null";
+            ite.AddBranch(cond);
             if (BaseAction != null)
-                BaseAction.GenerateAbstractCode(ifst.Code);
+                BaseAction.GenerateAbstractCode(ite.ThenBranches[cond]);
             if (!String.IsNullOrEmpty(Flag))
             {
                 tmp = new DropFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(lambda.Code);
             }
-            ifst.AddCode("return Message.Perfect");
-            lambda.AddCode(ifst);
+            ite.AddToBranch(cond, "return Message.Perfect");
+            lambda.AddCode(ite);
             lambda.AddCode($"var {Target}1 = _{Target} as {Name};");
             lambda.AddCode($"{Target}.Add({Target}1)");
             lambda.AddCode("return Message.Consume");

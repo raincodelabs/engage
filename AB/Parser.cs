@@ -182,18 +182,16 @@ namespace AB
                                 );
                                 break;
                             case "to":
-                                if (MAP)
-                                    if (Main.Peek() is System.Int32)
-                                    {
-                                        System.Int32 x = (System.Int32)Main.Pop();
-                                        Push(new Lit(x));
-                                    }
-                                else if (MAP)
-                                    if (Main.Peek() is System.String)
-                                    {
-                                        System.String name = Main.Pop() as System.String;
-                                        Push(new Var(name));
-                                    }
+                                if (MAP && Main.Peek() is System.Int32)
+                                {
+                                    System.Int32 x = (System.Int32)Main.Pop();
+                                    Push(new Lit(x));
+                                }
+                                else if (MAP && Main.Peek() is System.String)
+                                {
+                                    System.String name = Main.Pop() as System.String;
+                                    Push(new Var(name));
+                                }
                                 break;
                         }
                         break;
@@ -251,6 +249,8 @@ namespace AB
                                 data.Add(Main.Pop() as Decl);
                             else if (Main.Peek() is Stmt)
                                 code.Add(Main.Pop() as Stmt);
+                            else
+                                break;
                         code.Reverse();
                         data.Reverse();
                         Push(new ABProgram(data, code));

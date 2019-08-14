@@ -18,7 +18,7 @@ namespace Engage.C
         }
 
         public IfThenElse(string cond1, string code1, string elsecode)
-            : this(cond1,code1)
+            : this(cond1, code1)
         {
             AddElse(elsecode);
         }
@@ -35,10 +35,29 @@ namespace Engage.C
             AddElse(elsecode);
         }
 
+        public void AddBranch(string cond)
+        {
+            ThenBranches[cond] = new List<CsStmt>();
+        }
+
         public void AddBranch(string cond, string code)
         {
             ThenBranches[cond] = new List<CsStmt>();
             ThenBranches[cond].Add(new CsSimpleStmt(code));
+        }
+
+        public void AddToBranch(string cond, string code)
+        {
+            if (!ThenBranches.ContainsKey(cond))
+                ThenBranches[cond] = new List<CsStmt>();
+            ThenBranches[cond].Add(new CsSimpleStmt(code));
+        }
+
+        public void AddToBranch(string cond, CsStmt code)
+        {
+            if (!ThenBranches.ContainsKey(cond))
+                ThenBranches[cond] = new List<CsStmt>();
+            ThenBranches[cond].Add(code);
         }
 
         public void AddElse(string code)
@@ -58,7 +77,7 @@ namespace Engage.C
                 result.Stmts.Add(if1);
                 kw = "else if";
             }
-            if (ElseBranch.Count>1)
+            if (ElseBranch.Count > 0)
             {
                 var if2 = new D.CsComplexStmt();
                 if2.Before = "else";

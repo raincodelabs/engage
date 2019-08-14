@@ -28,5 +28,15 @@ namespace Engage
 
         private static string Indent(int level)
             => new String(' ', level * 4);
+
+        public static string CastAs(this string expr, string type)
+            => type == "System.Int32"
+            ? $"({type}){expr}"
+            : $"{expr} as {type}";
+
+        public static string DefaultValue(this string type)
+            => type == "System.Int32"
+            ? "0"
+            : "null";
     }
 }
