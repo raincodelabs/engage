@@ -141,6 +141,24 @@ namespace AB
                             case "dcl":
                                 DCL = true;
                                 break;
+                            case "dec":
+                                if (DCL)
+                                {
+                                    CHAR = true;
+                                    Schedule(typeof(Lit), _x =>
+                                    {
+                                        var x = _x as Lit;
+                                        CHAR = false;
+                                        if (!BRACKET)
+                                            return Message.Misfire;
+                                        Push(new Decimal(x.value));
+                                        return Message.Perfect;
+                                    }
+                                    );
+                                }
+                                else
+                                    ERROR = "flag DCL is not lifted when expected";
+                                break;
                             case "map":
                                 MAP = true;
                                 Schedule(typeof(Expr), _source =>
@@ -310,6 +328,12 @@ namespace AB
                 t = TokenType.Tword;
                 s = "char";
                 pos += 4;
+            }
+            else if ((pos + 2 < input.Length && input[pos] == 'd' && input[pos + 1] == 'e' && input[pos + 2] == 'c') && (pos + 3 == input.Length || input[pos + 3] == ' ' || input[pos + 3] == '\r' || input[pos + 3] == '\n' || input[pos + 3] == ';' || input[pos + 3] == '(' || input[pos + 3] == ')'))
+            {
+                t = TokenType.Tword;
+                s = "dec";
+                pos += 3;
             }
             else if ((pos + 4 < input.Length && input[pos] == 'c' && input[pos + 1] == 'l' && input[pos + 2] == 'e' && input[pos + 3] == 'a' && input[pos + 4] == 'r') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
             {

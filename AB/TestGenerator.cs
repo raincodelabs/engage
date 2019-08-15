@@ -11,12 +11,17 @@ namespace AB
         private static string[] Reserved = new[] {
             "char",
             "clear",
+            "converse",
             "dcl",
+            "dec",
             "enddcl",
             "endif",
+            "handler",
             "if",
             "integer",
             "map",
+            "overlay",
+            "print",
             "return",
             "to",
         };

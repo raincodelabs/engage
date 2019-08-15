@@ -2,16 +2,18 @@ namespace AB
 
 types
     ABProgram;
-    Integer, String     <: Type;
+    Integer, String, Decimal <: Type;
     Decl;
-    ClearStmt, ConverseStmt, HandlerStmt, IfStmt, MapStmt, OverlayStmt, PrintStmt, ReturnStmt
-                        <: Stmt;
-    Var, Lit            <: Expr;
+    ClearStmt, ConverseStmt,
+    HandlerStmt, IfStmt,
+    MapStmt, OverlayStmt,
+    PrintStmt, ReturnStmt    <: Stmt;
+    Var, Lit                 <: Expr;
 
 tokens
   ' ', '\r', '\n' :: skip
   ';', '(', ')' :: mark
-  'dcl', 'enddcl', 'integer', 'char',
+  'dcl', 'enddcl', 'integer', 'char', 'dec',
   'clear', 'converse', 'handler', 'if', 'endif', 'map', 'to', 'overlay', 'print', 'return' :: word
   number :: Num
   string :: Id % split by?
@@ -30,6 +32,9 @@ handlers
                                  v := pop Var
     'integer' given DCL -> push Integer
     'char'    given DCL -> push String(n)
+                           where x := await (Lit given BRACKET) with CHAR,
+                                 n := tear x
+    'dec'     given DCL -> push Decimal(n)
                            where x := await (Lit given BRACKET) with CHAR,
                                  n := tear x
     '(' given CHAR      -> lift BRACKET
