@@ -39,29 +39,7 @@ namespace Engage
                 hp.ReactOn = new B.TokenPlan() { Special = false, Value = hd.LHS.Terminal };
             if (!String.IsNullOrEmpty(hd.LHS.Flag))
                 hp.GuardFlag = hd.LHS.Flag;
-            if (hd.Context.All(ass => ass.RHS is A.AwaitAction || ass.RHS is A.AwaitStarAction || ass.RHS is A.PopHashAction))
-            {
-                // Asynchronously: schedule parsing
-                B.HandleAction act = hd.RHS.ToHandleAction();
-                for (int i = hd.Context.Count - 1; i >= 0; i--)
-                    act = hd.Context[i].RHS.ToHandleAction(hd.Context[i].LHS, act);
-                // add *one* action!
-                hp.Recipe.Add(act);
-            }
-            else if (hd.RHS is A.WrapReaction)
-            {
-                if (hd.Context.Count > 1 || !(hd.Context[0].RHS is A.PopAction))
-                    Console.WriteLine($"[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
-                // add one composite action
-                hp.Recipe.Add(hd.RHS.ToHandleAction(B.SystemPlan.Dealias((hd.Context[0].RHS as A.PopAction).Name)));
-            }
-            else
-            {
-                // Synchronously: just get it from the stack one by one
-                foreach (var ass in hd.Context)
-                    hp.Recipe.Add(ass.RHS.ToHandleAction(ass.LHS));
-                hp.Recipe.Add(hd.RHS.ToHandleAction());
-            }
+            hd.ProduceActions(hp.Recipe.Add);
             return hp;
         }
 
@@ -121,6 +99,20 @@ namespace Engage
                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(aa.Name)));
             else if (c is A.AwaitStarAction asa)
                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(asa.Name).Copy(true)));
+            else if (c is A.TearAction ta)
+            {
+                int idx = -1;
+                for (int i = 0; i < h.Context.Count; i++)
+                    if (h.Context[i].LHS == a)
+                    {
+                        idx = i;
+                        break;
+                    }
+                idx--; // previous
+                if (idx < 0)
+                    Console.WriteLine($"the TEAR action must not be the first one");
+                cp.Args.Add(new Tuple<string, B.TypePlan>(a, plan.GetTypePlan(h.Context[idx].RHS.Name).FirstConstructor.Args[0].Item2));
+            }
             else if (c == null && a == "this")
                 cp.Args.Add(new Tuple<string, B.TypePlan>(a, new B.TypePlan() { Name = B.SystemPlan.TypeAliases[h.LHS.NonTerminal] }));
         }

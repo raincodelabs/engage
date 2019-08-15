@@ -38,6 +38,7 @@ Reaction Operation ::=
 	/ AwaitAction     := "await"  i:s Name=Id (i:s? "with" i:s TmpContext=Id)?
 	/ AwaitAction     := "await"  i:s? "(" i:s? Name=Id i:s "given" i:s ExtraContext=Id i:s? ")" (i:s? "with" i:s TmpContext=Id)?
 	/ AwaitStarAction := "await*" i:s Name=Id (i:s? "with" i:s TmpContext=Id)?
+	/ TearAction      := "tear"   i:s Name=Id
 	;
 
 string Id ::= re:"[a-zA-Z_01-9#]+";

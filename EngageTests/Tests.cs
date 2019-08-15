@@ -407,10 +407,10 @@ namespace EngageTests
             Assert.IsNotNull(map);
             var src = map.source as AB.Var;
             Assert.IsNotNull(src);
-            Assert.AreEqual("mapper", src.s);
+            Assert.AreEqual("mapper", src.value);
             var tgt = map.target as AB.Var;
             Assert.IsNotNull(src);
-            Assert.AreEqual("iffer", tgt.s);
+            Assert.AreEqual("iffer", tgt.value);
         }
 
         [TestMethod]
@@ -591,6 +591,39 @@ namespace EngageTests
             //    Console.WriteLine($"'{token.Item2}' :: {token.Item1}");
             //}
             //while (token.Item1 != AB.Parser.TokenType.TEOF);
+        }
+
+        [TestMethod]
+        public void TryDeclarations()
+        {
+            var parser = new AB.Parser(@"
+                dcl
+                    n integer;
+                    s char(10);
+                enddcl
+                map 1 to n
+                clear s");
+            AB.ABProgram spec = parser.Parse() as AB.ABProgram;
+            Assert.IsNotNull(spec);
+            Assert.AreEqual(2, spec.data.Count);
+            Assert.AreEqual(2, spec.code.Count);
+            Assert.IsInstanceOfType(spec.code[0], typeof(AB.MapStmt));
+            Assert.IsInstanceOfType(spec.code[1], typeof(AB.ClearStmt));
+            var d1 = spec.data[0] as AB.Decl;
+            var d2 = spec.data[1] as AB.Decl;
+            Assert.IsNotNull(d1);
+            Assert.IsNotNull(d2);
+            var v1 = d1.v as AB.Var;
+            var v2 = d2.v as AB.Var;
+            Assert.IsNotNull(v1);
+            Assert.IsNotNull(v2);
+            Assert.AreEqual("n", v1.value);
+            Assert.AreEqual("s", v2.value);
+            var t1 = d1.t as AB.Integer;
+            var t2 = d2.t as AB.String;
+            Assert.IsNotNull(t1);
+            Assert.IsNotNull(t2);
+            Assert.AreEqual(10, t2.n);
         }
     }
 }

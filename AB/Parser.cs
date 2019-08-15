@@ -130,17 +130,7 @@ namespace AB
                                         CHAR = false;
                                         if (!BRACKET)
                                             return Message.Misfire;
-                                        x almostn;
-                                        if (Main.Peek() is x)
-                                        {
-                                            almostn = Main.Pop() as x;
-                                            var n = almostn.value;
-                                        }
-                                        else
-                                        {
-                                            ERROR = "the top of the stack is not of type x";
-                                            n = null;
-                                        }
+                                        Push(new String(x.value));
                                         return Message.Perfect;
                                     }
                                     );

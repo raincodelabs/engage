@@ -30,7 +30,8 @@ handlers
                                  v := pop Var
     'integer' given DCL -> push Integer
     'char'    given DCL -> push String(n)
-                           where n := await (Num given BRACKET) with CHAR
+                           where x := await (Lit given BRACKET) with CHAR,
+                                 n := tear x
     '(' given CHAR      -> lift BRACKET
     '(' given HANDLER   -> lift BRACKET
     ')'                 -> drop BRACKET

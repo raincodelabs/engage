@@ -49,20 +49,25 @@ namespace Engage.B
     {
         public string Name;
         public List<string> Args = new List<string>();
+        public string Tearing;
 
         public PushNew()
         {
         }
 
-        public PushNew(string name, IEnumerable<string> args)
+        public PushNew(string name, IEnumerable<string> args, string tearing)
         {
             Name = name;
             Args.AddRange(args);
+            Tearing = tearing;
         }
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
+            if (String.IsNullOrEmpty(Tearing))
+                code.Add(new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
+            else
+                code.Add(new C.SimpleStmt($"Push(new {Name}({Tearing}))"));
         }
     }
 
@@ -227,6 +232,24 @@ namespace Engage.B
             lambda.AddCode($"{Target}.Add({Target}1)");
             lambda.AddCode("return Message.Consume");
             code.Add(lambda);
+        }
+    }
+
+    public class TearOne : HandleAction
+    {
+        public string Name;
+        public string Target;
+
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
+        {
+            code.Add(new C.SimpleStmt($"{Name} almost{Target}"));
+            var cond = $"Main.Peek() is {Name}";
+            var ite = new C.IfThenElse(cond, $"almost{Target} = {"Main.Pop()".CastAs(Name)}");
+            // TODO: not always ".value", must get the type right
+            ite.AddToBranch(cond, $"var {Target} = almost{Target}.value");
+            ite.AddElse($"ERROR = \"the top of the stack is not of type {Name}\"");
+            ite.AddElse($"{Target} = {Name.DefaultValue()}");
+            code.Add(ite);
         }
     }
 }
