@@ -14,16 +14,23 @@ namespace EngageTests
         private const string AppBuilderRule = @"..\..\..\..\example\simple.ab";
         private const string AppBuilderCode = @"..\..\..\..\tests";
 
-        private const int LimitLongTests = 101;
+        private const int LimitNormal = 1001;
+        private const int LimitLongTests = LimitNormal;
         private const int LimitLongExpTests = 8;
-        private const int LimitDeepTests = 101;
+        private const int LimitDeepTests = LimitNormal;
         private const int LimitDeepExpTests = 5;
-        private const int LimitStackTests = 101;
+        private const int LimitStackTests = LimitNormal;
         private const int LimitStackExpTests = 7;
+        private const int LimitDeclTests = LimitNormal;
+        private const int LimitDeclExpTests = 8;
+        private const int LimitMixedTestsEach = 101;
+        private const int LimitMixedTestsRep = 101;
 
         private const int WarmUp = 10;
         private const int RunsToAverage = 100;
         private const int RunsSkip = 10;
+        private const int RunsExpToAverage = 10;
+        private const int RunsExpSkip = 2;
 
         [TestMethod]
         public void MeasureAllExpTests()
@@ -627,7 +634,43 @@ namespace EngageTests
         }
 
         [TestMethod]
-        public void CompareParsers()
+        public void CompareParsersOnLong()
+            => CompareParametrically(RunsToAverage, RunsSkip, "long", LimitLongTests);
+
+        [TestMethod]
+        public void CompareParsersOnExpLong()
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "long10e", LimitLongExpTests);
+
+        [TestMethod]
+        public void CompareParsersOnDecl()
+            => CompareParametrically(RunsToAverage, RunsSkip, "dcl", LimitDeclTests);
+
+        [TestMethod]
+        public void CompareParsersOnExpDecl()
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "dcl10e", LimitDeclExpTests);
+
+        [TestMethod]
+        public void CompareParsersOnDeep()
+            => CompareParametrically(RunsToAverage, RunsSkip, "deep", LimitDeepTests);
+
+        [TestMethod]
+        public void CompareParsersOnExpDeep()
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "deep10e", LimitDeepExpTests);
+
+        // NB: there are so many tests that we run them fewer times like with exp ones
+        [TestMethod]
+        public void CompareParsersOnMix()
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "mix", LimitMixedTestsEach, "x", LimitMixedTestsRep);
+
+        [TestMethod]
+        public void CompareParsersOnStack()
+            => CompareParametrically(RunsToAverage, RunsSkip, "stack", LimitStackTests);
+
+        [TestMethod]
+        public void CompareParsersOnExpStack()
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "stack10e", LimitStackExpTests);
+
+        private void CompareParametrically(int runs, int discard, string name1, int limit1, string name2 = "", int limit2 = 1)
         {
             Random r = new Random();
             List<long> measures1 = new List<long>();
@@ -635,32 +678,37 @@ namespace EngageTests
             List<long> runs1 = new List<long>();
             List<long> runs2 = new List<long>();
             Stopwatch sw = new Stopwatch();
-            for (int i = 0; i < LimitLongTests; i++)
-            {
-                string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
-                for (int j = 0; j < RunsToAverage; j++)
+            for (int i = 0; i < limit1; i++)
+                for (int j = 0; j < limit2; j++)
                 {
-                    sw.Start();
-                    var parser1 = new AB.Parser(File.ReadAllText(fname));
-                    var spec1 = parser1.Parse() as AB.ABProgram;
-                    sw.Stop();
-                    runs1.Add(sw.ElapsedTicks);
-                    sw.Restart();
-                    //var parser2 = new tialaa.Parser(File.ReadAllText(fname));
-                    var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
-                    sw.Stop();
-                    runs2.Add(sw.ElapsedTicks);
-                    sw.Reset();
+                    string name
+                            = limit2 == 1
+                            ? $"{name1}{i}.ab"
+                            : $"{name1}{i}{name2}{j}.ab";
+                    string fname = Path.Combine(AppBuilderCode, name);
+                    for (int k = 0; k < runs; k++)
+                    {
+                        sw.Start();
+                        var parser1 = new AB.Parser(File.ReadAllText(fname));
+                        var spec1 = parser1.Parse() as AB.ABProgram;
+                        sw.Stop();
+                        runs1.Add(sw.ElapsedTicks);
+                        sw.Restart();
+                        var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
+                        sw.Stop();
+                        runs2.Add(sw.ElapsedTicks);
+                        sw.Reset();
+                    }
+                    runs1.Sort();
+                    runs2.Sort();
+                    var result1 = (long)runs1.Skip(discard).SkipLast(discard).Average();
+                    var result2 = (long)runs2.Skip(discard).SkipLast(discard).Average();
+                    Console.WriteLine($"Measured '{name}': OK in {result1} ticks vs {result2} ticks");
+                    measures1.Add(result1);
+                    measures2.Add(result2);
                 }
-                runs1.Sort();
-                runs2.Sort();
-                var result1 = (long)runs1.Skip(RunsSkip).SkipLast(RunsSkip).Average();
-                var result2 = (long)runs2.Skip(RunsSkip).SkipLast(RunsSkip).Average();
-                Console.WriteLine($"Measured 'long{i}.ab': OK in {result1} ticks vs {result2} ticks");
-                measures1.Add(result1);
-                measures2.Add(result2);
-            }
-            Console.WriteLine($"AVERAGE time: {measures1.Average()} vs {measures2.Average()}");
+            if (measures1.Count > 0 && measures2.Count > 0)
+                Console.WriteLine($"AVERAGE time: {measures1.Average()} vs {measures2.Average()}");
         }
     }
 }

@@ -59,6 +59,25 @@ namespace AB
             return lines;
         }
 
+        internal List<string> GenerateDeclThenCode(ulong n)
+        {
+            List<string> lines = new List<string>();
+            RandomDeclBlock(lines, n);
+            RandomStmtBlock(lines, n);
+            return lines;
+        }
+
+        internal List<string> GenerateMixedDeclCode(ulong n, ulong k)
+        {
+            List<string> lines = new List<string>();
+            for (ulong i = 0; i < k; i++)
+            {
+                RandomDeclBlock(lines, n);
+                RandomStmtBlock(lines, n);
+            }
+            return lines;
+        }
+
         private void RandomStmtBlock(List<string> lines, ulong size, bool isIfAllowed = true)
         {
             for (ulong i = 0; i < size; i++)
@@ -70,6 +89,27 @@ namespace AB
 
         private string RandomStmtNoIf()
             => RandomStmtHelper(1);
+
+        private void RandomDeclBlock(List<string> lines, ulong size)
+        {
+            lines.Add("dcl");
+            for (ulong i = 0; i < size; i++)
+                switch (r.Next(3))
+                {
+                    case 0:
+                        lines.Add($"{RandomVar()} integer;");
+                        break;
+
+                    case 1:
+                        lines.Add($"{RandomVar()} char({RandomNum()});");
+                        break;
+
+                    default:
+                        lines.Add($"{RandomVar()} dec({RandomNum()});");
+                        break;
+                }
+            lines.Add("enddcl");
+        }
 
         private string RandomStmtHelper(int start)
         {
