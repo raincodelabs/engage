@@ -32,7 +32,8 @@ handlers
     'char'    given DCL -> push String(n)
                            where n := await (Num given BRACKET) with CHAR
     '(' given CHAR      -> lift BRACKET
-    ')' given CHAR      -> drop BRACKET
+    '(' given HANDLER   -> lift BRACKET
+    ')'                 -> drop BRACKET
 
 %    Id                  -> push Var(ids)
 %                           %where ids := await* Id split by 'of'
@@ -50,8 +51,6 @@ handlers
     'handler'           -> push HandlerStmt(obj,proc)
                            where obj  := await Var,
                                  proc := await (Var given BRACKET) with HANDLER
-    '(' given HANDLER   -> lift BRACKET
-    ')' given HANDLER   -> drop BRACKET
     'if'                -> push IfStmt(cond,branch)
                            where cond   := await Expr with IF,
                                  branch := await* Stmt

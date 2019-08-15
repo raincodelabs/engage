@@ -124,13 +124,23 @@ namespace AB
                                 if (DCL)
                                 {
                                     CHAR = true;
-                                    Schedule(typeof(System.Int32), _n =>
+                                    Schedule(typeof(Lit), _x =>
                                     {
-                                        var n = (System.Int32)_n;
+                                        var x = _x as Lit;
                                         CHAR = false;
                                         if (!BRACKET)
                                             return Message.Misfire;
-                                        Push(new String(n));
+                                        x almostn;
+                                        if (Main.Peek() is x)
+                                        {
+                                            almostn = Main.Pop() as x;
+                                            var n = almostn.value;
+                                        }
+                                        else
+                                        {
+                                            ERROR = "the top of the stack is not of type x";
+                                            n = null;
+                                        }
                                         return Message.Perfect;
                                     }
                                     );
@@ -221,12 +231,7 @@ namespace AB
                                     ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
                                 break;
                             case ')':
-                                if (CHAR)
-                                    BRACKET = false;
-                                else if (HANDLER)
-                                    BRACKET = false;
-                                else
-                                    ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
+                                BRACKET = false;
                                 break;
                         }
                         break;
