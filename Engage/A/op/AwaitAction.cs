@@ -2,7 +2,6 @@
 {
     public partial class AwaitAction : Reaction
     {
-        public string Name;
         public string TmpContext;
         public string ExtraContext;
 

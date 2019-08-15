@@ -2,8 +2,6 @@
 {
     public partial class PopHashAction : Reaction
     {
-        public string Name;
-
         public override B.HandleAction ToHandleAction(string target = "", B.HandleAction prev = null)
         {
             var a = new B.PopSeveral() { Name = B.SystemPlan.Dealias(Name), Target = target };

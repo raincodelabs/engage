@@ -2,7 +2,6 @@
 {
     public partial class AwaitStarAction : Reaction
     {
-        public string Name;
         public string TmpContext;
 
         public override B.HandleAction ToHandleAction(string target = "", B.HandleAction prev = null)
