@@ -14,7 +14,7 @@ tokens
   'dcl', 'enddcl', 'integer', 'char',
   'clear', 'converse', 'handler', 'if', 'endif', 'map', 'to', 'overlay', 'print', 'return' :: word
   number :: Num
-  string :: Id
+  string :: Id % split by?
 
 handlers
     EOF                 -> push ABProgram(data,code)
@@ -35,10 +35,6 @@ handlers
     '(' given CHAR      -> lift BRACKET
     '(' given HANDLER   -> lift BRACKET
     ')'                 -> drop BRACKET
-
-%    Id                  -> push Var(ids)
-%                           %where ids := await* Id split by 'of'
-%                           where ids := await Id
 
     'clear'             -> push ClearStmt(view)
                            where view := await Var

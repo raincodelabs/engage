@@ -625,5 +625,42 @@ namespace EngageTests
             Assert.IsNotNull(t2);
             Assert.AreEqual(10, t2.n);
         }
+
+        [TestMethod]
+        public void CompareParsers()
+        {
+            Random r = new Random();
+            List<long> measures1 = new List<long>();
+            List<long> measures2 = new List<long>();
+            List<long> runs1 = new List<long>();
+            List<long> runs2 = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            for (int i = 0; i < LimitLongTests; i++)
+            {
+                string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
+                for (int j = 0; j < RunsToAverage; j++)
+                {
+                    sw.Start();
+                    var parser1 = new AB.Parser(File.ReadAllText(fname));
+                    var spec1 = parser1.Parse() as AB.ABProgram;
+                    sw.Stop();
+                    runs1.Add(sw.ElapsedTicks);
+                    sw.Restart();
+                    //var parser2 = new tialaa.Parser(File.ReadAllText(fname));
+                    var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
+                    sw.Stop();
+                    runs2.Add(sw.ElapsedTicks);
+                    sw.Reset();
+                }
+                runs1.Sort();
+                runs2.Sort();
+                var result1 = (long)runs1.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                var result2 = (long)runs2.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                Console.WriteLine($"Measured 'long{i}.ab': OK in {result1} ticks vs {result2} ticks");
+                measures1.Add(result1);
+                measures2.Add(result2);
+            }
+            Console.WriteLine($"AVERAGE time: {measures1.Average()} vs {measures2.Average()}");
+        }
     }
 }
