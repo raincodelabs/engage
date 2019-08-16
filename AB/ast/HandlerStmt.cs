@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class HandlerStmt : Stmt
+    public partial class HandlerStmt : Stmt
     {
         public Var obj;
         public Var proc;

@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class PrintStmt : Stmt
+    public partial class PrintStmt : Stmt
     {
         public Expr message;
 

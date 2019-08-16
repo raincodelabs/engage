@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AB
 {
-    public class ABProgram
+    public partial class ABProgram
     {
         public List<Decl> data = new List<Decl>();
         public List<Stmt> code = new List<Stmt>();

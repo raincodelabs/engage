@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AB
 {
-    public class IfStmt : Stmt
+    public partial class IfStmt : Stmt
     {
         public Expr cond;
         public List<Stmt> branch = new List<Stmt>();

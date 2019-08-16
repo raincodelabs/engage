@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Var : Expr
+    public partial class Var : Expr
     {
         public System.String value;
 

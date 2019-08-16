@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class ClearStmt : Stmt
+    public partial class ClearStmt : Stmt
     {
         public Var view;
 

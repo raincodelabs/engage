@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class ConverseStmt : Stmt
+    public partial class ConverseStmt : Stmt
     {
         public Var win;
 

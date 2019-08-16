@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class OverlayStmt : Stmt
+    public partial class OverlayStmt : Stmt
     {
         public Expr source;
         public Var target;

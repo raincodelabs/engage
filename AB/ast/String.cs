@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class String : Type
+    public partial class String : Type
     {
         public System.Int32 n;
 

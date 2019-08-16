@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace AB
 {
-    public class Parser : BaseParser
+    public partial class Parser : BaseParser
     {
         private enum TokenType
         {
@@ -17,7 +17,7 @@ namespace AB
             TId,
         }
 
-        private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, IF, MAP;
+        private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, IF, MAP, OVERLAY;
 
         public Parser(string _input) : base(_input)
         {
@@ -75,16 +75,16 @@ namespace AB
                                 );
                                 break;
                             case "overlay":
-                                MAP = true;
+                                OVERLAY = true;
                                 Schedule(typeof(Expr), _source =>
                                 {
                                     var source = _source as Expr;
-                                    MAP = false;
-                                    MAP = true;
+                                    OVERLAY = false;
+                                    OVERLAY = true;
                                     Schedule(typeof(Var), _target =>
                                     {
                                         var target = _target as Var;
-                                        MAP = false;
+                                        OVERLAY = false;
                                         Push(new OverlayStmt(source, target));
                                         return Message.Perfect;
                                     }

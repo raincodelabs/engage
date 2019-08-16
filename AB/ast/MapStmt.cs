@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class MapStmt : Stmt
+    public partial class MapStmt : Stmt
     {
         public Expr source;
         public Var target;

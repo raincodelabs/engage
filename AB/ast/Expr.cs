@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Expr
+    public partial class Expr
     {
 
     }

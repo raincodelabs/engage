@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class ReturnStmt : Stmt
+    public partial class ReturnStmt : Stmt
     {
 
         public ReturnStmt()

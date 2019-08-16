@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Lit : Expr
+    public partial class Lit : Expr
     {
         public System.Int32 value;
 

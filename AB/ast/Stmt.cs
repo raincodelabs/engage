@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Stmt
+    public partial class Stmt
     {
 
     }

@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Type
+    public partial class Type
     {
 
     }

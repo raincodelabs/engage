@@ -7,6 +7,7 @@ namespace Engage.D
     {
         public string NS;
         public string Super;
+        public bool Partial = true;
         private Dictionary<string, string> PublicFields = new Dictionary<string, string>();
         private Dictionary<string, string> PrivateFields = new Dictionary<string, string>();
         private HashSet<CsExeField> Methods = new HashSet<CsExeField>();
@@ -78,7 +79,7 @@ namespace Engage.D
 
         public override void GenerateCode(List<string> lines, int level)
         {
-            lines.Add(level, $"public class {Name}" + (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
+            lines.Add(level, $"public{(Partial ? " partial" : "")} class {Name}" + (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
             lines.Open(level);
             foreach (var inner in Inners)
             {

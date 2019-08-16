@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Integer : Type
+    public partial class Integer : Type
     {
 
         public Integer()

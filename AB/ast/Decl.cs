@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Decl
+    public partial class Decl
     {
         public Var v;
         public Type t;

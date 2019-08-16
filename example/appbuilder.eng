@@ -61,8 +61,8 @@ handlers
                            where source := await Expr with MAP,
                                  target := await Var with MAP
     'overlay'           -> push OverlayStmt(source,target)
-                           where source := await Expr with MAP,
-                                 target := await Var with MAP
+                           where source := await Expr with OVERLAY,
+                                 target := await Var with OVERLAY
     'print'             -> push PrintStmt(message)
                            where message := await Expr
     'return'            -> push ReturnStmt

@@ -2,7 +2,7 @@
 
 namespace AB
 {
-    public class Decimal : Type
+    public partial class Decimal : Type
     {
         public System.Int32 n;
 
