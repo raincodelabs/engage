@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AB\AB.csproj" />
-    <ProjectReference Include="..\CastleLanguage\TIALAA.csproj" />
     <ProjectReference Include="..\Engage\Engage.csproj" />
+    <ProjectReference Include="..\TIALAA\TIALAA.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,6 +13,7 @@ namespace EngageTests
         private const string AppBuilderSpec = @"..\..\..\..\example\appbuilder.eng";
         private const string AppBuilderRule = @"..\..\..\..\example\simple.ab";
         private const string AppBuilderCode = @"..\..\..\..\tests";
+        private const string AppBuilderLog = @"..\..\..\..\";
 
         private const int LimitNormal = 1001;
         private const int LimitLongTests = LimitNormal;
@@ -634,8 +635,20 @@ namespace EngageTests
         }
 
         [TestMethod]
+        public void TryCompareParsersOnDeep130()
+            => CompareParametricallyOne("deep130", RunsToAverage, RunsSkip);
+
+        [TestMethod]
+        public void TryCompareParsersOnDeep131()
+            => CompareParametricallyOne("deep131", RunsToAverage, RunsSkip);
+
+        [TestMethod]
+        public void TryCompareParsersOnDeep132()
+            => CompareParametricallyOne("deep132", RunsToAverage, RunsSkip);
+
+        [TestMethod]
         public void CompareParsersOnLong()
-            => CompareParametrically(RunsToAverage, RunsSkip, "long", LimitLongTests);
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "long", LimitLongTests);
 
         [TestMethod]
         public void CompareParsersOnExpLong()
@@ -651,7 +664,7 @@ namespace EngageTests
 
         [TestMethod]
         public void CompareParsersOnDeep()
-            => CompareParametrically(RunsToAverage, RunsSkip, "deep", LimitDeepTests);
+            => CompareParametrically(RunsToAverage, RunsSkip, "deep", LimitDeepTests, limitForPEG: 131);
 
         [TestMethod]
         public void CompareParsersOnExpDeep()
@@ -660,7 +673,7 @@ namespace EngageTests
         // NB: there are so many tests that we run them fewer times like with exp ones
         [TestMethod]
         public void CompareParsersOnMix()
-            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "mix", LimitMixedTestsEach, "x", LimitMixedTestsRep);
+            => CompareParametrically(RunsToAverage, RunsSkip, "mix", LimitMixedTestsEach, "x", LimitMixedTestsRep);
 
         [TestMethod]
         public void CompareParsersOnStack()
@@ -670,15 +683,19 @@ namespace EngageTests
         public void CompareParsersOnExpStack()
             => CompareParametrically(RunsExpToAverage, RunsExpSkip, "stack10e", LimitStackExpTests);
 
-        private void CompareParametrically(int runs, int discard, string name1, int limit1, string name2 = "", int limit2 = 1)
+        private void CompareParametrically(int runs, int discard, string name1, int limit1, string name2 = "", int limit2 = 1, int limitForPEG = -1)
         {
-            Random r = new Random();
+            if (limitForPEG < 0)
+                limitForPEG = limit1;
             List<long> measures1 = new List<long>();
             List<long> measures2 = new List<long>();
             List<long> runs1 = new List<long>();
             List<long> runs2 = new List<long>();
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < limit1; i++)
+            {
+                runs1.Clear();
+                runs2.Clear();
                 for (int j = 0; j < limit2; j++)
                 {
                     string name
@@ -686,29 +703,165 @@ namespace EngageTests
                             ? $"{name1}{i}.ab"
                             : $"{name1}{i}{name2}{j}.ab";
                     string fname = Path.Combine(AppBuilderCode, name);
+                    string text = File.ReadAllText(fname);
                     for (int k = 0; k < runs; k++)
                     {
+                        var parser1 = new AB.Parser(text);
                         sw.Start();
-                        var parser1 = new AB.Parser(File.ReadAllText(fname));
                         var spec1 = parser1.Parse() as AB.ABProgram;
                         sw.Stop();
                         runs1.Add(sw.ElapsedTicks);
-                        sw.Restart();
-                        var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
-                        sw.Stop();
-                        runs2.Add(sw.ElapsedTicks);
+                        if (i < limitForPEG)
+                        {
+                            sw.Restart();
+                            var spec2 = tialaa.Parser.ParseRule(text);
+                            sw.Stop();
+                            runs2.Add(sw.ElapsedTicks);
+                        }
+                        else
+                            runs2.Add(0);
                         sw.Reset();
                     }
                     runs1.Sort();
                     runs2.Sort();
-                    var result1 = (long)runs1.Skip(discard).SkipLast(discard).Average();
-                    var result2 = (long)runs2.Skip(discard).SkipLast(discard).Average();
-                    Console.WriteLine($"Measured '{name}': OK in {result1} ticks vs {result2} ticks");
-                    measures1.Add(result1);
-                    measures2.Add(result2);
+                    var runs1cut = runs1.Skip(discard).SkipLast(discard);
+                    var runs2cut = runs2.Skip(discard).SkipLast(discard);
+
+                    var result1a = (long)runs1cut.Average();
+                    var result1m = Median(runs1);
+                    var result1n = NormalisedMean(runs1);
+                    var result1z = NormalisedMean(runs1cut.ToList());
+                    var result2a = (long)runs2cut.Average();
+                    var result2m = Median(runs2);
+                    var result2n = NormalisedMean(runs2);
+                    var result2z = NormalisedMean(runs2cut.ToList());
+                    Console.WriteLine($"OK for '{name}'. Ticks: average {result1a} vs {result2a} ; median {result1m} vs {result2m} ; normean {result1n} vs {result2n} ; outnormean {result1z} vs {result2z}");
+                    measures1.Add(result1n);
+                    measures2.Add(result2n);
                 }
+            }
             if (measures1.Count > 0 && measures2.Count > 0)
                 Console.WriteLine($"AVERAGE time: {measures1.Average()} vs {measures2.Average()}");
+        }
+
+        private long Median(IEnumerable<long> xs)
+        {
+            var ys = xs.OrderBy(x => x).ToList();
+            double mid = (ys.Count - 1) / 2.0;
+            return (ys[(int)(mid)] + ys[(int)(mid + 0.5)]) / 2;
+        }
+
+        public static long NormalisedMean(ICollection<long> values)
+        {
+            if (values.Count == 0)
+                return 0;
+
+            var deviations = Deviations(values).ToArray();
+            var meanDeviation = deviations.Sum(t => Math.Abs(t.Item2)) / values.Count;
+            return (long)deviations.Where(t => t.Item2 > 0 || Math.Abs(t.Item2) <= meanDeviation).Average(t => t.Item1);
+        }
+
+        public static IEnumerable<Tuple<long, long>> Deviations(ICollection<long> values)
+        {
+            if (values.Count == 0)
+                yield break;
+
+            long avg = (long)values.Average();
+            foreach (var d in values)
+                yield return Tuple.Create(d, avg - d);
+        }
+
+        private void CompareParametricallyOne(string name, int runs, int discard)
+        {
+            if (!name.EndsWith(".ab"))
+                name += ".ab";
+            List<long> runs1 = new List<long>();
+            List<long> runs2 = new List<long>();
+            Stopwatch sw = new Stopwatch();
+            string fname = Path.Combine(AppBuilderCode, name);
+            for (int k = 0; k < runs; k++)
+            {
+                sw.Start();
+                var parser1 = new AB.Parser(File.ReadAllText(fname));
+                var spec1 = parser1.Parse() as AB.ABProgram;
+                sw.Stop();
+                runs1.Add(sw.ElapsedTicks);
+                sw.Restart();
+                var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
+                sw.Stop();
+                runs2.Add(sw.ElapsedTicks);
+                sw.Reset();
+            }
+            runs1.Sort();
+            runs2.Sort();
+            var result1 = (long)runs1.Skip(discard).SkipLast(discard).Average();
+            var result2 = (long)runs2.Skip(discard).SkipLast(discard).Average();
+            Console.WriteLine($"Measured '{name}': OK in {result1} ticks vs {result2} ticks");
+        }
+
+        private void CompareParametricallyLogToFile(int runs, int discard, string name1, int limit1, string name2 = "", int limit2 = 1)
+        {
+            var f = Path.Combine(AppBuilderLog, name1 + ".log");
+            try
+            {
+                Random r = new Random();
+                List<long> measures1 = new List<long>();
+                List<long> measures2 = new List<long>();
+                List<long> runs1 = new List<long>();
+                List<long> runs2 = new List<long>();
+                Stopwatch sw = new Stopwatch();
+                for (int i = 0; i < limit1; i++)
+                    for (int j = 0; j < limit2; j++)
+                    {
+                        string name
+                                = limit2 == 1
+                                ? $"{name1}{i}.ab"
+                                : $"{name1}{i}{name2}{j}.ab";
+                        string fname = Path.Combine(AppBuilderCode, name);
+                        for (int k = 0; k < runs; k++)
+                        {
+                            try
+                            {
+                                sw.Start();
+                                var parser1 = new AB.Parser(File.ReadAllText(fname));
+                                var spec1 = parser1.Parse() as AB.ABProgram;
+                                sw.Stop();
+                                runs1.Add(sw.ElapsedTicks);
+                            }
+                            catch (StackOverflowException)
+                            {
+                                File.AppendAllText(f, "Engage! parser stackoverflowed" + Environment.NewLine);
+                                runs1.Add(0);
+                            }
+                            try
+                            {
+                                sw.Restart();
+                                var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
+                                sw.Stop();
+                                runs2.Add(sw.ElapsedTicks);
+                            }
+                            catch (StackOverflowException)
+                            {
+                                File.AppendAllText(f, "PEG parser stackoverflowed" + Environment.NewLine);
+                                runs2.Add(0);
+                            }
+                            sw.Reset();
+                        }
+                        runs1.Sort();
+                        runs2.Sort();
+                        var result1 = (long)runs1.Skip(discard).SkipLast(discard).Average();
+                        var result2 = (long)runs2.Skip(discard).SkipLast(discard).Average();
+                        File.AppendAllText(f, $"Measured '{name}': OK in {result1} ticks vs {result2} ticks" + Environment.NewLine);
+                        measures1.Add(result1);
+                        measures2.Add(result2);
+                    }
+                if (measures1.Count > 0 && measures2.Count > 0)
+                    File.AppendAllText(f, $"AVERAGE time: {measures1.Average()} vs {measures2.Average()}" + Environment.NewLine);
+            }
+            catch (Exception e)
+            {
+                File.AppendAllText(f, $"Process died with an exception: {e.Message}" + Environment.NewLine);
+            }
         }
     }
 }

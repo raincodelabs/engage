@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AB", "AB\AB.csproj", "{87C3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EngageRuntime", "EngageRuntime\EngageRuntime.csproj", "{7D1936E8-3AF6-4CFC-AD44-E6CFADBCDA8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIALAA", "CastleLanguage\TIALAA.csproj", "{661AE19B-EADA-4AAC-B8C5-B60AD1220F20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIALAA", "TIALAA\TIALAA.csproj", "{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{7D1936E8-3AF6-4CFC-AD44-E6CFADBCDA8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D1936E8-3AF6-4CFC-AD44-E6CFADBCDA8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D1936E8-3AF6-4CFC-AD44-E6CFADBCDA8F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{661AE19B-EADA-4AAC-B8C5-B60AD1220F20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{661AE19B-EADA-4AAC-B8C5-B60AD1220F20}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{661AE19B-EADA-4AAC-B8C5-B60AD1220F20}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{661AE19B-EADA-4AAC-B8C5-B60AD1220F20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
