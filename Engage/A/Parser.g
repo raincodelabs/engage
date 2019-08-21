@@ -19,7 +19,7 @@ Lexeme ::=
 
 HandlerDecl ::= i:s? LHS=Trigger i:s? "->" i:s? RHS=Reaction (i:s? "where" Context=Assignment+,("," i:s?))?;
 
-Trigger ::= (Terminal=Quoted / "EOF" EOF=$true / NonTerminal=Id) (i:s "given" i:s Flag=Id)?;
+Trigger ::= (Terminal=Quoted / "EOF" EOF=$true / NonTerminal=Id) (i:s "upon" i:s Flag=Id)?;
 
 Reaction ::=
 	  PushReaction := "push" i:s Name=Id (i:s? "(" Args=Id+,"," ")")?
@@ -36,7 +36,7 @@ Reaction Operation ::=
 	/ PopStarAction   := "pop*"   i:s Name=Id
 	/ PopHashAction   := "pop#"   i:s Name=Id
 	/ AwaitAction     := "await"  i:s Name=Id (i:s? "with" i:s TmpContext=Id)?
-	/ AwaitAction     := "await"  i:s? "(" i:s? Name=Id i:s "given" i:s ExtraContext=Id i:s? ")" (i:s? "with" i:s TmpContext=Id)?
+	/ AwaitAction     := "await"  i:s? "(" i:s? Name=Id i:s "upon" i:s ExtraContext=Id i:s? ")" (i:s? "with" i:s TmpContext=Id)?
 	/ AwaitStarAction := "await*" i:s Name=Id (i:s? "with" i:s TmpContext=Id)?
 	/ TearAction      := "tear"   i:s Name=Id
 	;

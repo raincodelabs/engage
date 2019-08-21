@@ -27,19 +27,19 @@ handlers
 
     'dcl'               -> lift DCL
     'enddcl'            -> drop DCL
-    ';' given DCL       -> push Decl(v,t)
+    ';' upon DCL        -> push Decl(v,t)
                            where t := pop Type,
                                  v := pop Var
-    'integer' given DCL -> push Integer
-    'char'    given DCL -> push String(n)
-                           where x := await (Lit given BRACKET) with CHAR,
+    'integer' upon DCL  -> push Integer
+    'char'    upon DCL  -> push String(n)
+                           where x := await (Lit upon BRACKET) with CHAR,
                                  n := tear x
-    'dec'     given DCL -> push Decimal(n)
-                           where x := await (Lit given BRACKET) with DEC,
+    'dec'     upon DCL  -> push Decimal(n)
+                           where x := await (Lit upon BRACKET) with DEC,
                                  n := tear x
-    '(' given CHAR      -> lift BRACKET
-    '(' given DEC       -> lift BRACKET
-    '(' given HANDLER   -> lift BRACKET
+    '(' upon CHAR       -> lift BRACKET
+    '(' upon DEC        -> lift BRACKET
+    '(' upon HANDLER    -> lift BRACKET
     ')'                 -> drop BRACKET
 
     'clear'             -> push ClearStmt(view)
@@ -49,11 +49,11 @@ handlers
     % ----------------- begin DO ------------------------------------------------------------------------
     %'do'                -> push DoStmt(doFrom,doTo,doBy,doIndex,block1,doWhile,block2)
     %                       where ...
-    %'from' given DO     -> next Expr push 
+    %'from' upon DO      -> next Expr push 
     % -----------------  end  DO ------------------------------------------------------------------------
     'handler'           -> push HandlerStmt(obj,proc)
                            where obj  := await Var,
-                                 proc := await (Var given BRACKET) with HANDLER
+                                 proc := await (Var upon BRACKET) with HANDLER
     'if'                -> push IfStmt(cond,branch)
                            where cond   := await Expr with IF,
                                  branch := await* Stmt
@@ -68,4 +68,4 @@ handlers
                            where message := await Expr
     'return'            -> push ReturnStmt
 
-%    V given MAP         -> assert exists Decl(v,t) such that v == this
+%    V upon MAP         -> assert exists Decl(v,t) such that v == this
