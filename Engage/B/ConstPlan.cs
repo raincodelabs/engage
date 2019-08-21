@@ -8,6 +8,37 @@ namespace Engage.B
     {
         public List<Tuple<string, TypePlan>> Args = new List<Tuple<string, TypePlan>>();
 
+        internal void AddConstructorArguments(A.HandlerDecl h, string a, Func<string, B.TypePlan> getTypePlan)
+        {
+            A.Reaction c = h.GetContext(a);
+            if (c is A.PopAction pa)
+                Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(pa.Name)));
+            else if (c is A.PopStarAction psa)
+                Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(psa.Name).Copy(true)));
+            else if (c is A.PopHashAction pha)
+                Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(pha.Name).Copy(true)));
+            else if (c is A.AwaitAction aa)
+                Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(aa.Name)));
+            else if (c is A.AwaitStarAction asa)
+                Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(asa.Name).Copy(true)));
+            else if (c is A.TearAction ta)
+            {
+                int idx = -1;
+                for (int i = 0; i < h.Context.Count; i++)
+                    if (h.Context[i].LHS == a)
+                    {
+                        idx = i;
+                        break;
+                    }
+                idx--; // previous
+                if (idx < 0)
+                    Console.WriteLine($"the TEAR action must not be the first one");
+                Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(h.Context[idx].RHS.Name).FirstConstructor.Args[0].Item2));
+            }
+            else if (c == null && a == "this")
+                Args.Add(new Tuple<string, B.TypePlan>(a, new B.TypePlan(B.SystemPlan.TypeAliases[h.LHS.NonTerminal])));
+        }
+
         public string ToString(string name, string super)
         {
             string result = name;

@@ -10,6 +10,11 @@ namespace Engage.B
         public bool IsList = false;
         private List<ConstPlan> Constructors = new List<ConstPlan>();
 
+        public TypePlan(string name)
+        {
+            Name = name;
+        }
+
         public ConstPlan FirstConstructor
         {
             get => Constructors.Count > 0 ? Constructors[0] : null;
@@ -17,8 +22,7 @@ namespace Engage.B
 
         public TypePlan Copy(bool turnIntoList = false)
         {
-            TypePlan plan = new TypePlan();
-            plan.Name = Name;
+            TypePlan plan = new TypePlan(Name);
             plan.Super = Super;
             plan.IsList = IsList || turnIntoList;
             // do not copy constructors!

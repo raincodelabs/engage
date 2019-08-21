@@ -30,6 +30,24 @@ namespace Engage.B
         public static string Dealias(string name)
             => TypeAliases.ContainsKey(name) ? RealNames[TypeAliases[name]] : name;
 
+        internal void AddHandler(HandlerPlan hp)
+        {
+            string type = hp.ReactOn.Value;
+            foreach (var k in Tokens.Keys)
+                if (Tokens[k].Contains(hp.ReactOn))
+                    type = k;
+            if (String.IsNullOrEmpty(type))
+                Console.WriteLine($"[A2B] Cannot determine type of token '{hp.ReactOn.Value}'");
+            if (!Handlers.ContainsKey(type))
+                Handlers[type] = new List<B.HandlerPlan>();
+            Handlers[type].Add(hp);
+        }
+
+        internal void AddToken(string type, List<B.TokenPlan> ts)
+        {
+            Tokens[type] = ts;
+        }
+
         internal TypePlan GetTypePlan(string name)
         {
             if (Types.ContainsKey(name))
@@ -37,7 +55,7 @@ namespace Engage.B
             if (TypeAliases.ContainsKey(name))
                 return GetTypePlan(TypeAliases[name]);
             if (RealNames.ContainsKey(name))
-                return new TypePlan() { Name = RealNames[name] };
+                return new TypePlan(RealNames[name]);
             Console.WriteLine($"[ B ] Failed to get a type plan for '{name}'");
             return null;
         }
@@ -60,8 +78,7 @@ namespace Engage.B
                     Console.WriteLine($"[A2B] Cannot add type '{n}' the second time");
                 return;
             }
-            TypePlan tp = new TypePlan();
-            tp.Name = n;
+            TypePlan tp = new TypePlan(n);
             tp.Super = super;
             Console.WriteLine($"[A2B] Added type '{n}' to the plan");
             Types[tp.Name] = tp;

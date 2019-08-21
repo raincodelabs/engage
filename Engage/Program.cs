@@ -16,7 +16,7 @@ namespace Engage
             Console.WriteLine("Engage!");
             A.EngSpec spec = Parser.ParseEngSpec(File.ReadAllText(AppBuilderSpec));
             Console.WriteLine("A-level spec read!");
-            B.SystemPlan plan = IntermediateFactory.Ast2ir(spec);
+            B.SystemPlan plan = spec.MakePlan();
             Console.WriteLine("B-level plan made!");
             IEnumerable<C.CsClass> data = plan.GenerateDataClasses();
             Console.WriteLine("C-level abstract code for data classes generated!");

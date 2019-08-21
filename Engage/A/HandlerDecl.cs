@@ -51,5 +51,20 @@ namespace Engage.A
                 add(RHS.ToHandleAction());
             }
         }
+
+        internal B.HandlerPlan MakePlan()
+        {
+            B.HandlerPlan hp = new B.HandlerPlan();
+            if (LHS.EOF)
+                hp.ReactOn = new B.TokenPlan() { Special = true, Value = "EOF" };
+            else if (!(String.IsNullOrEmpty(LHS.NonTerminal)))
+                hp.ReactOn = new B.TokenPlan() { Special = true, Value = LHS.NonTerminal };
+            else
+                hp.ReactOn = new B.TokenPlan() { Special = false, Value = LHS.Terminal };
+            if (!String.IsNullOrEmpty(LHS.Flag))
+                hp.GuardFlag = LHS.Flag;
+            ProduceActions(hp.Recipe.Add);
+            return hp;
+        }
     }
 }
