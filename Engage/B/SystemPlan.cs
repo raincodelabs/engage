@@ -30,6 +30,18 @@ namespace Engage.B
         public static string Dealias(string name)
             => TypeAliases.ContainsKey(name) ? RealNames[TypeAliases[name]] : name;
 
+        internal void AddBoolFlag(string name)
+        {
+            if (!String.IsNullOrEmpty(name))
+                BoolFlags.Add(name);
+        }
+
+        internal void AddIntFlag(string name)
+        {
+            if (!String.IsNullOrEmpty(name))
+                IntFlags.Add(name);
+        }
+
         internal void AddHandler(HandlerPlan hp)
         {
             string type = hp.ReactOn.Value;
@@ -99,9 +111,9 @@ namespace Engage.B
             p.AddUsing("System");
             p.AddUsing("System.Collections.Generic");
             if (BoolFlags.Count > 0)
-                p.AddField(String.Join(", ", BoolFlags), "bool", isPublic: false);
+                p.AddField(String.Join(", ", BoolFlags.OrderBy(x => x)), "bool", isPublic: false);
             if (IntFlags.Count > 0)
-                p.AddField(String.Join(", ", IntFlags), "int", isPublic: false);
+                p.AddField(String.Join(", ", IntFlags.OrderBy(x => x)), "int", isPublic: false);
             // token types
             var tt = new C.CsEnum();
             tt.IsPublic = false;

@@ -1,4 +1,5 @@
 ﻿using Engage.C;
+using System;
 using System.Collections.Generic;
 
 namespace Engage.B
@@ -18,6 +19,15 @@ namespace Engage.B
         public ConstPlan FirstConstructor
         {
             get => Constructors.Count > 0 ? Constructors[0] : null;
+        }
+
+        public void InferConstructor(IEnumerable<string> args, A.HandlerDecl h, Func<string, B.TypePlan> getTypePlan)
+        {
+            B.ConstPlan cp = new B.ConstPlan();
+            foreach (string a in args)
+                cp.AddConstructorArguments(h, a, getTypePlan);
+            AddConstructor(cp);
+            Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(Name, Super)}");
         }
 
         public TypePlan Copy(bool turnIntoList = false)

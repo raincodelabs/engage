@@ -1,4 +1,6 @@
-﻿namespace Engage.A
+﻿using System.Collections.Generic;
+
+namespace Engage.A
 {
     public partial class AwaitAction : Reaction
     {
@@ -11,5 +13,8 @@
             a.BaseAction = prev;
             return a;
         }
+
+        internal override IEnumerable<string> GetFlags()
+            => new List<string>() { TmpContext, ExtraContext };
     }
 }

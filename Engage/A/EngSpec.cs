@@ -6,12 +6,12 @@ namespace Engage.A
 {
     public partial class EngSpec
     {
-        public string NS;
-        public List<TypeDecl> Types = new List<TypeDecl>();
-        public List<TokenDecl> Tokens = new List<TokenDecl>();
-        public List<HandlerDecl> Handlers = new List<HandlerDecl>();
+        internal string NS;
+        internal List<TypeDecl> Types = new List<TypeDecl>();
+        internal List<TokenDecl> Tokens = new List<TokenDecl>();
+        internal List<HandlerDecl> Handlers = new List<HandlerDecl>();
 
-        public B.SystemPlan MakePlan()
+        internal B.SystemPlan MakePlan()
         {
             B.SystemPlan output = new B.SystemPlan(NS);
             InferTokens(output);
@@ -38,56 +38,38 @@ namespace Engage.A
                     if (tok.Special)
                         B.SystemPlan.TypeAliases[t] = tok.Value;
             }
-            foreach (var t in Types)
+            foreach (A.TypeDecl t in Types)
             {
                 foreach (var n in t.Names)
                     plan.AddType(n, t.Super);
                 plan.AddType(t.Super, null, silent: true);
             }
-            foreach (var h in Handlers)
+            foreach (A.HandlerDecl h in Handlers)
                 if (h.RHS is A.PushReaction pr)
                 {
                     if (plan.HasType(pr.Name))
-                    {
-                        var tp = plan.GetTypePlan(pr.Name);
-                        var cp = new B.ConstPlan();
-                        foreach (string a in pr.Args)
-                            cp.AddConstructorArguments(h, a, plan.GetTypePlan);
-                        tp.AddConstructor(cp);
-                        Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(pr.Name, tp.Super)}");
-                    }
+                        plan.GetTypePlan(pr.Name).InferConstructor(pr.Args, h, plan.GetTypePlan);
+                    else
+                        Console.WriteLine($"[A2B] Unknown pushed type '{pr.Name}'");
                 }
                 else if (h.RHS is A.WrapReaction wr)
                 {
                     if (plan.HasType(wr.Name))
-                    {
-                        var tp = plan.GetTypePlan(wr.Name);
-                        var cp = new B.ConstPlan();
-                        foreach (var a in wr.Args)
-                            cp.AddConstructorArguments(h, a, plan.GetTypePlan);
-                        tp.AddConstructor(cp);
-                        Console.WriteLine($"[A2B] Inferred constructor {cp.ToString(wr.Name, tp.Super)}");
-                    }
+                        plan.GetTypePlan(wr.Name).InferConstructor(wr.Args, h, plan.GetTypePlan);
+                    else
+                        Console.WriteLine($"[A2B] Unknown wrapped type '{wr.Name}'");
                 }
         }
 
         private void InferFlags(B.SystemPlan plan)
         {
-            foreach (HandlerDecl h in Handlers)
+            foreach (A.HandlerDecl h in Handlers)
             {
-                if (h.RHS is A.LiftReaction lr)
-                    plan.BoolFlags.Add(lr.Flag);
-                else if (h.RHS is A.DropReaction dr)
-                    plan.BoolFlags.Add(dr.Flag);
-
+                foreach (var flag in h.RHS.GetFlags())
+                    plan.AddBoolFlag(flag);
                 foreach (var a in h.Context)
-                    if (a.RHS is A.AwaitAction aa)
-                    {
-                        if (!String.IsNullOrEmpty(aa.ExtraContext))
-                            plan.BoolFlags.Add(aa.ExtraContext);
-                        if (!String.IsNullOrEmpty(aa.TmpContext))
-                            plan.BoolFlags.Add(aa.TmpContext);
-                    }
+                    foreach (var flag in a.RHS.GetFlags())
+                        plan.AddBoolFlag(flag);
             }
             foreach (string f in plan.BoolFlags.Distinct().ToArray())
                 if (f.EndsWith('#'))

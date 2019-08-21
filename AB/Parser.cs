@@ -17,7 +17,7 @@ namespace AB
             TId,
         }
 
-        private bool DCL, BRACKET, CHAR, DEC, CONVERSE, HANDLER, IF, MAP, OVERLAY;
+        private bool BRACKET, CHAR, CONVERSE, DCL, DEC, HANDLER, IF, MAP, OVERLAY;
 
         public Parser(string _input) : base(_input)
         {
