@@ -6,7 +6,7 @@ namespace Engage.B
 {
     public class ConstPlan
     {
-        public List<Tuple<string, TypePlan>> Args = new List<Tuple<string, TypePlan>>();
+        private List<Tuple<string, TypePlan>> Args = new List<Tuple<string, TypePlan>>();
 
         internal void AddConstructorArguments(A.HandlerDecl h, string a, Func<string, B.TypePlan> getTypePlan)
         {
@@ -36,7 +36,26 @@ namespace Engage.B
                 Args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(h.Context[idx].RHS.Name).FirstConstructor.Args[0].Item2));
             }
             else if (c == null && a == "this")
-                Args.Add(new Tuple<string, B.TypePlan>(a, new B.TypePlan(B.SystemPlan.TypeAliases[h.LHS.NonTerminal])));
+                Args.Add(new Tuple<string, B.TypePlan>(a, new B.TypePlan(B.SystemPlan.Unalias(h.LHS.NonTerminal))));
+        }
+
+        internal void AddAbstractCodeConstructor(C.CsClass c1ass)
+        {
+            var cc = new C.CsConstructor();
+            foreach (var a in Args)
+            {
+                var name = a.Item1;
+                if (name == "this")
+                    name = "value";
+                var type = a.Item2.ToString();
+                if (SystemPlan.RealNames.ContainsKey(type))
+                    type = SystemPlan.RealNames[type];
+                if (type == "number")
+                    ;
+                c1ass.AddField(name, type);
+                cc.AddArgument(name, type);
+            }
+            c1ass.AddConstructor(cc);
         }
 
         public string ToString(string name, string super)

@@ -5,7 +5,7 @@ namespace Engage.D
     public class CsEnum : CsTop
     {
         public bool IsPublic = true;
-        public List<string> Values = new List<string>();
+        private List<string> Values = new List<string>();
 
         public CsEnum(string name, bool isPublic, List<string> values)
         {
@@ -22,5 +22,11 @@ namespace Engage.D
                 lines.Add(level + 1, v + ",");
             lines.Close(level);
         }
+
+        internal void Add(string v)
+            => Values.Add(v);
+
+        internal void Add(IEnumerable<string> vs)
+            => Values.AddRange(vs);
     }
 }

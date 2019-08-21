@@ -34,7 +34,7 @@ namespace Engage.C
             var lambda = new D.CsComplexStmt();
             lambda.Before = $"Schedule(typeof({Type}), {Var} =>";
             lambda.After = ");";
-            lambda.Code.AddRange(Code.Select(x => x.Concretize()));
+            lambda.AddCode(Code.Select(x => x.Concretize()));
             return lambda;
         }
     }

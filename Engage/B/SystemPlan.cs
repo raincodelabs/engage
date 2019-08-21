@@ -16,11 +16,11 @@ namespace Engage.B
         public string NS;
         public string TopType;
         private Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
-        public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>();
-        public HashSet<string> BoolFlags = new HashSet<string>();
-        public HashSet<string> IntFlags = new HashSet<string>();
-        public Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
-        public Dictionary<string, List<HandlerPlan>> Handlers = new Dictionary<string, List<HandlerPlan>>();
+        private static Dictionary<string, string> TypeAliases = new Dictionary<string, string>();
+        private HashSet<string> BoolFlags = new HashSet<string>();
+        private HashSet<string> IntFlags = new HashSet<string>();
+        private Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
+        private Dictionary<string, List<HandlerPlan>> Handlers = new Dictionary<string, List<HandlerPlan>>();
 
         public SystemPlan(string ns)
         {
@@ -29,6 +29,9 @@ namespace Engage.B
 
         public static string Dealias(string name)
             => TypeAliases.ContainsKey(name) ? RealNames[TypeAliases[name]] : name;
+
+        public static string Unalias(string name)
+            => TypeAliases.ContainsKey(name) ? TypeAliases[name] : name;
 
         internal void AddBoolFlag(string name)
         {
@@ -41,6 +44,22 @@ namespace Engage.B
             if (!String.IsNullOrEmpty(name))
                 IntFlags.Add(name);
         }
+
+        internal void NormaliseFlags()
+        {
+            foreach (string f in BoolFlags.Distinct().ToArray())
+                if (f.EndsWith('#'))
+                {
+                    IntFlags.Add(f.Substring(0, f.Length - 1));
+                    BoolFlags.Remove(f);
+                }
+        }
+
+        internal string AllBoolFlags()
+            => String.Join(", ", BoolFlags);
+
+        internal string AllIntFlags()
+            => String.Join(", ", IntFlags);
 
         internal void AddHandler(HandlerPlan hp)
         {
@@ -96,6 +115,18 @@ namespace Engage.B
             Types[tp.Name] = tp;
         }
 
+        internal void InferTypeAliases()
+        {
+            foreach (var t in Tokens.Keys)
+            {
+                if (t == "mark" || t == "skip" || t == "word")
+                    continue;
+                foreach (B.TokenPlan tok in Tokens[t])
+                    if (tok.Special)
+                        TypeAliases[t] = tok.Value;
+            }
+        }
+
         public IEnumerable<C.CsClass> GenerateDataClasses()
             => Types.Values
                 .Where(t => !t.IsList)
@@ -118,9 +149,9 @@ namespace Engage.B
             var tt = new C.CsEnum();
             tt.IsPublic = false;
             tt.Name = "TokenType";
-            tt.Values.Add("TUndefined");
-            tt.Values.Add("TEOF");
-            tt.Values.AddRange(Tokens.Keys.Where(t => t != "skip").Select(t => "T" + t));
+            tt.Add("TUndefined");
+            tt.Add("TEOF");
+            tt.Add(Tokens.Keys.Where(t => t != "skip").Select(t => "T" + t));
             p.AddInner(tt);
             // parser constructor
             var pc = new C.CsConstructor();
@@ -155,13 +186,7 @@ namespace Engage.B
                     branchType.Add(new C.SimpleStmt("Flush()"));
                 if (Handlers[hpk].Count == 1)
                 {
-                    foreach (var action in Handlers[hpk][0].Recipe)
-                    {
-                        if (action != null)
-                            action.GenerateAbstractCode(branchType);
-                        else
-                            Console.WriteLine($"[IR] Warning: no action to handle '{hpk}'/{Handlers[hpk][0].ReactOn.Value}");
-                    }
+                    Handlers[hpk][0].GenerateAbstractCode(branchType);
                 }
                 else
                 {
@@ -176,7 +201,7 @@ namespace Engage.B
                         if (!resortedHandlers.ContainsKey(hp.ReactOn))
                             resortedHandlers[hp.ReactOn] = new Tuple<List<string>, List<List<HandleAction>>>(new List<string>(), new List<List<HandleAction>>());
                         resortedHandlers[hp.ReactOn].Item1.Add(hp.GuardFlag);
-                        resortedHandlers[hp.ReactOn].Item2.Add(hp.Recipe);
+                        hp.AddRecipeTo(resortedHandlers[hp.ReactOn].Item2);
                     }
                     List<TokenPlan> resortedKeys = resortedHandlers.Keys.ToList();
                     resortedKeys.Sort((x, y) => y.Value.Length - x.Value.Length);
@@ -236,17 +261,14 @@ namespace Engage.B
         private string PossiblyWrap(string v, string key)
         {
             foreach (var t in TypeAliases.Keys)
-                if (TypeAliases[t] == key)
+                if (TypeAliases[t] == key && Handlers.ContainsKey(t))
                 {
-                    if (Handlers.ContainsKey(t))
-                    {
-                        // NB: there can be only one
-                        var x = Handlers[t][0].Recipe[0];
-                        if (x is PushNew px)
-                            return $"new {px.Name}({v})";
-                        else
-                            Console.WriteLine("[B2C] some unsupported functionality found");
-                    }
+                    // NB: there can be only one
+                    var x = Handlers[t][0].IsPushFirst();
+                    if (String.IsNullOrEmpty(x))
+                        Console.WriteLine("[B2C] some unsupported functionality found");
+                    else
+                        return $"new {x}({v})";
                 }
             return v;
         }

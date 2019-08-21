@@ -51,30 +51,14 @@ namespace Engage.B
                 Constructors.Add(cp);
         }
 
-        internal CsClass GenerateClass(string ns)
+        internal C.CsClass GenerateClass(string ns)
         {
-            var result = new CsClass();
+            var result = new C.CsClass();
             result.NS = ns;
             result.Name = Name;
             result.Super = Super;
-            foreach (var c in Constructors)
-            {
-                var cc = new CsConstructor();
-                foreach (var a in c.Args)
-                {
-                    var name = a.Item1;
-                    if (name == "this")
-                        name = "value";
-                    var type = a.Item2.ToString();
-                    if (SystemPlan.RealNames.ContainsKey(type))
-                        type = SystemPlan.RealNames[type];
-                    if (type == "number")
-                        ;
-                    result.AddField(name, type);
-                    cc.AddArgument(name, type);
-                }
-                result.AddConstructor(cc);
-            }
+            foreach (B.ConstPlan c in Constructors)
+                c.AddAbstractCodeConstructor(result);
             return result;
         }
     }

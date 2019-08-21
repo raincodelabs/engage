@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Engage.A
 {
-    public partial class EngSpec
+    public class EngSpec
     {
         internal string NS;
         internal List<TypeDecl> Types = new List<TypeDecl>();
@@ -30,14 +30,7 @@ namespace Engage.A
 
         private void InferTypes(B.SystemPlan plan)
         {
-            foreach (var t in plan.Tokens.Keys)
-            {
-                if (t == "mark" || t == "skip" || t == "word")
-                    continue;
-                foreach (B.TokenPlan tok in plan.Tokens[t])
-                    if (tok.Special)
-                        B.SystemPlan.TypeAliases[t] = tok.Value;
-            }
+            plan.InferTypeAliases();
             foreach (A.TypeDecl t in Types)
             {
                 foreach (var n in t.Names)
@@ -71,14 +64,9 @@ namespace Engage.A
                     foreach (var flag in a.RHS.GetFlags())
                         plan.AddBoolFlag(flag);
             }
-            foreach (string f in plan.BoolFlags.Distinct().ToArray())
-                if (f.EndsWith('#'))
-                {
-                    plan.IntFlags.Add(f.Substring(0, f.Length - 1));
-                    plan.BoolFlags.Remove(f);
-                }
+            plan.NormaliseFlags();
 
-            Console.WriteLine($"[A2B] Inferred flags: Boolean {String.Join(", ", plan.BoolFlags)}; counter {String.Join(", ", plan.IntFlags)}");
+            Console.WriteLine($"[A2B] Inferred flags: Boolean {plan.AllBoolFlags()}; counter {plan.AllIntFlags()}");
         }
     }
 }

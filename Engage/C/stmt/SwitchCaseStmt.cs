@@ -22,7 +22,7 @@ namespace Engage.C
                 var case2 = new D.CsComplexStmt();
                 case2.Embrace = false; // no curlies
                 case2.Before = $"case {case1}:";
-                case2.Code.AddRange(Branches[case1].Select(x => x.Concretize()));
+                case2.AddCode(Branches[case1].Select(x => x.Concretize()));
                 case2.AddCode("break");
                 switch1.AddCode(case2);
             }
@@ -32,7 +32,7 @@ namespace Engage.C
                 var case3 = new D.CsComplexStmt();
                 case3.Embrace = false; // no curlies
                 case3.Before = "default:";
-                case3.Code.AddRange(DefaultBranch.Select(x => x.Concretize()));
+                case3.AddCode(DefaultBranch.Select(x => x.Concretize()));
                 case3.AddCode("break");
                 switch1.AddCode(case3);
             }

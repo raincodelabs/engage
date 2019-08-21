@@ -17,6 +17,21 @@ namespace Engage.A
             return null;
         }
 
+        internal B.HandlerPlan MakePlan()
+        {
+            B.HandlerPlan hp = new B.HandlerPlan();
+            if (LHS.EOF)
+                hp.ReactOn = B.TokenPlan.EOF();
+            else if (!(String.IsNullOrEmpty(LHS.NonTerminal)))
+                hp.ReactOn = B.TokenPlan.FromNT(LHS.NonTerminal);
+            else
+                hp.ReactOn = B.TokenPlan.FromT(LHS.Terminal);
+            if (!String.IsNullOrEmpty(LHS.Flag))
+                hp.GuardFlag = LHS.Flag;
+            ProduceActions(hp.AddAction);
+            return hp;
+        }
+
         internal void ProduceActions(Action<B.HandleAction> add)
         {
             if (Context.Count > 0 && (Context[0].RHS is A.AwaitAction || Context[0].RHS is A.AwaitStarAction || Context[0].RHS is A.PopHashAction))
@@ -28,9 +43,9 @@ namespace Engage.A
                     limit--;
                     tear = Context[Context.Count - 1].RHS.ToHandleAction();
                 }
-                
+
                 // Asynchronously: schedule parsing
-                B.HandleAction act = RHS.ToHandleAction(prev:tear);
+                B.HandleAction act = RHS.ToHandleAction(prev: tear);
                 for (int i = limit; i >= 0; i--)
                     act = Context[i].RHS.ToHandleAction(Context[i].LHS, act);
                 // add *one* action!
@@ -50,21 +65,6 @@ namespace Engage.A
                     add(ass.RHS.ToHandleAction(ass.LHS));
                 add(RHS.ToHandleAction());
             }
-        }
-
-        internal B.HandlerPlan MakePlan()
-        {
-            B.HandlerPlan hp = new B.HandlerPlan();
-            if (LHS.EOF)
-                hp.ReactOn = new B.TokenPlan() { Special = true, Value = "EOF" };
-            else if (!(String.IsNullOrEmpty(LHS.NonTerminal)))
-                hp.ReactOn = new B.TokenPlan() { Special = true, Value = LHS.NonTerminal };
-            else
-                hp.ReactOn = new B.TokenPlan() { Special = false, Value = LHS.Terminal };
-            if (!String.IsNullOrEmpty(LHS.Flag))
-                hp.GuardFlag = LHS.Flag;
-            ProduceActions(hp.Recipe.Add);
-            return hp;
         }
     }
 }

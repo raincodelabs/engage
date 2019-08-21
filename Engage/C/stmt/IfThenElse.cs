@@ -122,7 +122,7 @@ namespace Engage.C
             {
                 var if1 = new D.CsComplexStmt();
                 if1.Before = $"{kw} ({cond})";
-                if1.Code.AddRange(ThenBranches[cond].Select(x => x.Concretize()));
+                if1.AddCode(ThenBranches[cond].Select(x => x.Concretize()));
                 result.Stmts.Add(if1);
                 kw = "else if";
             }
@@ -130,7 +130,7 @@ namespace Engage.C
             {
                 var if2 = new D.CsComplexStmt();
                 if2.Before = "else";
-                if2.Code.AddRange(ElseBranch.Select(x => x.Concretize()));
+                if2.AddCode(ElseBranch.Select(x => x.Concretize()));
                 result.Stmts.Add(if2);
             }
             return result;

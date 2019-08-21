@@ -1,8 +1,8 @@
 ﻿namespace Engage.A
 {
-    public partial class Assignment
+    public class Assignment
     {
-        public string LHS;
-        public Reaction RHS;
+        internal string LHS;
+        internal Reaction RHS;
     }
 }

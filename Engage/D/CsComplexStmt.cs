@@ -6,7 +6,7 @@ namespace Engage.D
     public class CsComplexStmt : CsStmt
     {
         public string Before, After;
-        public List<CsStmt> Code = new List<CsStmt>();
+        private List<CsStmt> Code = new List<CsStmt>();
         public bool Embrace = true;
 
         public CsComplexStmt()
@@ -40,6 +40,9 @@ namespace Engage.D
 
         public void AddCode(CsStmt stmt)
             => Code.Add(stmt);
+
+        public void AddCode(IEnumerable<CsStmt> stmts)
+            => Code.AddRange(stmts);
 
         public override void GenerateCode(List<string> lines, int level)
         {
