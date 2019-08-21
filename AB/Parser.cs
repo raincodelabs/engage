@@ -17,7 +17,7 @@ namespace AB
             TId,
         }
 
-        private bool DCL, BRACKET, CHAR, CONVERSE, HANDLER, IF, MAP, OVERLAY;
+        private bool DCL, BRACKET, CHAR, DEC, CONVERSE, HANDLER, IF, MAP, OVERLAY;
 
         public Parser(string _input) : base(_input)
         {
@@ -144,11 +144,11 @@ namespace AB
                             case "dec":
                                 if (DCL)
                                 {
-                                    CHAR = true;
+                                    DEC = true;
                                     Schedule(typeof(Lit), _x =>
                                     {
                                         var x = _x as Lit;
-                                        CHAR = false;
+                                        DEC = false;
                                         if (!BRACKET)
                                             return Message.Misfire;
                                         Push(new Decimal(x.value));
@@ -233,10 +233,12 @@ namespace AB
                             case '(':
                                 if (CHAR)
                                     BRACKET = true;
+                                else if (DEC)
+                                    BRACKET = true;
                                 else if (HANDLER)
                                     BRACKET = true;
                                 else
-                                    ERROR = "neither of the flags CHAR, HANDLER are lifted when expected";
+                                    ERROR = "neither of the flags CHAR, DEC, HANDLER are lifted when expected";
                                 break;
                             case ')':
                                 BRACKET = false;
