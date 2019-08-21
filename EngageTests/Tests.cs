@@ -673,7 +673,7 @@ namespace EngageTests
         // NB: there are so many tests that we run them fewer times like with exp ones
         [TestMethod]
         public void CompareParsersOnMix()
-            => CompareParametrically(RunsToAverage, RunsSkip, "mix", LimitMixedTestsEach, "x", LimitMixedTestsRep);
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "mix", LimitMixedTestsEach, "x", LimitMixedTestsRep);
 
         [TestMethod]
         public void CompareParsersOnStack()
