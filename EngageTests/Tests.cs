@@ -10,10 +10,17 @@ namespace EngageTests
     [TestClass]
     public class Tests
     {
+#if Windows
         private const string AppBuilderSpec = @"..\..\..\..\example\appbuilder.eng";
         private const string AppBuilderRule = @"..\..\..\..\example\simple.ab";
         private const string AppBuilderCode = @"..\..\..\..\tests";
         private const string AppBuilderLog = @"..\..\..\..\";
+#else
+        private const string AppBuilderSpec = @"../../../../example/appbuilder.eng";
+        private const string AppBuilderRule = @"../../../../example/simple.ab";
+        private const string AppBuilderCode = @"../../../../tests";
+        private const string AppBuilderLog = @"../../../../";
+#endif
 
         private const int LimitNormal = 1001;
         private const int LimitLongTests = LimitNormal;
