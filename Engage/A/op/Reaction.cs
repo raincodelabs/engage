@@ -4,7 +4,7 @@ namespace Engage.A
 {
     public class Reaction
     {
-        internal string Name;
+		public string Name;
 
         public virtual B.HandleAction ToHandleAction(string target = "", B.HandleAction prev = null)
             => null;

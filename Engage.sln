@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EngageRuntime", "EngageRunt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIALAA", "TIALAA\TIALAA.csproj", "{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "takmela-lexer", "takmela-lexer\takmela-lexer.csproj", "{2533E6AE-B741-43F7-8678-10B7AC5BA558}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B85AB655-E3DB-463E-B6CB-01ABA20ECA25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2533E6AE-B741-43F7-8678-10B7AC5BA558}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2533E6AE-B741-43F7-8678-10B7AC5BA558}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2533E6AE-B741-43F7-8678-10B7AC5BA558}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2533E6AE-B741-43F7-8678-10B7AC5BA558}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

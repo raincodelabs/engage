@@ -48,7 +48,7 @@ namespace Engage.B
         internal void NormaliseFlags()
         {
             foreach (string f in BoolFlags.Distinct().ToArray())
-                if (f.EndsWith('#'))
+                if (f.EndsWith("#"))
                 {
                     IntFlags.Add(f.Substring(0, f.Length - 1));
                     BoolFlags.Remove(f);

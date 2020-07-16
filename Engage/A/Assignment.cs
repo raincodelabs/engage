@@ -2,7 +2,7 @@
 {
     public class Assignment
     {
-        internal string LHS;
-        internal Reaction RHS;
+		public string LHS;
+		public Reaction RHS;
     }
 }

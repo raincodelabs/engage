@@ -14,7 +14,7 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            if (Flag.EndsWith('#'))
+            if (Flag.EndsWith("#"))
                 code.Add(new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
             else
                 code.Add(new C.SimpleStmt($"{Flag} = true"));
@@ -27,7 +27,7 @@ namespace Engage.B
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            if (Flag.EndsWith('#'))
+            if (Flag.EndsWith("#"))
                 code.Add(new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
             else
                 code.Add(new C.SimpleStmt($"{Flag} = false"));
