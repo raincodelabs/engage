@@ -7,7 +7,11 @@ namespace AB
 {
     internal class Program
     {
+#if Windows
         private const string TestPath = @"..\..\..\..\tests\";
+#else
+        private const string TestPath = @"../../../../tests/";
+#endif
 
         private const int LimitNormal = 1001;
         private const int LimitLongTests = LimitNormal;

@@ -8,8 +8,13 @@ namespace Engage
 {
     internal class Program
     {
+#if Windows
         private const string AppBuilderSpec = @"..\..\..\..\example\appbuilder.eng";
         private const string Output = @"..\..\..\..\AB";
+#else
+        private const string AppBuilderSpec = @"../../../../example/appbuilder.eng";
+        private const string Output = @"../../../../AB";
+#endif
 
         private static void Main(string[] args)
         {
@@ -29,7 +34,7 @@ namespace Engage
             Console.WriteLine("D-level abstract code for the parser generated!");
 
             foreach (D.CsClass cs in css)
-                File.WriteAllLines(Path.Combine(Output, $"ast\\{cs.Name}.cs"), cs.GenerateFileCode());
+                File.WriteAllLines(Path.Combine(Path.Combine(Output, "ast"), $"{cs.Name}.cs"), cs.GenerateFileCode());
             File.WriteAllLines(Path.Combine(Output, "Parser.cs"), dp.GenerateFileCode());
             Console.WriteLine("Final code generated and saved!");
         }
