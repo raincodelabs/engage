@@ -6,7 +6,7 @@ namespace Engage.D
     public class CsComplexStmt : CsStmt
     {
         public string Before, After;
-        private List<CsStmt> Code = new List<CsStmt>();
+        private readonly List<CsStmt> _code = new List<CsStmt>();
         public bool Embrace = true;
 
         public CsComplexStmt()
@@ -16,7 +16,7 @@ namespace Engage.D
         public CsComplexStmt(string before, CsStmt code, string after = "")
         {
             Before = before;
-            Code.Add(code);
+            _code.Add(code);
             After = after;
         }
 
@@ -28,7 +28,7 @@ namespace Engage.D
         public CsComplexStmt(string before, IEnumerable<CsStmt> code, string after)
         {
             Before = before;
-            Code.AddRange(code);
+            _code.AddRange(code);
             After = after;
         }
 
@@ -39,27 +39,25 @@ namespace Engage.D
             => AddCode(new CsComplexStmt(cond, line));
 
         public void AddCode(CsStmt stmt)
-            => Code.Add(stmt);
+            => _code.Add(stmt);
 
         public void AddCode(IEnumerable<CsStmt> stmts)
-            => Code.AddRange(stmts);
+            => _code.AddRange(stmts);
 
         public override void GenerateCode(List<string> lines, int level)
         {
             if (!String.IsNullOrEmpty(Before))
                 lines.Add(level, Before);
-            if (Embrace && Code.Count > 1)
+            if (Embrace && _code.Count > 1)
                 lines.Open(level);
-            foreach (var stmt in Code)
+            foreach (var stmt in _code)
                 stmt.GenerateCode(lines, level + 1);
-            if (Embrace && Code.Count > 1)
+            if (Embrace && _code.Count > 1)
                 lines.Close(level);
-            if (!String.IsNullOrEmpty(After))
-            {
-                if (!After.EndsWith(";"))
-                    After += ";";
-                lines.Add(level, After);
-            }
+            if (String.IsNullOrEmpty(After)) return;
+            if (!After.EndsWith(";"))
+                After += ";";
+            lines.Add(level, After);
         }
     }
 }

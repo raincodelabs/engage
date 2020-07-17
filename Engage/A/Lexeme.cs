@@ -1,20 +1,20 @@
 ﻿namespace Engage.A
 {
-    public partial class Lexeme
+    public class Lexeme
     {
         public bool Special;
     }
 
-    public partial class LiteralLex : Lexeme
+    public class LiteralLex : Lexeme
     {
         public string Literal;
     }
 
-    public partial class NumberLex : Lexeme
+    public class NumberLex : Lexeme
     {
     }
 
-    public partial class StringLex : Lexeme
+    public class StringLex : Lexeme
     {
     }
 }

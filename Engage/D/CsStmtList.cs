@@ -6,17 +6,19 @@ namespace Engage.D
 {
     public class CsStmtList : CsStmt
     {
-        public List<CsStmt> Stmts = new List<CsStmt>();
+        private readonly List<CsStmt> Stmts = new List<CsStmt>();
 
         public CsStmtList()
         {
-
         }
 
         public CsStmtList(IEnumerable<CsStmt> stmts)
         {
             Stmts.AddRange(stmts);
         }
+
+        public void AddStmt(CsStmt stmt)
+            => Stmts.Add(stmt);
 
         public override void GenerateCode(List<string> lines, int level)
         {

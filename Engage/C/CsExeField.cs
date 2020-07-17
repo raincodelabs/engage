@@ -6,8 +6,8 @@ namespace Engage.C
     public abstract class CsExeField
     {
         public bool IsPublic = true;
-        protected List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
-        protected List<CsStmt> Code = new List<CsStmt>();
+        protected readonly List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
+        protected readonly List<CsStmt> Code = new List<CsStmt>();
 
         public abstract D.CsExeField Concretize();
 

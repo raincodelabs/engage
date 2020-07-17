@@ -7,7 +7,7 @@ namespace Engage.C
     {
         public string Condition;
         public bool Reversed = false;
-        public List<CsStmt> Code = new List<CsStmt>();
+        public readonly List<CsStmt> Code = new List<CsStmt>();
 
         public WhileStmt()
         {

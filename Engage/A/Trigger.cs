@@ -1,6 +1,6 @@
 ﻿namespace Engage.A
 {
-    public partial class Trigger
+    public class Trigger
     {
         public string Terminal = "";
         public string NonTerminal = ""; // unused as of now

@@ -6,8 +6,8 @@ namespace Engage.C
     public class SwitchCaseStmt : CsStmt
     {
         public string Expression;
-        public Dictionary<string, List<CsStmt>> Branches = new Dictionary<string, List<CsStmt>>();
-        public List<CsStmt> DefaultBranch = new List<CsStmt>();
+        public readonly Dictionary<string, List<CsStmt>> Branches = new Dictionary<string, List<CsStmt>>();
+        public readonly List<CsStmt> DefaultBranch = new List<CsStmt>();
 
         public override D.CsStmt Concretize()
         {
@@ -19,23 +19,28 @@ namespace Engage.C
 
             foreach (var case1 in cases)
             {
-                var case2 = new D.CsComplexStmt();
-                case2.Embrace = false; // no curlies
-                case2.Before = $"case {case1}:";
+                var case2 = new D.CsComplexStmt
+                {
+                    Embrace = false,
+                    Before = $"case {case1}:"
+                };
+                // no curlies
                 case2.AddCode(Branches[case1].Select(x => x.Concretize()));
                 case2.AddCode("break");
                 switch1.AddCode(case2);
             }
             // default
-            if (DefaultBranch.Count > 1)
+            if (DefaultBranch.Count <= 1) return switch1;
+            
+            var case3 = new D.CsComplexStmt
             {
-                var case3 = new D.CsComplexStmt();
-                case3.Embrace = false; // no curlies
-                case3.Before = "default:";
-                case3.AddCode(DefaultBranch.Select(x => x.Concretize()));
-                case3.AddCode("break");
-                switch1.AddCode(case3);
-            }
+                Embrace = false,
+                Before = "default:"
+            };
+            // no curlies
+            case3.AddCode(DefaultBranch.Select(x => x.Concretize()));
+            case3.AddCode("break");
+            switch1.AddCode(case3);
 
             return switch1;
         }

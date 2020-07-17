@@ -2,7 +2,7 @@
 
 namespace Engage.A
 {
-    public partial class WrapReaction : Reaction
+    public class WrapReaction : Reaction
     {
         public List<string> Args = new List<string>();
 

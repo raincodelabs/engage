@@ -2,14 +2,14 @@
 
 namespace Engage.A
 {
-    public partial class TokenDecl
+    public class TokenDecl
     {
         public List<Lexeme> Names = new List<Lexeme>();
         public string Type;
 
         internal List<B.TokenPlan> MakePlans()
         {
-            List<B.TokenPlan> ts = new List<B.TokenPlan>();
+            var ts = new List<B.TokenPlan>();
             foreach (var a in Names)
                 if (a is A.NumberLex)
                     ts.Add(new B.TokenPlan() { Special = true, Value = "number" });

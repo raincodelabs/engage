@@ -13,12 +13,9 @@ namespace Engage.B
         public string Flag;
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
-        {
-            if (Flag.EndsWith("#"))
-                code.Add(new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++"));
-            else
-                code.Add(new C.SimpleStmt($"{Flag} = true"));
-        }
+            => code.Add(Flag.EndsWith("#")
+                ? new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}++")
+                : new C.SimpleStmt($"{Flag} = true"));
     }
 
     public class DropFlag : HandleAction
@@ -26,12 +23,9 @@ namespace Engage.B
         public string Flag;
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
-        {
-            if (Flag.EndsWith("#"))
-                code.Add(new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--"));
-            else
-                code.Add(new C.SimpleStmt($"{Flag} = false"));
-        }
+            => code.Add(Flag.EndsWith("#")
+                ? new C.SimpleStmt($"{Flag.Substring(0, Flag.Length - 1)}--")
+                : new C.SimpleStmt($"{Flag} = false"));
     }
 
     public class TrimStream : HandleAction
@@ -48,7 +42,7 @@ namespace Engage.B
     public class PushNew : HandleAction
     {
         public string Name;
-        public List<string> Args = new List<string>();
+        public readonly List<string> Args = new List<string>();
         public string Tearing;
 
         public PushNew()
@@ -63,12 +57,9 @@ namespace Engage.B
         }
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
-        {
-            if (String.IsNullOrEmpty(Tearing))
-                code.Add(new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))"));
-            else
-                code.Add(new C.SimpleStmt($"Push(new {Name}({Tearing}))"));
-        }
+            => code.Add(String.IsNullOrEmpty(Tearing)
+                ? new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))")
+                : new C.SimpleStmt($"Push(new {Name}({Tearing}))"));
     }
 
     public class PopOne : HandleAction
@@ -127,7 +118,7 @@ namespace Engage.B
         public string Name;
         public string Target;
 
-        public List<HandleAction> SiblingActions = new List<HandleAction>();
+        public readonly List<HandleAction> SiblingActions = new List<HandleAction>();
 
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
@@ -137,13 +128,12 @@ namespace Engage.B
                 if (sa is PopSeveral ps)
                     ps.GenerateInitialisationCode(code);
 
-            var loop = new C.WhileStmt();
-            loop.Condition = "Main.Count > 0";
+            var loop = new C.WhileStmt {Condition = "Main.Count > 0"};
             var ite = new C.IfThenElse($"Main.Peek() is {Name}", $"{Target}.Add(Main.Pop() as {Name})");
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
                     ite.AddBranch($"Main.Peek() is {ps.Name}", $"{ps.Target}.Add(Main.Pop() as {ps.Name})");
-            ite.ElseBranch.Add(new C.SimpleStmt("break"));
+            ite.AddElse(new C.SimpleStmt("break"));
             loop.Code.Add(ite);
             code.Add(loop);
 
@@ -159,7 +149,7 @@ namespace Engage.B
                     sa.GenerateAbstractCode(code);
         }
 
-        public void GenerateInitialisationCode(List<C.CsStmt> code)
+        private void GenerateInitialisationCode(List<C.CsStmt> code)
         {
             code.Add(new C.SimpleStmt($"var {Target} = new List<{Name}>()"));
         }
@@ -191,8 +181,7 @@ namespace Engage.B
             }
             if (!String.IsNullOrEmpty(ExtraFlag))
                 lambda.AddCode(new C.IfThenElse($"!{ExtraFlag}", "return Message.Misfire"));
-            if (BaseAction != null)
-                BaseAction.GenerateAbstractCode(lambda.Code);
+            BaseAction?.GenerateAbstractCode(lambda.Code);
             lambda.AddCode("return Message.Perfect");
             code.Add(lambda);
         }
@@ -211,7 +200,7 @@ namespace Engage.B
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new LiftFlag() { Flag = Flag };
+                tmp = new LiftFlag { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
             code.Add(new C.SimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
@@ -219,11 +208,10 @@ namespace Engage.B
             var ite = new C.IfThenElse();
             var cond = $"_{Target} == null";
             ite.AddBranch(cond);
-            if (BaseAction != null)
-                BaseAction.GenerateAbstractCode(ite.ThenBranches[cond]);
+            BaseAction?.GenerateAbstractCode(ite.GetThenBranch(cond));
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new DropFlag() { Flag = Flag };
+                tmp = new DropFlag { Flag = Flag };
                 tmp.GenerateAbstractCode(lambda.Code);
             }
             ite.AddToBranch(cond, "return Message.Perfect");

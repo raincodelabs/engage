@@ -15,12 +15,12 @@ namespace Engage.B
 
         public string NS;
         public string TopType;
-        private Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
+        private readonly Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
         private static Dictionary<string, string> TypeAliases = new Dictionary<string, string>();
-        private HashSet<string> BoolFlags = new HashSet<string>();
-        private HashSet<string> IntFlags = new HashSet<string>();
-        private Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
-        private Dictionary<string, List<HandlerPlan>> Handlers = new Dictionary<string, List<HandlerPlan>>();
+        private readonly HashSet<string> BoolFlags = new HashSet<string>();
+        private readonly HashSet<string> IntFlags = new HashSet<string>();
+        private readonly Dictionary<string, List<TokenPlan>> Tokens = new Dictionary<string, List<TokenPlan>>();
+        private readonly Dictionary<string, List<HandlerPlan>> Handlers = new Dictionary<string, List<HandlerPlan>>();
 
         public SystemPlan(string ns)
         {
@@ -109,8 +109,8 @@ namespace Engage.B
                     Console.WriteLine($"[A2B] Cannot add type '{n}' the second time");
                 return;
             }
-            TypePlan tp = new TypePlan(n);
-            tp.Super = super;
+
+            var tp = new TypePlan(n) {Super = super};
             Console.WriteLine($"[A2B] Added type '{n}' to the plan");
             Types[tp.Name] = tp;
         }
@@ -121,9 +121,8 @@ namespace Engage.B
             {
                 if (t == "mark" || t == "skip" || t == "word")
                     continue;
-                foreach (B.TokenPlan tok in Tokens[t])
-                    if (tok.Special)
-                        TypeAliases[t] = tok.Value;
+                foreach (var tok in Tokens[t].Where(tok => tok.Special))
+                    TypeAliases[t] = tok.Value;
             }
         }
 
@@ -134,10 +133,12 @@ namespace Engage.B
 
         public C.CsClass GenerateParser()
         {
-            var p = new C.CsClass();
-            p.NS = NS;
-            p.Name = "Parser";
-            p.Super = "BaseParser";
+            var p = new C.CsClass
+            {
+                NS = NS,
+                Name = "Parser",
+                Super = "BaseParser"
+            };
             p.AddUsing("EngageRuntime");
             p.AddUsing("System");
             p.AddUsing("System.Collections.Generic");
@@ -146,26 +147,32 @@ namespace Engage.B
             if (IntFlags.Count > 0)
                 p.AddField(String.Join(", ", IntFlags.OrderBy(x => x)), "int", isPublic: false);
             // token types
-            var tt = new C.CsEnum();
-            tt.IsPublic = false;
-            tt.Name = "TokenType";
+            var tt = new C.CsEnum
+            {
+                IsPublic = false,
+                Name = "TokenType"
+            };
             tt.Add("TUndefined");
             tt.Add("TEOF");
             tt.Add(Tokens.Keys.Where(t => t != "skip").Select(t => "T" + t));
             p.AddInner(tt);
             // parser constructor
-            var pc = new C.CsConstructor();
-            pc.InheritFromBase = true;
+            var pc = new C.CsConstructor
+            {
+                InheritFromBase = true
+            };
             pc.AddArgument("input", "string");
             p.AddConstructor(pc);
             // the parse function
-            var pf = new C.CsMethod();
-            pf.Name = "Parse";
-            pf.RetType = "object";
+            var pf = new C.CsMethod
+            {
+                Name = "Parse",
+                RetType = "object"
+            };
             pf.AddCode("string ERROR = \"\"");
             pf.AddCode("TokenType type");
             pf.AddCode("string lexeme");
-            List<C.CsStmt> loop = new List<C.CsStmt>();
+            var loop = new List<C.CsStmt>();
             var pl = new C.WhileStmt("type != TokenType.TEOF", reversed: true);
 
             // main parsing loop: begin
@@ -173,15 +180,16 @@ namespace Engage.B
             pl.AddCode("lexeme = _token.Item2;");
             pl.AddCode("type = _token.Item1;");
 
-            var swType = new C.SwitchCaseStmt();
-            swType.Expression = "type";
+            var swType = new C.SwitchCaseStmt
+            {
+                Expression = "type"
+            };
 
-            var UsedTokens = new HashSet<string>();
-            UsedTokens.Add("skip");
+            var usedTokens = new HashSet<string> {"skip"};
 
             foreach (var hpk in Handlers.Keys)
             {
-                List<C.CsStmt> branchType = new List<C.CsStmt>();
+                var branchType = new List<C.CsStmt>();
                 if (hpk == "EOF")
                     branchType.Add(new C.SimpleStmt("Flush()"));
                 if (Handlers[hpk].Count == 1)
@@ -210,28 +218,23 @@ namespace Engage.B
                     branchType.Add(swLex);
                 }
                 swType.Branches["TokenType.T" + hpk] = branchType;
-                UsedTokens.Add(hpk);
+                usedTokens.Add(hpk);
             }
             foreach (var t in Tokens.Keys)
             {
-                if (!UsedTokens.Contains(t))
+                if (!usedTokens.Contains(t))
                     Console.WriteLine($"[B2C] unused token {t}");
                 foreach (B.TokenPlan tok in Tokens[t])
                 {
                     if (!tok.Special)
                         continue;
-                    List<C.CsStmt> branchType = new List<C.CsStmt>();
-                    string todo = "";
-                    switch (tok.Value)
+                    var branchType = new List<C.CsStmt>();
+                    string todo = tok.Value switch
                     {
-                        case "number":
-                            todo = "System.Int32.Parse(lexeme)";
-                            break;
-
-                        case "string":
-                            todo = "lexeme";
-                            break;
-                    }
+                        "number" => "System.Int32.Parse(lexeme)",
+                        "string" => "lexeme",
+                        _ => ""
+                    };
                     todo = PossiblyWrap(todo, tok.Value);
                     branchType.Add(new C.SimpleStmt($"Push({todo})"));
 
@@ -240,7 +243,7 @@ namespace Engage.B
             }
 
             pl.AddCode(swType);
-            var cond = "!System.String.IsNullOrEmpty(ERROR)";
+            const string cond = "!System.String.IsNullOrEmpty(ERROR)";
             var abend = new C.IfThenElse();
             abend.AddToBranch(cond, "Console.WriteLine(\"Parser error: \" + ERROR);");
             abend.AddToBranch(cond, "return null;");
@@ -260,22 +263,20 @@ namespace Engage.B
 
         private string PossiblyWrap(string v, string key)
         {
-            foreach (var t in TypeAliases.Keys)
-                if (TypeAliases[t] == key && Handlers.ContainsKey(t))
-                {
-                    // NB: there can be only one
-                    var x = Handlers[t][0].IsPushFirst();
-                    if (String.IsNullOrEmpty(x))
-                        Console.WriteLine("[B2C] some unsupported functionality found");
-                    else
-                        return $"new {x}({v})";
-                }
+            foreach (var x in
+                    from t in TypeAliases.Keys
+                    where TypeAliases[t] == key && Handlers.ContainsKey(t)
+                    select Handlers[t][0].IsPushFirst())
+                if (String.IsNullOrEmpty(x))
+                    Console.WriteLine("[B2C] some unsupported functionality found");
+                else
+                    return $"new {x}({v})";
             return v;
         }
 
-        private void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, List<string> guardFlags, List<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
+        private static void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, IReadOnlyList<string> guardFlags, IReadOnlyList<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
         {
-            List<C.CsStmt> branchLex = new List<C.CsStmt>();
+            var branchLex = new List<C.CsStmt>();
             //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
             bool onlyWraps = true;
             var ite = new C.IfThenElse();
@@ -283,22 +284,25 @@ namespace Engage.B
             {
                 if (!String.IsNullOrEmpty(guardFlags[i]))
                     ite.AddBranch(guardFlags[i]);
-                var target = String.IsNullOrEmpty(guardFlags[i]) ? branchLex : ite.ThenBranches[guardFlags[i]];
+                var target
+                    = String.IsNullOrEmpty(guardFlags[i])
+                        ? branchLex
+                        : ite.GetThenBranch(guardFlags[i]);
                 foreach (var action in recipes[i])
                 {
                     if (!(action is WrapOne))
                         onlyWraps = false;
                     if (action != null)
                     {
-                        if (action is WrapOne waction)
+                        if (action is WrapOne)
                         {
-                            List<CsStmt> fake = new List<CsStmt>();
+                            var fake = new List<CsStmt>();
                             action.GenerateAbstractCode(fake);
                             if (fake.Count == 1 && fake[0] is IfThenElse ite2)
                             {
-                                var newcond = guardFlags[i] + " && " + ite2.ThenBranches.Keys.First();
+                                var newcond = guardFlags[i] + " && " + ite2.FirstThenBranchKey();
                                 ite.RenameBranch(guardFlags[i], newcond);
-                                foreach (CsStmt stmt in ite2.ThenBranches.Values.First())
+                                foreach (CsStmt stmt in ite2.FirstThenBranchValue())
                                     ite.AddToBranch(newcond, stmt);
                             }
                             else
@@ -330,10 +334,12 @@ namespace Engage.B
         {
             var skipmark = new List<string>();
 
-            var tok = new C.CsMethod();
-            tok.IsPublic = false;
-            tok.Name = "NextToken";
-            tok.RetType = "Tuple<TokenType, string>";
+            var tok = new C.CsMethod
+            {
+                IsPublic = false,
+                Name = "NextToken",
+                RetType = "Tuple<TokenType, string>"
+            };
 
             // init phase
             tok.AddCode("TokenType t = TokenType.TUndefined;");
@@ -350,45 +356,40 @@ namespace Engage.B
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
             // EOF after skip
-            var MegaIf = new C.IfThenElse("pos >= input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
-            tok.AddCode(MegaIf);
+            var megaIf = new C.IfThenElse("pos >= input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
+            tok.AddCode(megaIf);
             // mark
             if (Tokens.ContainsKey("mark"))
             {
                 Tokens["mark"].ForEach(t => skipmark.Add(t.Value));
-                GenerateBranches("mark", MegaIf, null);
+                GenerateBranches("mark", megaIf, null);
             }
             else
-                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
+                Console.WriteLine("[IR] It is suspicious that there are no tokens of type 'word'");
             // word
             if (Tokens.ContainsKey("word"))
-                GenerateBranches("word", MegaIf, skipmark);
+                GenerateBranches("word", megaIf, skipmark);
             else
-                Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'word'");
+                Console.WriteLine("[IR] It is suspicious that there are no tokens of type 'word'");
             // number etc
-            foreach (var tt in Tokens.Keys)
-            {
-                if (tt == "skip" || tt == "word" || tt == "mark")
-                    continue;
-                GenerateBranches(tt, MegaIf, skipmark);
-            }
+            foreach (var tt in Tokens.Keys.Where(tt => tt != "skip" && tt != "word" && tt != "mark"))
+                GenerateBranches(tt, megaIf, skipmark);
             tok.AddCode("return new Tuple<TokenType, string>(t, s);");
 
             cls.AddMethod(tok);
         }
 
         // Precondition: Tokens.Contains(token_name)
-        private void GenerateBranches(string token_name, C.IfThenElse ite, List<string> skipmark)
+        private void GenerateBranches(string tokenName, C.IfThenElse ite, List<string> skipMark)
         {
-            if (!Tokens.ContainsKey(token_name))
+            if (!Tokens.ContainsKey(tokenName))
                 return;
-            foreach (var tm in Tokens[token_name])
+            foreach (var tm in Tokens[tokenName])
             {
-                Tuple<string, IEnumerable<CsStmt>> res;
-                if (tm.Special)
-                    res = GenerateBranchSpecialMatch(tm.Value, token_name);
-                else
-                    res = GenerateBranchPreciseMatch(tm.Value, token_name, skipmark);
+                var res
+                    = tm.Special
+                        ? GenerateBranchSpecialMatch(tm.Value, tokenName)
+                        : GenerateBranchPreciseMatch(tm.Value, tokenName, skipMark);
                 if (res != null)
                     ite.AddToBranch(res.Item1, res.Item2);
             }
@@ -435,11 +436,7 @@ namespace Engage.B
         {
             int len = value.Length;
             var block = new List<CsStmt>();
-            string cond;
-            if (len > 1)
-                cond = $"pos + {len - 1} < input.Length";
-            else
-                cond = "";
+            var cond = len > 1 ? $"pos + {len - 1} < input.Length" : "";
             for (int i = 0; i < len; i++)
                 cond += $" && input[pos + {i}] == '{value[i]}'";
             if (cond.StartsWith(" && "))

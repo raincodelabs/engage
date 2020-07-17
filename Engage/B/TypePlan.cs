@@ -1,5 +1,4 @@
-﻿using Engage.C;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Engage.B
@@ -9,7 +8,7 @@ namespace Engage.B
         public string Name;
         public string Super;
         public bool IsList = false;
-        private List<ConstPlan> Constructors = new List<ConstPlan>();
+        private readonly List<ConstPlan> _constructors = new List<ConstPlan>();
 
         public TypePlan(string name)
         {
@@ -17,13 +16,11 @@ namespace Engage.B
         }
 
         public ConstPlan FirstConstructor
-        {
-            get => Constructors.Count > 0 ? Constructors[0] : null;
-        }
+            => _constructors.Count > 0 ? _constructors[0] : null;
 
         public void InferConstructor(IEnumerable<string> args, A.HandlerDecl h, Func<string, B.TypePlan> getTypePlan)
         {
-            B.ConstPlan cp = new B.ConstPlan();
+            var cp = new B.ConstPlan();
             foreach (string a in args)
                 cp.AddConstructorArguments(h, a, getTypePlan);
             AddConstructor(cp);
@@ -32,9 +29,11 @@ namespace Engage.B
 
         public TypePlan Copy(bool turnIntoList = false)
         {
-            TypePlan plan = new TypePlan(Name);
-            plan.Super = Super;
-            plan.IsList = IsList || turnIntoList;
+            var plan = new TypePlan(Name)
+            {
+                Super = Super,
+                IsList = IsList || turnIntoList
+            };
             // do not copy constructors!
             return plan;
         }
@@ -47,17 +46,19 @@ namespace Engage.B
 
         public void AddConstructor(ConstPlan cp)
         {
-            if (!Constructors.Contains(cp))
-                Constructors.Add(cp);
+            if (!_constructors.Contains(cp))
+                _constructors.Add(cp);
         }
 
         internal C.CsClass GenerateClass(string ns)
         {
-            var result = new C.CsClass();
-            result.NS = ns;
-            result.Name = Name;
-            result.Super = Super;
-            foreach (B.ConstPlan c in Constructors)
+            var result = new C.CsClass
+            {
+                NS = ns,
+                Name = Name,
+                Super = Super
+            };
+            foreach (B.ConstPlan c in _constructors)
                 c.AddAbstractCodeConstructor(result);
             return result;
         }

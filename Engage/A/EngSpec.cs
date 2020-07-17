@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Engage.A
 {
@@ -13,7 +12,7 @@ namespace Engage.A
 
         internal B.SystemPlan MakePlan()
         {
-            B.SystemPlan output = new B.SystemPlan(NS);
+            var output = new B.SystemPlan(NS);
             InferTokens(output);
             InferTypes(output);
             InferFlags(output);
