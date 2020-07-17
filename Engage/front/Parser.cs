@@ -7,7 +7,7 @@ namespace Engage.front
 		public static EngSpec ParseEngSpec(string code)
 		{
 			EngageMetaParser parser = new EngageMetaParser();
-			return parser.parseGrammar (code);
+			return parser.ParseGrammar (code);
 		}
     }
 }

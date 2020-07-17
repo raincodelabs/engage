@@ -7,94 +7,88 @@ namespace Engage.front
 {
 	public class EngageMetaParser
 	{
-		private int pos;
-		private List<Token> tokens;
-		private Token lookAhead;
-		private Dictionary<int, string> tokenNames;
+		private int _pos;
+		private List<Token> _tokens;
+		private Token _lookAhead;
+		private Dictionary<int, string> _tokenNames;
 
 		public EngageMetaParser()
 		{
 		}
 
-		public EngSpec parseGrammar(string grammar)
+		public EngSpec ParseGrammar(string grammar)
 		{
 			EngageMetaLexer lexer = new EngageMetaLexer();
-			tokens = lexer.Lexise(grammar);
-			tokenNames = Utils.inverse(lexer.TokenVocab);
-			if(tokens.Count == 0)
-			{
+			_tokens = lexer.Lexise(grammar);
+			_tokenNames = Utils.inverse(lexer.TokenVocab);
+			if (_tokens.Count == 0)
 				throw new Exception("Empty token stream when parsing grammar");
-			}
-			lookAhead = tokens[0];
-			pos = 0;
-			return engSpec();
+			_lookAhead = _tokens[0];
+			_pos = 0;
+			return EngageSpec();
 		}
 
-		private EngSpec engSpec()
+		private EngSpec EngageSpec()
 		{
-			List<TypeDecl> tds = new List<TypeDecl> ();
-			List<TokenDecl> tkds = new List<TokenDecl> ();
-			List<HandlerDecl> hds = new List<HandlerDecl> ();
+			var tds = new List<TypeDecl>();
+			var lds = new List<TokenDecl>();
+			var hds = new List<HandlerDecl>();
 
-			match (EngageToken.KW_NAMESPACE);
-			string ns = consumeText (EngageToken.ID);
+			match(EngageToken.KW_NAMESPACE);
+			string ns = consumeText(EngageToken.ID);
 
-			match (EngageToken.KW_TYPES);
-			while (la_typeDecl ()) 
+			match(EngageToken.KW_TYPES);
+			while (la_typeDecl())
+				tds.Add(TypeDeclaration());
+
+			match(EngageToken.KW_TOKENS);
+			while (la_tokenDecl())
+				lds.Add(TokenDeclaration());
+
+			match(EngageToken.KW_HANDLERS);
+			while (la_handlerDecl())
 			{
-				tds.Add (typeDecl ());
+				HandlerDecl hd = handlerDecl();
+				hds.Add(hd);
 			}
 
-			match (EngageToken.KW_TOKENS);
-			while (la_tokenDecl ()) 
+			var spec = new EngSpec
 			{
-				tkds.Add (tokenDecl ());
-			}
-
-			match (EngageToken.KW_HANDLERS);
-			while (la_handlerDecl ()) 
-			{
-				HandlerDecl hd = handlerDecl ();
-				hds.Add (hd);
-			}
-
-			EngSpec spec = new EngSpec ();
-			spec.NS = ns;
-			spec.Types = tds;
-			spec.Tokens = tkds;
-			spec.Handlers = hds;
+				NS = ns,
+				Types = tds,
+				Tokens = lds,
+				Handlers = hds
+			};
 
 			return spec;
 		}
 
 		private bool la_typeDecl()
-		{
-			return la (EngageToken.ID);
-		}
+			=> la (EngageToken.ID);
 
-		private TypeDecl typeDecl()
+		private TypeDecl TypeDeclaration()
 		{
-			List<string> names = new List<string> ();
+			var names = new List<string>();
 			string super = "";
 
-			string n = consumeText (EngageToken.ID);
-			names.Add (n);
+			string n = consumeText(EngageToken.ID);
+			names.Add(n);
 
-			while (la (EngageToken.COMMA)) 
+			while (la(EngageToken.COMMA))
 			{
-				match (EngageToken.COMMA);
-				n = consumeText (EngageToken.ID);
-				names.Add (n);
+				match(EngageToken.COMMA);
+				n = consumeText(EngageToken.ID);
+				names.Add(n);
 			}
 
-			if (la (EngageToken.SUB_TYPE)) 
+			if (la(EngageToken.SUB_TYPE))
 			{
-				match (EngageToken.SUB_TYPE);
-				super = consumeText (EngageToken.ID);
+				match(EngageToken.SUB_TYPE);
+				super = consumeText(EngageToken.ID);
 			}
 
-			match (EngageToken.SEMI);
-			TypeDecl td = new TypeDecl ();
+			match(EngageToken.SEMI);
+			var td = new TypeDecl();
 			td.Names = names;
 			td.Super = super;
 
@@ -106,28 +100,27 @@ namespace Engage.front
 			return la (EngageToken.QUOTED) || la (EngageToken.KW_NUMBER) || la (EngageToken.KW_STRING);
 		}
 
-		private TokenDecl tokenDecl()
+		private TokenDecl TokenDeclaration()
 		{
-			List<Lexeme> names = new List<Lexeme> ();
-			Lexeme n = lexeme ();
-			names.Add (n);
-			while (la (EngageToken.COMMA)) 
+			var names = new List<Lexeme>();
+			Lexeme n = lexeme();
+			names.Add(n);
+			while (la(EngageToken.COMMA))
 			{
-				match (EngageToken.COMMA);
-				n = lexeme ();
-				names.Add (n);
+				match(EngageToken.COMMA);
+				n = lexeme();
+				names.Add(n);
 			}
 
-			match (EngageToken.IS_TYPE);
+			match(EngageToken.IS_TYPE);
 
-			string t = consumeText (EngageToken.ID);
+			string t = consumeText(EngageToken.ID);
 
-			TokenDecl td = new TokenDecl ();
+			var td = new TokenDecl();
 			td.Names = names;
 			td.Type = t;
 
 			return td;
-				
 		}
 
 		private Lexeme lexeme()
@@ -508,62 +501,60 @@ namespace Engage.front
 		}
 
 		private string text()
-		{
-			return lookAhead.text;
-		}
+			=> _lookAhead.text;
 
 		private string consumeText()
 		{
-			string ret = lookAhead.text;
-			pos++;
-			if(pos < tokens.Count)
+			string ret = _lookAhead.text;
+			_pos++;
+			if(_pos < _tokens.Count)
 			{
-				lookAhead = tokens[pos];
+				_lookAhead = _tokens[_pos];
 			}
 			return ret;
 		}
 
 		private string consumeText(EngageToken tokenType)
 		{
-			string ret = lookAhead.text;
+			string ret = _lookAhead.text;
 			match(tokenType);
 			return ret;
 		}
 
 		private string tokenName()
 		{
-			return tokenNames[lookAhead.id];
+			return _tokenNames[_lookAhead.id];
 		}
 
 		private string tokenName(int id)
 		{
-			return tokenNames [id];
+			return _tokenNames [id];
 		}
 
 		private bool eof()
 		{
-			return pos == tokens.Count;
+			return _pos == _tokens.Count;
 		}
 
 		private bool la(EngageToken tokenType)
 		{
-			return !eof() && lookAhead.id == (int) tokenType;
+			return !eof() && _lookAhead.id == (int) tokenType;
 		}
 
 		private bool la(string text)
 		{
-			return !eof() && lookAhead.text == text;
+			return !eof() && _lookAhead.text == text;
 		}
 
 		private bool la(EngageToken t1, EngageToken t2)
 		{
-			return ((pos+1) < tokens.Count) && lookAhead.id == (int) t1 && tokens[pos+1].id == (int) t2;
+			return ((_pos+1) < _tokens.Count) && _lookAhead.id == (int) t1 && _tokens[_pos+1].id == (int) t2;
 		}
 
 		// Check the token *after* the current lookAhead
 		private bool la2(EngageToken t)
 		{
-			return ((pos+1) < tokens.Count) && tokens[pos+1].id == (int) t;
+			return ((_pos+1) < _tokens.Count) && _tokens[_pos+1].id == (int) t;
 		}
 
 		private bool la_thenNot(EngageToken t1, EngageToken t2)
@@ -573,9 +564,9 @@ namespace Engage.front
 				return false;
 			}
 
-			if((pos+1) < tokens.Count)
+			if((_pos+1) < _tokens.Count)
 			{
-				return tokens[pos+1].id != (int) t2;
+				return _tokens[_pos+1].id != (int) t2;
 			}
 			else
 			{
@@ -585,21 +576,21 @@ namespace Engage.front
 
 		private void match(EngageToken tokenType)
 		{
-			if(!eof() && lookAhead.id == (int) tokenType)
+			if(!eof() && _lookAhead.id == (int) tokenType)
 			{
-				++pos;
+				++_pos;
 				if(!eof())
 				{
-					lookAhead = tokens[pos];
+					_lookAhead = _tokens[_pos];
 				}
 			}
 			else
 			{
-				string tokType = tokenName(lookAhead.id);
+				string tokType = tokenName(_lookAhead.id);
 				throw new Exception(string.Format("Expected: {0}, got {1} @line {2}",
 					tokenName((int) tokenType),
 					tokType,
-					lookAhead.line));
+					_lookAhead.line));
 			}
 		}
 
@@ -607,13 +598,13 @@ namespace Engage.front
 		{
 			if(!eof())
 			{
-				throw new Exception(string.Format("Extra token at end of parsing after position {0}", pos));
+				throw new Exception(string.Format("Extra token at end of parsing after position {0}", _pos));
 			}
 		}
 
 		private void fail(string msg)
 		{
-			throw new Exception(string.Format("Error: {0} at token # {1}, line {2}", msg, pos, lookAhead.line));
+			throw new Exception(string.Format("Error: {0} at token # {1}, line {2}", msg, _pos, _lookAhead.line));
 		}
 	}
 }

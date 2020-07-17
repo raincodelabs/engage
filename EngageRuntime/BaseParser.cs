@@ -5,17 +5,17 @@ namespace EngageRuntime
 {
     public class BaseParser
     {
-        protected string input;
-        protected int pos;
+        protected readonly string Input;
+        protected int Pos;
 
-        protected List<Message> Pending = new List<Message>();
-        protected Stack<object> Main = new Stack<object>();
+        protected readonly List<Message> Pending = new List<Message>();
+        protected readonly Stack<object> Main = new Stack<object>();
 
-        public BaseParser(string _input)
+        public BaseParser(string input)
         {
             //Log($"init with '{_input}'");
-            input = _input;
-            pos = 0;
+            this.Input = input;
+            Pos = 0;
         }
 
         protected void Log(string message)
@@ -28,17 +28,17 @@ namespace EngageRuntime
                 Main.Push(_x);
         }
 
-        protected void Schedule(Type _type, Func<object, int> _action)
+        protected void Schedule(Type type, Func<object, int> action)
         {
             //Log($"SCHEDULE for {_type}");
-            Message message = new Message(_type, _action);
+            Message message = new Message(type, action);
             Pending.Add(message);
         }
 
-        protected void Trim(Type _type)
+        protected void Trim(Type type)
         {
             for (int i = Pending.Count - 1; i >= 0; i--)
-                if (Pending[i].IsWanted(_type))
+                if (Pending[i].IsWanted(type))
                 {
                     var p = Pending[i];
                     Pending.Remove(p);
@@ -56,16 +56,16 @@ namespace EngageRuntime
                 Log($"forced a {msg.ExpectedType} handler: return code {Convert.ToString(msg.Handler(null), 2)}");
         }
 
-        private bool Trigger(object _x)
+        private bool Trigger(object x)
         {
             //Log($"APPLY to {_x} :: {_x.GetType()}");
-            Type _t = _x.GetType();
+            Type t = x.GetType();
             for (int i = Pending.Count - 1; i >= 0; i--)
             {
                 var candidate = Pending[i];
-                if (candidate.IsWanted(_t))
+                if (candidate.IsWanted(t))
                 {
-                    int code = candidate.Handler(_x);
+                    int code = candidate.Handler(x);
                     if (code == Message.Misfire)
                         continue;
                     if (code == Message.Perfect)
