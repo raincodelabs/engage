@@ -52,60 +52,53 @@ namespace Engage.front
 				hds.Add(hd);
 			}
 
-			var spec = new EngSpec
+			return new EngSpec
 			{
 				NS = ns,
 				Types = tds,
 				Tokens = lds,
 				Handlers = hds
 			};
-
-			return spec;
 		}
 
 		private bool la_typeDecl()
-			=> la (EngageToken.ID);
+			=> LookAhead(EngageToken.ID);
 
 		private TypeDecl TypeDeclaration()
 		{
-			var names = new List<string>();
+			List<string> names = new List<string>();
 			string super = "";
 
 			string n = consumeText(EngageToken.ID);
 			names.Add(n);
 
-			while (la(EngageToken.COMMA))
+			while (LookAhead(EngageToken.COMMA))
 			{
 				match(EngageToken.COMMA);
 				n = consumeText(EngageToken.ID);
 				names.Add(n);
 			}
 
-			if (la(EngageToken.SUB_TYPE))
+			if (LookAhead(EngageToken.SUB_TYPE))
 			{
 				match(EngageToken.SUB_TYPE);
 				super = consumeText(EngageToken.ID);
 			}
 
 			match(EngageToken.SEMI);
-			var td = new TypeDecl();
-			td.Names = names;
-			td.Super = super;
 
-			return td;
+			return new TypeDecl {Names = names, Super = super};
 		}
 
 		private bool la_tokenDecl()
-		{
-			return la (EngageToken.QUOTED) || la (EngageToken.KW_NUMBER) || la (EngageToken.KW_STRING);
-		}
+			=> LookAhead(EngageToken.QUOTED) || LookAhead(EngageToken.KW_NUMBER) || LookAhead(EngageToken.KW_STRING);
 
 		private TokenDecl TokenDeclaration()
 		{
 			var names = new List<Lexeme>();
 			Lexeme n = lexeme();
 			names.Add(n);
-			while (la(EngageToken.COMMA))
+			while (LookAhead(EngageToken.COMMA))
 			{
 				match(EngageToken.COMMA);
 				n = lexeme();
@@ -114,81 +107,68 @@ namespace Engage.front
 
 			match(EngageToken.IS_TYPE);
 
-			string t = consumeText(EngageToken.ID);
-
-			var td = new TokenDecl();
-			td.Names = names;
-			td.Type = t;
-
-			return td;
+			return new TokenDecl {Names = names, Type = consumeText(EngageToken.ID)};
 		}
 
 		private Lexeme lexeme()
 		{
-			if (la (EngageToken.QUOTED)) 
+			if (LookAhead(EngageToken.QUOTED))
 			{
-				string literal = consumeText (EngageToken.QUOTED);
-				literal = preprocess (literal);
-				LiteralLex lex = new LiteralLex ();
-				lex.Literal = literal;
-				lex.Special = false;
-				return lex;
+				string literal = consumeText(EngageToken.QUOTED);
+				literal = preprocess(literal);
+				return new LiteralLex {Literal = literal, Special = false};
 			}
-			else if (la (EngageToken.KW_NUMBER)) 
+			else if (LookAhead(EngageToken.KW_NUMBER))
 			{
-				match (EngageToken.KW_NUMBER);
-				NumberLex lex = new NumberLex ();
-				lex.Special = true;
-				return lex;
+				match(EngageToken.KW_NUMBER);
+				return new NumberLex {Special = true};
 			}
-			else if (la (EngageToken.KW_STRING)) 
+			else if (LookAhead(EngageToken.KW_STRING))
 			{
-				match (EngageToken.KW_STRING);
-				StringLex lex = new StringLex ();
-				lex.Special = true;
-				return lex;
+				match(EngageToken.KW_STRING);
+				return new StringLex {Special = true};
 			}
-			else 
+			else
 			{
-				fail ("Expected lexeme");
+				fail("Expected lexeme");
 				return null;
 			}
 		}
 
 		private bool la_handlerDecl()
 		{
-			return (la (EngageToken.QUOTED) ||
-				la (EngageToken.KW_EOF) ||
-				la (EngageToken.ID))
-			&& (la2 (EngageToken.KW_UPON) || la2 (EngageToken.ARROW));
+			return (LookAhead(EngageToken.QUOTED) ||
+			        LookAhead(EngageToken.KW_EOF) ||
+			        LookAhead(EngageToken.ID))
+			       && (LookAhead2(EngageToken.KW_UPON) || LookAhead2(EngageToken.ARROW));
 		}
 
 		HandlerDecl handlerDecl()
 		{
-			List<Assignment> context = new List<Assignment> ();
+			List<Assignment> context = new List<Assignment>();
 
-			Trigger lhs = trigger ();
+			Trigger lhs = trigger();
 
-			match (EngageToken.ARROW);
+			match(EngageToken.ARROW);
 
-			Reaction rhs = reaction ();
+			Reaction rhs = reaction();
 
-			if (la (EngageToken.KW_WHERE)) 
+			if (LookAhead(EngageToken.KW_WHERE))
 			{
-				match (EngageToken.KW_WHERE);
+				match(EngageToken.KW_WHERE);
 
-				Assignment a = assignment ();
-				context.Add (a);
+				Assignment a = assignment();
+				context.Add(a);
 
-				while (la (EngageToken.COMMA)) 
+				while (LookAhead(EngageToken.COMMA))
 				{
-					match (EngageToken.COMMA);
-					a = assignment ();
-					context.Add (a);
+					match(EngageToken.COMMA);
+					a = assignment();
+					context.Add(a);
 				}
 			}
 
-			HandlerDecl hd = new HandlerDecl ();
+			HandlerDecl hd = new HandlerDecl();
 			hd.LHS = lhs;
 			hd.RHS = rhs;
 			hd.Context = context;
@@ -197,90 +177,93 @@ namespace Engage.front
 
 		Trigger trigger()
 		{
-			Trigger trig = new Trigger ();
+			Trigger trig = new Trigger();
 
-			if (la (EngageToken.QUOTED)) 
+			if (LookAhead(EngageToken.QUOTED))
 			{
-				string terminal = consumeText (EngageToken.QUOTED);
-				terminal = preprocess (terminal);
+				string terminal = consumeText(EngageToken.QUOTED);
+				terminal = preprocess(terminal);
 				trig.Terminal = terminal;
 			}
-			else if (la (EngageToken.KW_EOF)) 
+			else if (LookAhead(EngageToken.KW_EOF))
 			{
-				match (EngageToken.KW_EOF);
+				match(EngageToken.KW_EOF);
 				trig.EOF = true;
 			}
-			else if (la (EngageToken.ID)) 
+			else if (LookAhead(EngageToken.ID))
 			{
-				string nonterminal = consumeText (EngageToken.ID);
+				string nonterminal = consumeText(EngageToken.ID);
 				trig.NonTerminal = nonterminal;
 			}
-			else 
+			else
 			{
-				fail ("Expected trigger");
+				fail("Expected trigger");
 				return null;
 			}
-			if (la (EngageToken.KW_UPON)) 
+
+			if (LookAhead(EngageToken.KW_UPON))
 			{
-				match (EngageToken.KW_UPON);
-				string flag = consumeText (EngageToken.ID);
+				match(EngageToken.KW_UPON);
+				string flag = consumeText(EngageToken.ID);
 				trig.Flag = flag;
 			}
+
 			return trig;
 		}
 
 		Reaction reaction()
 		{
-			if (la (EngageToken.KW_PUSH)) 
+			if (LookAhead(EngageToken.KW_PUSH))
 			{
-				return pushReaction ();
+				return pushReaction();
 			}
-			else if (la (EngageToken.KW_WRAP)) 
+			else if (LookAhead(EngageToken.KW_WRAP))
 			{
-				return wrapReaction ();
+				return wrapReaction();
 			}
-			else if (la (EngageToken.KW_LIFT)) 
+			else if (LookAhead(EngageToken.KW_LIFT))
 			{
-				return liftReaction ();
+				return liftReaction();
 			}
-			else if (la (EngageToken.KW_DROP)) 
+			else if (LookAhead(EngageToken.KW_DROP))
 			{
-				return dropReaction ();
+				return dropReaction();
 			}
-			else if (la (EngageToken.KW_TRIM)) 
+			else if (LookAhead(EngageToken.KW_TRIM))
 			{
-				return trimReaction ();
-			} 
-			else 
+				return trimReaction();
+			}
+			else
 			{
-				fail ("Expected reaction");
+				fail("Expected reaction");
 				return null;
 			}
 		}
 
 		PushReaction pushReaction()
 		{
-			match (EngageToken.KW_PUSH);
-			string name = consumeText (EngageToken.ID);
-			List<string> args = new List<string> ();
-			if (la (EngageToken.LPAREN)) 
+			match(EngageToken.KW_PUSH);
+			string name = consumeText(EngageToken.ID);
+			List<string> args = new List<string>();
+			if (LookAhead(EngageToken.LPAREN))
 			{
-				match (EngageToken.LPAREN);
-				if (la (EngageToken.ID)) 
+				match(EngageToken.LPAREN);
+				if (LookAhead(EngageToken.ID))
 				{
-					string arg = consumeText (EngageToken.ID);
-					args.Add (arg);
-					while (la (EngageToken.COMMA)) 
+					string arg = consumeText(EngageToken.ID);
+					args.Add(arg);
+					while (LookAhead(EngageToken.COMMA))
 					{
-						match (EngageToken.COMMA);
-						arg = consumeText (EngageToken.ID);
-						args.Add (arg);
+						match(EngageToken.COMMA);
+						arg = consumeText(EngageToken.ID);
+						args.Add(arg);
 					}
 				}
-				match (EngageToken.RPAREN);
+
+				match(EngageToken.RPAREN);
 			}
 
-			PushReaction pr = new PushReaction ();
+			PushReaction pr = new PushReaction();
 			pr.Name = name;
 			pr.Args = args;
 			return pr;
@@ -288,27 +271,28 @@ namespace Engage.front
 
 		WrapReaction wrapReaction()
 		{
-			match (EngageToken.KW_WRAP);
-			string name = consumeText (EngageToken.ID);
-			List<string> args = new List<string> ();
-			if (la (EngageToken.LPAREN)) 
+			match(EngageToken.KW_WRAP);
+			string name = consumeText(EngageToken.ID);
+			List<string> args = new List<string>();
+			if (LookAhead(EngageToken.LPAREN))
 			{
-				match (EngageToken.LPAREN);
-				if (la (EngageToken.ID)) 
+				match(EngageToken.LPAREN);
+				if (LookAhead(EngageToken.ID))
 				{
-					string arg = consumeText (EngageToken.ID);
-					args.Add (arg);
-					while (la (EngageToken.COMMA)) 
+					string arg = consumeText(EngageToken.ID);
+					args.Add(arg);
+					while (LookAhead(EngageToken.COMMA))
 					{
-						match (EngageToken.COMMA);
-						arg = consumeText (EngageToken.ID);
-						args.Add (arg);
+						match(EngageToken.COMMA);
+						arg = consumeText(EngageToken.ID);
+						args.Add(arg);
 					}
 				}
-				match (EngageToken.RPAREN);
+
+				match(EngageToken.RPAREN);
 			}
 
-			WrapReaction wr = new WrapReaction ();
+			WrapReaction wr = new WrapReaction();
 			wr.Name = name;
 			wr.Args = args;
 			return wr;
@@ -316,9 +300,9 @@ namespace Engage.front
 
 		LiftReaction liftReaction()
 		{
-			match (EngageToken.KW_LIFT);
-			string flag = consumeText (EngageToken.ID);
-			LiftReaction lr = new LiftReaction ();
+			match(EngageToken.KW_LIFT);
+			string flag = consumeText(EngageToken.ID);
+			LiftReaction lr = new LiftReaction();
 			lr.Name = "";
 			lr.Flag = flag;
 			return lr;
@@ -326,9 +310,9 @@ namespace Engage.front
 
 		DropReaction dropReaction()
 		{
-			match (EngageToken.KW_DROP);
-			string flag = consumeText (EngageToken.ID);
-			DropReaction dr = new DropReaction ();
+			match(EngageToken.KW_DROP);
+			string flag = consumeText(EngageToken.ID);
+			DropReaction dr = new DropReaction();
 			dr.Name = "";
 			dr.Flag = flag;
 			return dr;
@@ -336,15 +320,16 @@ namespace Engage.front
 
 		TrimReaction trimReaction()
 		{
-			match (EngageToken.KW_TRIM);
-			string name = consumeText (EngageToken.ID);
+			match(EngageToken.KW_TRIM);
+			string name = consumeText(EngageToken.ID);
 			bool starred = false;
-			if (la (EngageToken.STAR)) 
+			if (LookAhead(EngageToken.STAR))
 			{
-				match (EngageToken.STAR);
+				match(EngageToken.STAR);
 				starred = true;
 			}
-			TrimReaction tr = new TrimReaction ();
+
+			TrimReaction tr = new TrimReaction();
 			tr.Name = name;
 			tr.Starred = starred;
 			return tr;
@@ -352,10 +337,10 @@ namespace Engage.front
 
 		Assignment assignment()
 		{
-			string lhs = consumeText (EngageToken.ID);
-			match (EngageToken.ASSIGN);
-			Reaction rhs = operation ();
-			Assignment assignment = new Assignment ();
+			string lhs = consumeText(EngageToken.ID);
+			match(EngageToken.ASSIGN);
+			Reaction rhs = operation();
+			Assignment assignment = new Assignment();
 			assignment.LHS = lhs;
 			assignment.RHS = rhs;
 			return assignment;
@@ -363,134 +348,137 @@ namespace Engage.front
 
 		Reaction operation()
 		{
-			if (la (EngageToken.KW_POP))
+			if (LookAhead(EngageToken.KW_POP))
 			{
-				match (EngageToken.KW_POP);
-				string name = consumeText (EngageToken.ID);
-				PopAction op = new PopAction ();
+				match(EngageToken.KW_POP);
+				string name = consumeText(EngageToken.ID);
+				PopAction op = new PopAction();
 				op.Name = name;
 				return op;
 			}
-			else if (la (EngageToken.KW_POP_STAR_)) 
+			else if (LookAhead(EngageToken.KW_POP_STAR_))
 			{
-				match (EngageToken.KW_POP_STAR_);
-				string name = consumeText (EngageToken.ID);
-				PopStarAction op = new PopStarAction ();
+				match(EngageToken.KW_POP_STAR_);
+				string name = consumeText(EngageToken.ID);
+				PopStarAction op = new PopStarAction();
 				op.Name = name;
 				return op;
 			}
-			else if (la (EngageToken.KW_POP_HASH_)) 
+			else if (LookAhead(EngageToken.KW_POP_HASH_))
 			{
-				match (EngageToken.KW_POP_HASH_);
-				string name = consumeText (EngageToken.ID);
-				PopHashAction op = new PopHashAction ();
+				match(EngageToken.KW_POP_HASH_);
+				string name = consumeText(EngageToken.ID);
+				PopHashAction op = new PopHashAction();
 				op.Name = name;
 				return op;
 			}
-			else if (la (EngageToken.KW_AWAIT, EngageToken.LPAREN)) 
+			else if (LookAhead(EngageToken.KW_AWAIT, EngageToken.LPAREN))
 			{
-				match (EngageToken.KW_AWAIT);
-				match (EngageToken.LPAREN);
-				string name = consumeText (EngageToken.ID);
-				match (EngageToken.KW_UPON);
-				string extraContext = consumeText (EngageToken.ID);
-				match (EngageToken.RPAREN);
+				match(EngageToken.KW_AWAIT);
+				match(EngageToken.LPAREN);
+				string name = consumeText(EngageToken.ID);
+				match(EngageToken.KW_UPON);
+				string extraContext = consumeText(EngageToken.ID);
+				match(EngageToken.RPAREN);
 				string tmpContext = "";
-				if (la (EngageToken.KW_WITH)) 
+				if (LookAhead(EngageToken.KW_WITH))
 				{
-					match (EngageToken.KW_WITH);
-					tmpContext = consumeText (EngageToken.ID);
+					match(EngageToken.KW_WITH);
+					tmpContext = consumeText(EngageToken.ID);
 				}
-				AwaitAction op = new AwaitAction ();
+
+				AwaitAction op = new AwaitAction();
 				op.Name = name;
 				op.ExtraContext = extraContext;
 				op.TmpContext = tmpContext;
 				return op;
 			}
-			else if (la (EngageToken.KW_AWAIT)) 
+			else if (LookAhead(EngageToken.KW_AWAIT))
 			{
-				match (EngageToken.KW_AWAIT);
-				string name = consumeText (EngageToken.ID);
+				match(EngageToken.KW_AWAIT);
+				string name = consumeText(EngageToken.ID);
 				string tmpContext = "";
-				if (la (EngageToken.KW_WITH)) 
+				if (LookAhead(EngageToken.KW_WITH))
 				{
-					match (EngageToken.KW_WITH);
-					tmpContext = consumeText (EngageToken.ID);
+					match(EngageToken.KW_WITH);
+					tmpContext = consumeText(EngageToken.ID);
 				}
-				AwaitAction op = new AwaitAction ();
+
+				AwaitAction op = new AwaitAction();
 				op.Name = name;
 				op.ExtraContext = "";
 				op.TmpContext = tmpContext;
 				return op;
 			}
-			else if (la (EngageToken.KW_AWAIT_STAR_)) 
+			else if (LookAhead(EngageToken.KW_AWAIT_STAR_))
 			{
-				match (EngageToken.KW_AWAIT_STAR_);
-				string name = consumeText (EngageToken.ID);
+				match(EngageToken.KW_AWAIT_STAR_);
+				string name = consumeText(EngageToken.ID);
 				string tmpContext = "";
-				if (la (EngageToken.KW_WITH)) 
+				if (LookAhead(EngageToken.KW_WITH))
 				{
-					match (EngageToken.KW_WITH);
-					tmpContext = consumeText (EngageToken.ID);
+					match(EngageToken.KW_WITH);
+					tmpContext = consumeText(EngageToken.ID);
 				}
-				AwaitStarAction op = new AwaitStarAction ();
+
+				AwaitStarAction op = new AwaitStarAction();
 				op.Name = name;
 				op.TmpContext = tmpContext;
 				return op;
 			}
-			else if (la (EngageToken.KW_TEAR)) 
+			else if (LookAhead(EngageToken.KW_TEAR))
 			{
-				match (EngageToken.KW_TEAR);
-				string name = consumeText (EngageToken.ID);
-				TearAction op = new TearAction ();
+				match(EngageToken.KW_TEAR);
+				string name = consumeText(EngageToken.ID);
+				TearAction op = new TearAction();
 				op.Name = name;
 				return op;
 			}
-			else 
+			else
 			{
-				fail ("Expected operation");
+				fail("Expected operation");
 				return null;
 			}
 		}
 
 		private string preprocess(string s)
 		{
-			return stripQuotes (s);
+			return stripQuotes(s);
 		}
 
 		private string stripQuotes(string s)
 		{
-			string s2 = s.Substring (1, s.Length - 2);
+			string s2 = s.Substring(1, s.Length - 2);
 			return s2;
 		}
 
 		private string interpretChar(string s)
 		{
-			if(s == "\\n")
+			if (s == "\\n")
 			{
 				return "\n";
 			}
-			else if(s == "\\r")
+			else if (s == "\\r")
 			{
 				return "\r";
 			}
-			else if(s == "\\t")
+			else if (s == "\\t")
 			{
 				return "\t";
 			}
-			else if(s == "\\\\")
+			else if (s == "\\\\")
 			{
 				return "\\";
 			}
-			else if(s == "\\'")
+			else if (s == "\\'")
 			{
 				return "'";
 			}
-			else if(s == "\\-")
+			else if (s == "\\-")
 			{
 				return "-";
 			}
-			else if(s == "\\\"")
+			else if (s == "\\\"")
 			{
 				return "\"";
 			}
@@ -507,10 +495,11 @@ namespace Engage.front
 		{
 			string ret = _lookAhead.text;
 			_pos++;
-			if(_pos < _tokens.Count)
+			if (_pos < _tokens.Count)
 			{
 				_lookAhead = _tokens[_pos];
 			}
+
 			return ret;
 		}
 
@@ -528,7 +517,7 @@ namespace Engage.front
 
 		private string tokenName(int id)
 		{
-			return _tokenNames [id];
+			return _tokenNames[id];
 		}
 
 		private bool eof()
@@ -536,50 +525,29 @@ namespace Engage.front
 			return _pos == _tokens.Count;
 		}
 
-		private bool la(EngageToken tokenType)
-		{
-			return !eof() && _lookAhead.id == (int) tokenType;
-		}
+		private bool LookAhead(EngageToken tokenType)
+			=> !eof() && _lookAhead.id == (int) tokenType;
 
-		private bool la(string text)
-		{
-			return !eof() && _lookAhead.text == text;
-		}
+		private bool LookAhead(string text)
+			=> !eof() && _lookAhead.text == text;
 
-		private bool la(EngageToken t1, EngageToken t2)
+		private bool LookAhead(EngageToken t1, EngageToken t2)
 		{
-			return ((_pos+1) < _tokens.Count) && _lookAhead.id == (int) t1 && _tokens[_pos+1].id == (int) t2;
+			return ((_pos + 1) < _tokens.Count) && _lookAhead.id == (int) t1 && _tokens[_pos + 1].id == (int) t2;
 		}
 
 		// Check the token *after* the current lookAhead
-		private bool la2(EngageToken t)
+		private bool LookAhead2(EngageToken t)
 		{
-			return ((_pos+1) < _tokens.Count) && _tokens[_pos+1].id == (int) t;
-		}
-
-		private bool la_thenNot(EngageToken t1, EngageToken t2)
-		{
-			if(!la(t1))
-			{
-				return false;
-			}
-
-			if((_pos+1) < _tokens.Count)
-			{
-				return _tokens[_pos+1].id != (int) t2;
-			}
-			else
-			{
-				return true;
-			}
+			return ((_pos + 1) < _tokens.Count) && _tokens[_pos + 1].id == (int) t;
 		}
 
 		private void match(EngageToken tokenType)
 		{
-			if(!eof() && _lookAhead.id == (int) tokenType)
+			if (!eof() && _lookAhead.id == (int) tokenType)
 			{
 				++_pos;
-				if(!eof())
+				if (!eof())
 				{
 					_lookAhead = _tokens[_pos];
 				}
@@ -596,7 +564,7 @@ namespace Engage.front
 
 		private void matchEof()
 		{
-			if(!eof())
+			if (!eof())
 			{
 				throw new Exception(string.Format("Extra token at end of parsing after position {0}", _pos));
 			}
@@ -608,4 +576,3 @@ namespace Engage.front
 		}
 	}
 }
-
