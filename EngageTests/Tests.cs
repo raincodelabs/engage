@@ -561,7 +561,7 @@ namespace EngageTests
         [TestMethod]
         public void TryAppBuilder()
         {
-            var spec = Engage.front.Parser.ParseEngSpec(File.ReadAllText(AppBuilderSpec));
+            var spec = Engage.front.Parser.EngSpecFromText(File.ReadAllText(AppBuilderSpec));
         }
 
         [TestMethod]

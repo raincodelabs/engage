@@ -19,7 +19,7 @@ namespace Engage
         private static void Main(string[] args)
         {
             Console.WriteLine("Engage!");
-            A.EngSpec spec = Parser.ParseEngSpec(File.ReadAllText(AppBuilderSpec));
+            A.EngSpec spec = Parser.EngSpecFromFile(AppBuilderSpec);
             Console.WriteLine("A-level spec read!");
             B.SystemPlan plan = spec.MakePlan();
             Console.WriteLine("B-level plan made!");

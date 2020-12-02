@@ -1,13 +1,17 @@
-﻿using Engage.A;
+﻿using System.IO;
+using Engage.A;
 
 namespace Engage.front
 {
-    public class Parser
-    {
-		public static EngSpec ParseEngSpec(string code)
+	public static class Parser
+	{
+		public static EngSpec EngSpecFromText(string code)
 		{
 			EngageMetaParser parser = new EngageMetaParser();
-			return parser.ParseGrammar (code);
+			return parser.ParseGrammar(code);
 		}
-    }
+
+		public static EngSpec EngSpecFromFile(string filename)
+			=> EngSpecFromText(File.ReadAllText(filename));
+	}
 }
