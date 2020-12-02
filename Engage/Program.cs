@@ -33,8 +33,14 @@ namespace Engage
             D.CsClass dp = cp.Concretize() as D.CsClass;
             Console.WriteLine("D-level abstract code for the parser generated!");
 
-            foreach (D.CsClass cs in css)
-                File.WriteAllLines(Path.Combine(Path.Combine(Output, "ast"), $"{cs.Name}.cs"), cs.GenerateFileCode());
+            foreach (var csTop in css)
+            {
+                if (csTop is D.CsClass cs)
+                    File.WriteAllLines(Path.Combine(Output, "ast", $"{cs.Name}.cs"), cs.GenerateFileCode());
+                else
+                    Console.WriteLine($"Unexpected type on the D-level: {csTop.GetType().Name}");
+            }
+
             File.WriteAllLines(Path.Combine(Output, "Parser.cs"), dp.GenerateFileCode());
             Console.WriteLine("Final code generated and saved!");
         }
