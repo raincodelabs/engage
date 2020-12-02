@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\takmela-lexer\takmela-lexer.csproj" />
   </ItemGroup>
+
 <!--    
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="&quot;$(SolutionDir)lib\StandaloneGenerator.exe&quot; &quot;$(ProjectDir)A\Parser.g&quot; &quot;$(ProjectDir)A\GeneratedParser.cs&quot;" />
