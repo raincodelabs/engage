@@ -10,17 +10,8 @@ namespace EngageTests
     [TestClass]
     public class Tests
     {
-#if Windows
-        private const string AppBuilderSpec = @"..\..\..\..\example\appbuilder.eng";
-        private const string AppBuilderRule = @"..\..\..\..\example\simple.ab";
-        private const string AppBuilderCode = @"..\..\..\..\tests";
-        private const string AppBuilderLog = @"..\..\..\..\";
-#else
-        private const string AppBuilderSpec = @"../../../../example/appbuilder.eng";
-        private const string AppBuilderRule = @"../../../../example/simple.ab";
-        private const string AppBuilderCode = @"../../../../tests";
-        private const string AppBuilderLog = @"../../../../";
-#endif
+        private static string FourUp { get; } = Path.Combine("..", "..", "..", "..");
+        private static string AppBuilderCode { get; } = Path.Combine(FourUp, "tests");
 
         private const int LimitNormal = 1001;
         private const int LimitLongTests = LimitNormal;
@@ -51,11 +42,12 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             Dictionary<string, int> TestPlan = new Dictionary<string, int>()
             {
-                {"long", LimitLongExpTests },
-                {"deep", LimitDeepExpTests },
+                {"long", LimitLongExpTests},
+                {"deep", LimitDeepExpTests},
                 {"stack", LimitStackExpTests},
             };
             foreach (var name in TestPlan.Keys)
@@ -74,8 +66,9 @@ namespace EngageTests
                         runs.Add(sw.ElapsedTicks);
                         sw.Reset();
                     }
+
                     runs.Sort();
-                    var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                    var result = (long) runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
                     Console.WriteLine($"Measured '{name}10e{i}.ab': OK in {result} ticks");
                 }
             }
@@ -92,6 +85,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             List<long> measures = new List<long>();
             Stopwatch sw = new Stopwatch();
@@ -115,6 +109,7 @@ namespace EngageTests
                 measures.Add(sw.ElapsedTicks);
                 sw.Reset();
             }
+
             Console.WriteLine($"AVERAGE time: {measures.Average()}");
         }
 
@@ -129,6 +124,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             List<long> measures = new List<long>();
             List<long> runs = new List<long>();
@@ -145,11 +141,13 @@ namespace EngageTests
                     runs.Add(sw.ElapsedTicks);
                     sw.Reset();
                 }
+
                 runs.Sort();
-                var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                var result = (long) runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
                 Console.WriteLine($"Measured 'stack{i}.ab': OK in {result} ticks");
                 measures.Add(result);
             }
+
             Console.WriteLine($"AVERAGE time: {measures.Average()}");
         }
 
@@ -164,6 +162,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             List<long> measures = new List<long>();
             Stopwatch sw = new Stopwatch();
@@ -181,6 +180,7 @@ namespace EngageTests
                 measures.Add(sw.ElapsedTicks);
                 sw.Reset();
             }
+
             Console.WriteLine($"AVERAGE time: {measures.Average()}");
         }
 
@@ -195,6 +195,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             List<long> measures = new List<long>();
             List<long> runs = new List<long>();
@@ -211,11 +212,13 @@ namespace EngageTests
                     runs.Add(sw.ElapsedTicks);
                     sw.Reset();
                 }
+
                 runs.Sort();
-                var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                var result = (long) runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
                 Console.WriteLine($"Measured 'deep{i}.ab': OK in {result} ticks");
                 measures.Add(result);
             }
+
             Console.WriteLine($"AVERAGE time: {measures.Average()}");
         }
 
@@ -230,6 +233,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitDeepExpTests; i++)
@@ -258,6 +262,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             List<long> measures = new List<long>();
             Stopwatch sw = new Stopwatch();
@@ -275,6 +280,7 @@ namespace EngageTests
                 measures.Add(sw.ElapsedTicks);
                 sw.Reset();
             }
+
             Console.WriteLine($"AVERAGE time: {measures.Average()}");
         }
 
@@ -289,6 +295,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             List<long> measures = new List<long>();
             List<long> runs = new List<long>();
@@ -305,11 +312,13 @@ namespace EngageTests
                     runs.Add(sw.ElapsedTicks);
                     sw.Reset();
                 }
+
                 runs.Sort();
-                var result = (long)runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
+                var result = (long) runs.Skip(RunsSkip).SkipLast(RunsSkip).Average();
                 Console.WriteLine($"Measured 'long{i}.ab': OK in {result} ticks");
                 measures.Add(result);
             }
+
             Console.WriteLine($"AVERAGE time: {measures.Average()}");
         }
 
@@ -324,6 +333,7 @@ namespace EngageTests
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
+
             // actual measurement
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitLongExpTests; i++)
@@ -335,7 +345,7 @@ namespace EngageTests
                 sw.Stop();
                 Assert.IsNotNull(spec);
                 Assert.AreEqual(0, spec.data.Count);
-                Assert.AreEqual((int)Math.Pow(10, i), spec.code.Count);
+                Assert.AreEqual((int) Math.Pow(10, i), spec.code.Count);
                 Console.WriteLine($"Tested 'long10e{i}.ab': OK in {sw.ElapsedTicks} ticks");
                 sw.Reset();
             }
@@ -551,7 +561,7 @@ namespace EngageTests
         [TestMethod]
         public void TryEngagedParser()
         {
-            var parser = new AB.Parser(File.ReadAllText(AppBuilderRule));
+            var parser = new AB.Parser(File.ReadAllText(Path.Combine(FourUp, "example", "simple.ab")));
             AB.ABProgram spec = parser.Parse() as AB.ABProgram;
             Assert.IsNotNull(spec);
             Assert.AreEqual(1, spec.data.Count);
@@ -561,7 +571,8 @@ namespace EngageTests
         [TestMethod]
         public void TryAppBuilder()
         {
-            var spec = Engage.front.FrontEnd.EngSpecFromText(File.ReadAllText(AppBuilderSpec));
+            var spec = Engage.front.FrontEnd.EngSpecFromFile(Path.Combine(FourUp, "example", "appbuilder.eng"));
+            Assert.IsNotNull(spec);
         }
 
         [TestMethod]
@@ -680,7 +691,8 @@ namespace EngageTests
         // NB: there are so many tests that we run them fewer times like with exp ones
         [TestMethod]
         public void CompareParsersOnMix()
-            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "mix", LimitMixedTestsEach, "x", LimitMixedTestsRep);
+            => CompareParametrically(RunsExpToAverage, RunsExpSkip, "mix", LimitMixedTestsEach, "x",
+                LimitMixedTestsRep);
 
         [TestMethod]
         public void CompareParsersOnStack()
@@ -690,7 +702,8 @@ namespace EngageTests
         public void CompareParsersOnExpStack()
             => CompareParametrically(RunsExpToAverage, RunsExpSkip, "stack10e", LimitStackExpTests);
 
-        private void CompareParametrically(int runs, int discard, string name1, int limit1, string name2 = "", int limit2 = 1, int limitForPEG = -1)
+        private void CompareParametrically(int runs, int discard, string name1, int limit1, string name2 = "",
+            int limit2 = 1, int limitForPEG = -1)
         {
             if (limitForPEG < 0)
                 limitForPEG = limit1;
@@ -706,7 +719,7 @@ namespace EngageTests
                 for (int j = 0; j < limit2; j++)
                 {
                     string name
-                            = limit2 == 1
+                        = limit2 == 1
                             ? $"{name1}{i}.ab"
                             : $"{name1}{i}{name2}{j}.ab";
                     string fname = Path.Combine(AppBuilderCode, name);
@@ -727,26 +740,30 @@ namespace EngageTests
                         }
                         else
                             runs2.Add(0);
+
                         sw.Reset();
                     }
+
                     runs1.Sort();
                     runs2.Sort();
                     var runs1cut = runs1.Skip(discard).SkipLast(discard);
                     var runs2cut = runs2.Skip(discard).SkipLast(discard);
 
-                    var result1a = (long)runs1cut.Average();
+                    var result1a = (long) runs1cut.Average();
                     var result1m = Median(runs1);
                     var result1n = NormalisedMean(runs1);
                     var result1z = NormalisedMean(runs1cut.ToList());
-                    var result2a = (long)runs2cut.Average();
+                    var result2a = (long) runs2cut.Average();
                     var result2m = Median(runs2);
                     var result2n = NormalisedMean(runs2);
                     var result2z = NormalisedMean(runs2cut.ToList());
-                    Console.WriteLine($"OK for '{name}'. Ticks: average {result1a} vs {result2a} ; median {result1m} vs {result2m} ; normean {result1n} vs {result2n} ; outnormean {result1z} vs {result2z}");
+                    Console.WriteLine(
+                        $"OK for '{name}'. Ticks: average {result1a} vs {result2a} ; median {result1m} vs {result2m} ; normean {result1n} vs {result2n} ; outnormean {result1z} vs {result2z}");
                     measures1.Add(result1n);
                     measures2.Add(result2n);
                 }
             }
+
             if (measures1.Count > 0 && measures2.Count > 0)
                 Console.WriteLine($"AVERAGE time: {measures1.Average()} vs {measures2.Average()}");
         }
@@ -755,7 +772,7 @@ namespace EngageTests
         {
             var ys = xs.OrderBy(x => x).ToList();
             double mid = (ys.Count - 1) / 2.0;
-            return (ys[(int)(mid)] + ys[(int)(mid + 0.5)]) / 2;
+            return (ys[(int) (mid)] + ys[(int) (mid + 0.5)]) / 2;
         }
 
         public static long NormalisedMean(ICollection<long> values)
@@ -765,7 +782,8 @@ namespace EngageTests
 
             var deviations = Deviations(values).ToArray();
             var meanDeviation = deviations.Sum(t => Math.Abs(t.Item2)) / values.Count;
-            return (long)deviations.Where(t => t.Item2 > 0 || Math.Abs(t.Item2) <= meanDeviation).Average(t => t.Item1);
+            return (long) deviations.Where(t => t.Item2 > 0 || Math.Abs(t.Item2) <= meanDeviation)
+                .Average(t => t.Item1);
         }
 
         public static IEnumerable<Tuple<long, long>> Deviations(ICollection<long> values)
@@ -773,7 +791,7 @@ namespace EngageTests
             if (values.Count == 0)
                 yield break;
 
-            long avg = (long)values.Average();
+            long avg = (long) values.Average();
             foreach (var d in values)
                 yield return Tuple.Create(d, avg - d);
         }
@@ -799,16 +817,18 @@ namespace EngageTests
                 runs2.Add(sw.ElapsedTicks);
                 sw.Reset();
             }
+
             runs1.Sort();
             runs2.Sort();
-            var result1 = (long)runs1.Skip(discard).SkipLast(discard).Average();
-            var result2 = (long)runs2.Skip(discard).SkipLast(discard).Average();
+            var result1 = (long) runs1.Skip(discard).SkipLast(discard).Average();
+            var result2 = (long) runs2.Skip(discard).SkipLast(discard).Average();
             Console.WriteLine($"Measured '{name}': OK in {result1} ticks vs {result2} ticks");
         }
 
-        private void CompareParametricallyLogToFile(int runs, int discard, string name1, int limit1, string name2 = "", int limit2 = 1)
+        private void CompareParametricallyLogToFile(int runs, int discard, string name1, int limit1, string name2 = "",
+            int limit2 = 1)
         {
-            var f = Path.Combine(AppBuilderLog, name1 + ".log");
+            var f = Path.Combine(FourUp, name1 + ".log");
             try
             {
                 Random r = new Random();
@@ -818,52 +838,58 @@ namespace EngageTests
                 List<long> runs2 = new List<long>();
                 Stopwatch sw = new Stopwatch();
                 for (int i = 0; i < limit1; i++)
-                    for (int j = 0; j < limit2; j++)
+                for (int j = 0; j < limit2; j++)
+                {
+                    string name
+                        = limit2 == 1
+                            ? $"{name1}{i}.ab"
+                            : $"{name1}{i}{name2}{j}.ab";
+                    string fname = Path.Combine(AppBuilderCode, name);
+                    for (int k = 0; k < runs; k++)
                     {
-                        string name
-                                = limit2 == 1
-                                ? $"{name1}{i}.ab"
-                                : $"{name1}{i}{name2}{j}.ab";
-                        string fname = Path.Combine(AppBuilderCode, name);
-                        for (int k = 0; k < runs; k++)
+                        try
                         {
-                            try
-                            {
-                                sw.Start();
-                                var parser1 = new AB.Parser(File.ReadAllText(fname));
-                                var spec1 = parser1.Parse() as AB.ABProgram;
-                                sw.Stop();
-                                runs1.Add(sw.ElapsedTicks);
-                            }
-                            catch (StackOverflowException)
-                            {
-                                File.AppendAllText(f, "Engage! parser stackoverflowed" + Environment.NewLine);
-                                runs1.Add(0);
-                            }
-                            try
-                            {
-                                sw.Restart();
-                                var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
-                                sw.Stop();
-                                runs2.Add(sw.ElapsedTicks);
-                            }
-                            catch (StackOverflowException)
-                            {
-                                File.AppendAllText(f, "PEG parser stackoverflowed" + Environment.NewLine);
-                                runs2.Add(0);
-                            }
-                            sw.Reset();
+                            sw.Start();
+                            var parser1 = new AB.Parser(File.ReadAllText(fname));
+                            var spec1 = parser1.Parse() as AB.ABProgram;
+                            sw.Stop();
+                            runs1.Add(sw.ElapsedTicks);
                         }
-                        runs1.Sort();
-                        runs2.Sort();
-                        var result1 = (long)runs1.Skip(discard).SkipLast(discard).Average();
-                        var result2 = (long)runs2.Skip(discard).SkipLast(discard).Average();
-                        File.AppendAllText(f, $"Measured '{name}': OK in {result1} ticks vs {result2} ticks" + Environment.NewLine);
-                        measures1.Add(result1);
-                        measures2.Add(result2);
+                        catch (StackOverflowException)
+                        {
+                            File.AppendAllText(f, "Engage! parser stackoverflowed" + Environment.NewLine);
+                            runs1.Add(0);
+                        }
+
+                        try
+                        {
+                            sw.Restart();
+                            var spec2 = tialaa.Parser.ParseRule(File.ReadAllText(fname));
+                            sw.Stop();
+                            runs2.Add(sw.ElapsedTicks);
+                        }
+                        catch (StackOverflowException)
+                        {
+                            File.AppendAllText(f, "PEG parser stackoverflowed" + Environment.NewLine);
+                            runs2.Add(0);
+                        }
+
+                        sw.Reset();
                     }
+
+                    runs1.Sort();
+                    runs2.Sort();
+                    var result1 = (long) runs1.Skip(discard).SkipLast(discard).Average();
+                    var result2 = (long) runs2.Skip(discard).SkipLast(discard).Average();
+                    File.AppendAllText(f,
+                        $"Measured '{name}': OK in {result1} ticks vs {result2} ticks" + Environment.NewLine);
+                    measures1.Add(result1);
+                    measures2.Add(result2);
+                }
+
                 if (measures1.Count > 0 && measures2.Count > 0)
-                    File.AppendAllText(f, $"AVERAGE time: {measures1.Average()} vs {measures2.Average()}" + Environment.NewLine);
+                    File.AppendAllText(f,
+                        $"AVERAGE time: {measures1.Average()} vs {measures2.Average()}" + Environment.NewLine);
             }
             catch (Exception e)
             {
