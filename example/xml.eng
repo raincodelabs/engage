@@ -1,0 +1,21 @@
+% EAX: Engage! API for XML
+namespace EAX
+
+types
+    EngagedXmlDoc;
+    Name;
+    TagOpen;
+
+tokens
+  ' ', '\r', '\n' :: skip
+  '<', '>', '!' :: mark
+  string :: Id
+
+handlers
+    EOF                 -> push EngagedXmlDoc(tags)
+                           where tags := pop* TagOpen
+    '<'                 -> lift TAG
+%   '/' upon TAG        -> lift CLOSE
+    Id upon TAG         -> push Name(this)
+    '>'                 -> push TagOpen(n)
+                           where n := pop Name

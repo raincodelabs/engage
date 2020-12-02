@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Engage.front;
 
@@ -13,7 +12,8 @@ namespace Runner
         {
             Dictionary<string, string> compilationList = new Dictionary<string, string>();
             compilationList[Path.Combine(FourUp, "example", "appbuilder.eng")] = Path.Combine(FourUp, "AB");
-            
+            compilationList[Path.Combine(FourUp, "example", "xml.eng")] = Path.Combine(FourUp, "EAX");
+
             foreach (var spec in compilationList.Keys)
                 FrontEnd.FullPipeline(spec, compilationList[spec]);
         }
