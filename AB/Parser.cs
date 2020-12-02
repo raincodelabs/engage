@@ -283,131 +283,131 @@ namespace AB
         {
             TokenType t = TokenType.TUndefined;
             string s = "";
-            if (pos >= input.Length)
+            if (Pos >= Input.Length)
                 return new Tuple<TokenType, string>(TokenType.TEOF, "");
-            while (pos < input.Length && (input[pos] == ' ' || input[pos] == '\r' || input[pos] == '\n'))
-                pos++;
-            if (pos >= input.Length)
+            while (Pos < Input.Length && (Input[Pos] == ' ' || Input[Pos] == '\r' || Input[Pos] == '\n'))
+                Pos++;
+            if (Pos >= Input.Length)
                 return new Tuple<TokenType, string>(TokenType.TEOF, "");
-            else if (input[pos] == ';')
+            else if (Input[Pos] == ';')
             {
                 t = TokenType.Tmark;
                 s = ";";
-                pos++;
+                Pos++;
             }
-            else if (input[pos] == '(')
+            else if (Input[Pos] == '(')
             {
                 t = TokenType.Tmark;
                 s = "(";
-                pos++;
+                Pos++;
             }
-            else if (input[pos] == ')')
+            else if (Input[Pos] == ')')
             {
                 t = TokenType.Tmark;
                 s = ")";
-                pos++;
+                Pos++;
             }
-            else if ((pos + 2 < input.Length && input[pos] == 'd' && input[pos + 1] == 'c' && input[pos + 2] == 'l') && (pos + 3 == input.Length || input[pos + 3] == ' ' || input[pos + 3] == '\r' || input[pos + 3] == '\n' || input[pos + 3] == ';' || input[pos + 3] == '(' || input[pos + 3] == ')'))
+            else if ((Pos + 2 < Input.Length && Input[Pos] == 'd' && Input[Pos + 1] == 'c' && Input[Pos + 2] == 'l') && (Pos + 3 == Input.Length || Input[Pos + 3] == ' ' || Input[Pos + 3] == '\r' || Input[Pos + 3] == '\n' || Input[Pos + 3] == ';' || Input[Pos + 3] == '(' || Input[Pos + 3] == ')'))
             {
                 t = TokenType.Tword;
                 s = "dcl";
-                pos += 3;
+                Pos += 3;
             }
-            else if ((pos + 5 < input.Length && input[pos] == 'e' && input[pos + 1] == 'n' && input[pos + 2] == 'd' && input[pos + 3] == 'd' && input[pos + 4] == 'c' && input[pos + 5] == 'l') && (pos + 6 == input.Length || input[pos + 6] == ' ' || input[pos + 6] == '\r' || input[pos + 6] == '\n' || input[pos + 6] == ';' || input[pos + 6] == '(' || input[pos + 6] == ')'))
+            else if ((Pos + 5 < Input.Length && Input[Pos] == 'e' && Input[Pos + 1] == 'n' && Input[Pos + 2] == 'd' && Input[Pos + 3] == 'd' && Input[Pos + 4] == 'c' && Input[Pos + 5] == 'l') && (Pos + 6 == Input.Length || Input[Pos + 6] == ' ' || Input[Pos + 6] == '\r' || Input[Pos + 6] == '\n' || Input[Pos + 6] == ';' || Input[Pos + 6] == '(' || Input[Pos + 6] == ')'))
             {
                 t = TokenType.Tword;
                 s = "enddcl";
-                pos += 6;
+                Pos += 6;
             }
-            else if ((pos + 6 < input.Length && input[pos] == 'i' && input[pos + 1] == 'n' && input[pos + 2] == 't' && input[pos + 3] == 'e' && input[pos + 4] == 'g' && input[pos + 5] == 'e' && input[pos + 6] == 'r') && (pos + 7 == input.Length || input[pos + 7] == ' ' || input[pos + 7] == '\r' || input[pos + 7] == '\n' || input[pos + 7] == ';' || input[pos + 7] == '(' || input[pos + 7] == ')'))
+            else if ((Pos + 6 < Input.Length && Input[Pos] == 'i' && Input[Pos + 1] == 'n' && Input[Pos + 2] == 't' && Input[Pos + 3] == 'e' && Input[Pos + 4] == 'g' && Input[Pos + 5] == 'e' && Input[Pos + 6] == 'r') && (Pos + 7 == Input.Length || Input[Pos + 7] == ' ' || Input[Pos + 7] == '\r' || Input[Pos + 7] == '\n' || Input[Pos + 7] == ';' || Input[Pos + 7] == '(' || Input[Pos + 7] == ')'))
             {
                 t = TokenType.Tword;
                 s = "integer";
-                pos += 7;
+                Pos += 7;
             }
-            else if ((pos + 3 < input.Length && input[pos] == 'c' && input[pos + 1] == 'h' && input[pos + 2] == 'a' && input[pos + 3] == 'r') && (pos + 4 == input.Length || input[pos + 4] == ' ' || input[pos + 4] == '\r' || input[pos + 4] == '\n' || input[pos + 4] == ';' || input[pos + 4] == '(' || input[pos + 4] == ')'))
+            else if ((Pos + 3 < Input.Length && Input[Pos] == 'c' && Input[Pos + 1] == 'h' && Input[Pos + 2] == 'a' && Input[Pos + 3] == 'r') && (Pos + 4 == Input.Length || Input[Pos + 4] == ' ' || Input[Pos + 4] == '\r' || Input[Pos + 4] == '\n' || Input[Pos + 4] == ';' || Input[Pos + 4] == '(' || Input[Pos + 4] == ')'))
             {
                 t = TokenType.Tword;
                 s = "char";
-                pos += 4;
+                Pos += 4;
             }
-            else if ((pos + 2 < input.Length && input[pos] == 'd' && input[pos + 1] == 'e' && input[pos + 2] == 'c') && (pos + 3 == input.Length || input[pos + 3] == ' ' || input[pos + 3] == '\r' || input[pos + 3] == '\n' || input[pos + 3] == ';' || input[pos + 3] == '(' || input[pos + 3] == ')'))
+            else if ((Pos + 2 < Input.Length && Input[Pos] == 'd' && Input[Pos + 1] == 'e' && Input[Pos + 2] == 'c') && (Pos + 3 == Input.Length || Input[Pos + 3] == ' ' || Input[Pos + 3] == '\r' || Input[Pos + 3] == '\n' || Input[Pos + 3] == ';' || Input[Pos + 3] == '(' || Input[Pos + 3] == ')'))
             {
                 t = TokenType.Tword;
                 s = "dec";
-                pos += 3;
+                Pos += 3;
             }
-            else if ((pos + 4 < input.Length && input[pos] == 'c' && input[pos + 1] == 'l' && input[pos + 2] == 'e' && input[pos + 3] == 'a' && input[pos + 4] == 'r') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
+            else if ((Pos + 4 < Input.Length && Input[Pos] == 'c' && Input[Pos + 1] == 'l' && Input[Pos + 2] == 'e' && Input[Pos + 3] == 'a' && Input[Pos + 4] == 'r') && (Pos + 5 == Input.Length || Input[Pos + 5] == ' ' || Input[Pos + 5] == '\r' || Input[Pos + 5] == '\n' || Input[Pos + 5] == ';' || Input[Pos + 5] == '(' || Input[Pos + 5] == ')'))
             {
                 t = TokenType.Tword;
                 s = "clear";
-                pos += 5;
+                Pos += 5;
             }
-            else if ((pos + 7 < input.Length && input[pos] == 'c' && input[pos + 1] == 'o' && input[pos + 2] == 'n' && input[pos + 3] == 'v' && input[pos + 4] == 'e' && input[pos + 5] == 'r' && input[pos + 6] == 's' && input[pos + 7] == 'e') && (pos + 8 == input.Length || input[pos + 8] == ' ' || input[pos + 8] == '\r' || input[pos + 8] == '\n' || input[pos + 8] == ';' || input[pos + 8] == '(' || input[pos + 8] == ')'))
+            else if ((Pos + 7 < Input.Length && Input[Pos] == 'c' && Input[Pos + 1] == 'o' && Input[Pos + 2] == 'n' && Input[Pos + 3] == 'v' && Input[Pos + 4] == 'e' && Input[Pos + 5] == 'r' && Input[Pos + 6] == 's' && Input[Pos + 7] == 'e') && (Pos + 8 == Input.Length || Input[Pos + 8] == ' ' || Input[Pos + 8] == '\r' || Input[Pos + 8] == '\n' || Input[Pos + 8] == ';' || Input[Pos + 8] == '(' || Input[Pos + 8] == ')'))
             {
                 t = TokenType.Tword;
                 s = "converse";
-                pos += 8;
+                Pos += 8;
             }
-            else if ((pos + 6 < input.Length && input[pos] == 'h' && input[pos + 1] == 'a' && input[pos + 2] == 'n' && input[pos + 3] == 'd' && input[pos + 4] == 'l' && input[pos + 5] == 'e' && input[pos + 6] == 'r') && (pos + 7 == input.Length || input[pos + 7] == ' ' || input[pos + 7] == '\r' || input[pos + 7] == '\n' || input[pos + 7] == ';' || input[pos + 7] == '(' || input[pos + 7] == ')'))
+            else if ((Pos + 6 < Input.Length && Input[Pos] == 'h' && Input[Pos + 1] == 'a' && Input[Pos + 2] == 'n' && Input[Pos + 3] == 'd' && Input[Pos + 4] == 'l' && Input[Pos + 5] == 'e' && Input[Pos + 6] == 'r') && (Pos + 7 == Input.Length || Input[Pos + 7] == ' ' || Input[Pos + 7] == '\r' || Input[Pos + 7] == '\n' || Input[Pos + 7] == ';' || Input[Pos + 7] == '(' || Input[Pos + 7] == ')'))
             {
                 t = TokenType.Tword;
                 s = "handler";
-                pos += 7;
+                Pos += 7;
             }
-            else if ((pos + 1 < input.Length && input[pos] == 'i' && input[pos + 1] == 'f') && (pos + 2 == input.Length || input[pos + 2] == ' ' || input[pos + 2] == '\r' || input[pos + 2] == '\n' || input[pos + 2] == ';' || input[pos + 2] == '(' || input[pos + 2] == ')'))
+            else if ((Pos + 1 < Input.Length && Input[Pos] == 'i' && Input[Pos + 1] == 'f') && (Pos + 2 == Input.Length || Input[Pos + 2] == ' ' || Input[Pos + 2] == '\r' || Input[Pos + 2] == '\n' || Input[Pos + 2] == ';' || Input[Pos + 2] == '(' || Input[Pos + 2] == ')'))
             {
                 t = TokenType.Tword;
                 s = "if";
-                pos += 2;
+                Pos += 2;
             }
-            else if ((pos + 4 < input.Length && input[pos] == 'e' && input[pos + 1] == 'n' && input[pos + 2] == 'd' && input[pos + 3] == 'i' && input[pos + 4] == 'f') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
+            else if ((Pos + 4 < Input.Length && Input[Pos] == 'e' && Input[Pos + 1] == 'n' && Input[Pos + 2] == 'd' && Input[Pos + 3] == 'i' && Input[Pos + 4] == 'f') && (Pos + 5 == Input.Length || Input[Pos + 5] == ' ' || Input[Pos + 5] == '\r' || Input[Pos + 5] == '\n' || Input[Pos + 5] == ';' || Input[Pos + 5] == '(' || Input[Pos + 5] == ')'))
             {
                 t = TokenType.Tword;
                 s = "endif";
-                pos += 5;
+                Pos += 5;
             }
-            else if ((pos + 2 < input.Length && input[pos] == 'm' && input[pos + 1] == 'a' && input[pos + 2] == 'p') && (pos + 3 == input.Length || input[pos + 3] == ' ' || input[pos + 3] == '\r' || input[pos + 3] == '\n' || input[pos + 3] == ';' || input[pos + 3] == '(' || input[pos + 3] == ')'))
+            else if ((Pos + 2 < Input.Length && Input[Pos] == 'm' && Input[Pos + 1] == 'a' && Input[Pos + 2] == 'p') && (Pos + 3 == Input.Length || Input[Pos + 3] == ' ' || Input[Pos + 3] == '\r' || Input[Pos + 3] == '\n' || Input[Pos + 3] == ';' || Input[Pos + 3] == '(' || Input[Pos + 3] == ')'))
             {
                 t = TokenType.Tword;
                 s = "map";
-                pos += 3;
+                Pos += 3;
             }
-            else if ((pos + 1 < input.Length && input[pos] == 't' && input[pos + 1] == 'o') && (pos + 2 == input.Length || input[pos + 2] == ' ' || input[pos + 2] == '\r' || input[pos + 2] == '\n' || input[pos + 2] == ';' || input[pos + 2] == '(' || input[pos + 2] == ')'))
+            else if ((Pos + 1 < Input.Length && Input[Pos] == 't' && Input[Pos + 1] == 'o') && (Pos + 2 == Input.Length || Input[Pos + 2] == ' ' || Input[Pos + 2] == '\r' || Input[Pos + 2] == '\n' || Input[Pos + 2] == ';' || Input[Pos + 2] == '(' || Input[Pos + 2] == ')'))
             {
                 t = TokenType.Tword;
                 s = "to";
-                pos += 2;
+                Pos += 2;
             }
-            else if ((pos + 6 < input.Length && input[pos] == 'o' && input[pos + 1] == 'v' && input[pos + 2] == 'e' && input[pos + 3] == 'r' && input[pos + 4] == 'l' && input[pos + 5] == 'a' && input[pos + 6] == 'y') && (pos + 7 == input.Length || input[pos + 7] == ' ' || input[pos + 7] == '\r' || input[pos + 7] == '\n' || input[pos + 7] == ';' || input[pos + 7] == '(' || input[pos + 7] == ')'))
+            else if ((Pos + 6 < Input.Length && Input[Pos] == 'o' && Input[Pos + 1] == 'v' && Input[Pos + 2] == 'e' && Input[Pos + 3] == 'r' && Input[Pos + 4] == 'l' && Input[Pos + 5] == 'a' && Input[Pos + 6] == 'y') && (Pos + 7 == Input.Length || Input[Pos + 7] == ' ' || Input[Pos + 7] == '\r' || Input[Pos + 7] == '\n' || Input[Pos + 7] == ';' || Input[Pos + 7] == '(' || Input[Pos + 7] == ')'))
             {
                 t = TokenType.Tword;
                 s = "overlay";
-                pos += 7;
+                Pos += 7;
             }
-            else if ((pos + 4 < input.Length && input[pos] == 'p' && input[pos + 1] == 'r' && input[pos + 2] == 'i' && input[pos + 3] == 'n' && input[pos + 4] == 't') && (pos + 5 == input.Length || input[pos + 5] == ' ' || input[pos + 5] == '\r' || input[pos + 5] == '\n' || input[pos + 5] == ';' || input[pos + 5] == '(' || input[pos + 5] == ')'))
+            else if ((Pos + 4 < Input.Length && Input[Pos] == 'p' && Input[Pos + 1] == 'r' && Input[Pos + 2] == 'i' && Input[Pos + 3] == 'n' && Input[Pos + 4] == 't') && (Pos + 5 == Input.Length || Input[Pos + 5] == ' ' || Input[Pos + 5] == '\r' || Input[Pos + 5] == '\n' || Input[Pos + 5] == ';' || Input[Pos + 5] == '(' || Input[Pos + 5] == ')'))
             {
                 t = TokenType.Tword;
                 s = "print";
-                pos += 5;
+                Pos += 5;
             }
-            else if ((pos + 5 < input.Length && input[pos] == 'r' && input[pos + 1] == 'e' && input[pos + 2] == 't' && input[pos + 3] == 'u' && input[pos + 4] == 'r' && input[pos + 5] == 'n') && (pos + 6 == input.Length || input[pos + 6] == ' ' || input[pos + 6] == '\r' || input[pos + 6] == '\n' || input[pos + 6] == ';' || input[pos + 6] == '(' || input[pos + 6] == ')'))
+            else if ((Pos + 5 < Input.Length && Input[Pos] == 'r' && Input[Pos + 1] == 'e' && Input[Pos + 2] == 't' && Input[Pos + 3] == 'u' && Input[Pos + 4] == 'r' && Input[Pos + 5] == 'n') && (Pos + 6 == Input.Length || Input[Pos + 6] == ' ' || Input[Pos + 6] == '\r' || Input[Pos + 6] == '\n' || Input[Pos + 6] == ';' || Input[Pos + 6] == '(' || Input[Pos + 6] == ')'))
             {
                 t = TokenType.Tword;
                 s = "return";
-                pos += 6;
+                Pos += 6;
             }
-            else if (input[pos] == '0' || input[pos] == '1' || input[pos] == '2' || input[pos] == '3' || input[pos] == '4' || input[pos] == '5' || input[pos] == '6' || input[pos] == '7' || input[pos] == '8' || input[pos] == '9')
+            else if (Input[Pos] == '0' || Input[Pos] == '1' || Input[Pos] == '2' || Input[Pos] == '3' || Input[Pos] == '4' || Input[Pos] == '5' || Input[Pos] == '6' || Input[Pos] == '7' || Input[Pos] == '8' || Input[Pos] == '9')
             {
                 t = TokenType.TNum;
-                while (pos < input.Length && (input[pos] == '0' || input[pos] == '1' || input[pos] == '2' || input[pos] == '3' || input[pos] == '4' || input[pos] == '5' || input[pos] == '6' || input[pos] == '7' || input[pos] == '8' || input[pos] == '9'))
-                    s += input[pos++];
+                while (Pos < Input.Length && (Input[Pos] == '0' || Input[Pos] == '1' || Input[Pos] == '2' || Input[Pos] == '3' || Input[Pos] == '4' || Input[Pos] == '5' || Input[Pos] == '6' || Input[Pos] == '7' || Input[Pos] == '8' || Input[Pos] == '9'))
+                    s += Input[Pos++];
             }
             else
             {
                 t = TokenType.TId;
-                while (pos < input.Length && input[pos] != ' ' && input[pos] != '\r' && input[pos] != '\n')
-                    s += input[pos++];
+                while (Pos < Input.Length && Input[Pos] != ' ' && Input[Pos] != '\r' && Input[Pos] != '\n')
+                    s += Input[Pos++];
             }
             return new Tuple<TokenType, string>(t, s);
         }

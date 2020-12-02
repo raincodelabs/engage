@@ -345,18 +345,18 @@ namespace Engage.B
             tok.AddCode("TokenType t = TokenType.TUndefined;");
             tok.AddCode("string s = \"\";");
             // EOF phase
-            tok.AddCode(new C.IfThenElse("pos >= input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            tok.AddCode(new C.IfThenElse("Pos >= Input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
             // skip
             if (Tokens.ContainsKey("skip"))
             {
-                string cond = String.Join(" || ", Tokens["skip"].Select(t => $"input[pos] == '{t.Value}'"));
-                tok.AddCode(new C.WhileStmt($"pos < input.Length && ({cond})", "pos++"));
+                string cond = String.Join(" || ", Tokens["skip"].Select(t => $"Input[Pos] == '{t.Value}'"));
+                tok.AddCode(new C.WhileStmt($"Pos < Input.Length && ({cond})", "Pos++"));
                 Tokens["skip"].ForEach(t => skipmark.Add(t.Value));
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
             // EOF after skip
-            var megaIf = new C.IfThenElse("pos >= input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
+            var megaIf = new C.IfThenElse("Pos >= Input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
             tok.AddCode(megaIf);
             // mark
             if (Tokens.ContainsKey("mark"))
@@ -416,19 +416,19 @@ namespace Engage.B
             string cond = "";
             if (Tokens.ContainsKey("skip"))
                 foreach (var t in Tokens["skip"])
-                    cond += $" && input[pos] != '{t.Value}'";
+                    cond += $" && Input[Pos] != '{t.Value}'";
             var block = new List<CsStmt>();
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
-            block.Add(new C.WhileStmt($"pos < input.Length{cond}", "s += input[pos++]"));
+            block.Add(new C.WhileStmt($"Pos < Input.Length{cond}", "s += Input[Pos++]"));
             return new Tuple<string, IEnumerable<CsStmt>>(null, block); // null condition means the ELSE branch
         }
 
         private Tuple<string, IEnumerable<CsStmt>> GenerateBranchNumberMatch(string type)
         {
             var block = new List<CsStmt>();
-            string cond = string.Join(" || ", "0123456789".Select(c => $"input[pos] == '{c}'"));
+            string cond = string.Join(" || ", "0123456789".Select(c => $"Input[Pos] == '{c}'"));
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
-            block.Add(new C.WhileStmt($"pos < input.Length && ({cond})", "s += input[pos++]"));
+            block.Add(new C.WhileStmt($"Pos < Input.Length && ({cond})", "s += Input[Pos++]"));
             return new Tuple<string, IEnumerable<CsStmt>>(cond, block);
         }
 
@@ -436,20 +436,20 @@ namespace Engage.B
         {
             int len = value.Length;
             var block = new List<CsStmt>();
-            var cond = len > 1 ? $"pos + {len - 1} < input.Length" : "";
+            var cond = len > 1 ? $"Pos + {len - 1} < Input.Length" : "";
             for (int i = 0; i < len; i++)
-                cond += $" && input[pos + {i}] == '{value[i]}'";
+                cond += $" && Input[Pos + {i}] == '{value[i]}'";
             if (cond.StartsWith(" && "))
                 cond = cond.Substring(4);
 
             // either EOF or next is skip or mark
             if (skipmark != null && skipmark.Count > 0)
-                cond = $"({cond}) && (pos + {len} == input.Length || {String.Join(" || ", skipmark.Select(c => $"input[pos + {len}] == '{c}'"))})";
+                cond = $"({cond}) && (Pos + {len} == Input.Length || {String.Join(" || ", skipmark.Select(c => $"Input[Pos + {len}] == '{c}'"))})";
 
             cond = cond.Replace(" + 0", "");
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
             block.Add(new SimpleStmt($"s = \"{value}\""));
-            block.Add(new SimpleStmt(len > 1 ? $"pos += {len}" : "pos++"));
+            block.Add(new SimpleStmt(len > 1 ? $"Pos += {len}" : "Pos++"));
             return new Tuple<string, IEnumerable<CsStmt>>(cond, block);
         }
     }
