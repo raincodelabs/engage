@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Engage.front;
+using Engage;
 
 namespace Runner
 {
@@ -10,9 +10,11 @@ namespace Runner
 
         private static void Main(string[] args)
         {
-            Dictionary<string, string> compilationList = new Dictionary<string, string>();
-            compilationList[Path.Combine(FourUp, "example", "appbuilder.eng")] = Path.Combine(FourUp, "AB");
-            compilationList[Path.Combine(FourUp, "example", "xml.eng")] = Path.Combine(FourUp, "EAX");
+            Dictionary<string, string> compilationList = new Dictionary<string, string>
+            {
+                [Path.Combine(FourUp, "example", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
+                [Path.Combine(FourUp, "example", "xml.eng")] = Path.Combine(FourUp, "EAX")
+            };
 
             foreach (var spec in compilationList.Keys)
                 FrontEnd.FullPipeline(spec, compilationList[spec]);

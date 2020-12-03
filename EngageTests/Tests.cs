@@ -571,7 +571,7 @@ namespace EngageTests
         [TestMethod]
         public void TryAppBuilder()
         {
-            var spec = Engage.front.FrontEnd.EngSpecFromFile(Path.Combine(FourUp, "example", "appbuilder.eng"));
+            var spec = Engage.FrontEnd.EngSpecFromFile(Path.Combine(FourUp, "example", "appbuilder.eng"));
             Assert.IsNotNull(spec);
         }
 

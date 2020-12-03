@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using takmelalexer;
 
-namespace Engage.front
+namespace Engage.parsing
 {
 	public class EngageMetaLexer
 	{
-		private readonly Dictionary<string, int> _tokenVocabulary = new Dictionary<string, int>();
 		private int _tokenVocabularyCounter;
 
-		public Dictionary<string, int> TokenVocab { get { return _tokenVocabulary; } }
+		public Dictionary<string, int> TokenVocab { get; } = new Dictionary<string, int>();
 
 		public List<Token> Lexise(string engageGrammar)
 		{
@@ -82,7 +81,7 @@ namespace Engage.front
 
 			var m = new LexerModule(rules, "");
 
-			var lex = new Lexer(m, _tokenVocabulary, true);
+			var lex = new Lexer(m, TokenVocab, true);
 			var result = new List<Token>();
 
 			lex.init (engageGrammar);
@@ -101,7 +100,7 @@ namespace Engage.front
 			var rule = new LexerRule (name, new List<string> (), new List<string> (), new List<string> (),
 				"", false, ex);
 			rules.Add (rule);
-			_tokenVocabulary [name] = _tokenVocabularyCounter++;
+			TokenVocab [name] = _tokenVocabularyCounter++;
 		}
 
 		private void s(ICollection<LexerRule> rules, string name, string lexeme)
@@ -109,7 +108,7 @@ namespace Engage.front
 			LexerRule rule = new LexerRule (name, new List<string> (), new List<string> (), new List<string> (),
 				"", false, new Str(lexeme));
 			rules.Add (rule);
-			_tokenVocabulary [name] = _tokenVocabularyCounter++;
+			TokenVocab [name] = _tokenVocabularyCounter++;
 		}
 
 		private void kw(ICollection<LexerRule> rules, string lexeme)
@@ -118,7 +117,7 @@ namespace Engage.front
 			var rule = new LexerRule (name, new List<string> (), new List<string> (), new List<string> (),
 				"", false, new Str(lexeme));
 			rules.Add (rule);
-			_tokenVocabulary [name] = _tokenVocabularyCounter++;
+			TokenVocab [name] = _tokenVocabularyCounter++;
 		}
 
 		private void r_skip(ICollection<LexerRule> rules, string name, RExpr ex)
@@ -126,7 +125,7 @@ namespace Engage.front
 			var rule = new LexerRule (name, new List<string> (), new List<string> (), new List<string> (),
 				"", true, ex);
 			rules.Add (rule);
-			_tokenVocabulary [name] = _tokenVocabularyCounter++;
+			TokenVocab [name] = _tokenVocabularyCounter++;
 		}
 
 		private static RXSeq seq(params RExpr[] exprs)

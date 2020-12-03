@@ -1,4 +1,4 @@
-﻿namespace Engage.front
+﻿namespace Engage.parsing
 {
 	public enum EngageToken 
 	{
