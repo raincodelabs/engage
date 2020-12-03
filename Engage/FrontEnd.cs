@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Engage.parsing;
 
-namespace Engage.front
+namespace Engage
 {
     public static class FrontEnd
     {

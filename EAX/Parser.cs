@@ -15,7 +15,7 @@ namespace EAX
             TId,
         }
 
-        private bool TAG;
+        private bool CLOSE, OPEN, TAG;
 
         public Parser(string _input) : base(_input)
         {
@@ -38,17 +38,43 @@ namespace EAX
                         {
                             case '<':
                                 TAG = true;
+                                OPEN = true;
+                                break;
+                            case '/':
+                                if (TAG)
+                                    OPEN = false;
+                                else if (TAG)
+                                    OPEN = false;
+                                else
+                                    ERROR = "neither of the flags TAG, TAG are lifted when expected";
                                 break;
                             case '>':
-                                Name n;
-                                if (Main.Peek() is Name)
-                                    n = Main.Pop() as Name;
-                                else
+                                if (OPEN)
                                 {
-                                    ERROR = "the top of the stack is not of type Name";
-                                    n = null;
+                                    Name n;
+                                    if (Main.Peek() is Name)
+                                        n = Main.Pop() as Name;
+                                    else
+                                    {
+                                        ERROR = "the top of the stack is not of type Name";
+                                        n = null;
+                                    }
+                                    Push(new TagOpen(n));
                                 }
-                                Push(new TagOpen(n));
+                                else if (CLOSE)
+                                {
+                                    Name n;
+                                    if (Main.Peek() is Name)
+                                        n = Main.Pop() as Name;
+                                    else
+                                    {
+                                        ERROR = "the top of the stack is not of type Name";
+                                        n = null;
+                                    }
+                                    Push(new TagClose(n));
+                                }
+                                else
+                                    ERROR = "neither of the flags OPEN, CLOSE are lifted when expected";
                                 break;
                         }
                         break;
@@ -102,6 +128,12 @@ namespace EAX
             {
                 t = TokenType.Tmark;
                 s = "!";
+                Pos++;
+            }
+            else if (Input[Pos] == '/')
+            {
+                t = TokenType.Tmark;
+                s = "/";
                 Pos++;
             }
             else

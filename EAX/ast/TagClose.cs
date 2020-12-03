@@ -2,11 +2,11 @@
 
 namespace EAX
 {
-    public partial class TagOpen : TagEvent
+    public partial class TagClose : TagEvent
     {
         public Name n;
 
-        public TagOpen(Name _n)
+        public TagClose(Name _n)
         {
             n = _n;
         }

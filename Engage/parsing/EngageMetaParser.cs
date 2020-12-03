@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engage.A;
-using Engage.parsing;
 using takmelalexer;
 
-namespace Engage
+namespace Engage.parsing
 {
     public class EngageMetaParser
     {
