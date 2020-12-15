@@ -26,7 +26,7 @@ namespace EngageTests
             Assert.AreEqual(1,result.tags.Count);
             var tag = result.tags[0] as TagOpen;
             Assert.IsNotNull(tag);
-            Assert.AreEqual("tag",tag.n);
+            Assert.AreEqual("tag",tag.n?.value);
         }
     }
 }

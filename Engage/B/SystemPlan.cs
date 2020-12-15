@@ -417,6 +417,9 @@ namespace Engage.B
             if (Tokens.ContainsKey("skip"))
                 foreach (var t in Tokens["skip"])
                     cond += $" && Input[Pos] != '{t.Value}'";
+            if (Tokens.ContainsKey("mark"))
+                foreach (var t in Tokens["mark"])
+                    cond += $" && Input[Pos] != '{t.Value}'";
             var block = new List<CsStmt>();
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));
             block.Add(new C.WhileStmt($"Pos < Input.Length{cond}", "s += Input[Pos++]"));
