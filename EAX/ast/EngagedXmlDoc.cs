@@ -5,9 +5,9 @@ namespace EAX
 {
     public partial class EngagedXmlDoc
     {
-        public List<TagOpen> tags = new List<TagOpen>();
+        public List<TagEvent> tags = new List<TagEvent>();
 
-        public EngagedXmlDoc(List<TagOpen> _tags)
+        public EngagedXmlDoc(List<TagEvent> _tags)
         {
             tags.AddRange(_tags);
         }

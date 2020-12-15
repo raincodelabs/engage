@@ -42,11 +42,9 @@ namespace EAX
                                 break;
                             case '/':
                                 if (TAG)
-                                    OPEN = false;
-                                else if (TAG)
-                                    OPEN = false;
+                                    CLOSE = true;
                                 else
-                                    ERROR = "neither of the flags TAG, TAG are lifted when expected";
+                                    ERROR = "flag TAG is not lifted when expected";
                                 break;
                             case '>':
                                 if (OPEN)
@@ -80,9 +78,9 @@ namespace EAX
                         break;
                     case TokenType.TEOF:
                         Flush();
-                        var tags = new List<TagOpen>();
-                        while (Main.Count > 0 && Main.Peek() is TagOpen)
-                            tags.Add(Main.Pop() as TagOpen);
+                        var tags = new List<TagEvent>();
+                        while (Main.Count > 0 && Main.Peek() is TagEvent)
+                            tags.Add(Main.Pop() as TagEvent);
                         tags.Reverse();
                         Push(new EngagedXmlDoc(tags));
                         break;
