@@ -6,10 +6,10 @@ using System.Linq;
 namespace Engage.B
 {
     // Dictionary<TokenPlan,HandlerCollection>
-
     internal class HandlerMetaCollection
     {
-        private readonly Dictionary<TokenPlan, HandlerCollection> _data = new Dictionary<TokenPlan, HandlerCollection>();
+        private readonly Dictionary<TokenPlan, HandlerCollection>
+            _data = new Dictionary<TokenPlan, HandlerCollection>();
 
         public void Add(HandlerPlan hp)
         {
@@ -43,13 +43,11 @@ namespace Engage.B
             for (int i = 0; i < _triggers.Count; i++)
                 if (_triggers[i] == hp.GuardFlag && _reacts[i].Value == hp.ReactOn.Value)
                 {
-                    Console.WriteLine($"[?] add old <{hp.GuardFlag}> / <{hp.ReactOn.Value}> / <{hp}>");
                     hp.AddRecipeTo(Handlers[i]);
                     return;
                 }
 
             // if branch not found, make a new one
-            Console.WriteLine($"[?] add new <{hp.GuardFlag}> / <{hp.ReactOn.Value}> / <{hp}>");
             _reacts.Add(hp.ReactOn);
             _triggers.Add(hp.GuardFlag);
             hp.AddRecipeTo(Handlers);
@@ -256,7 +254,7 @@ namespace Engage.B
                     swLex.Expression = "lexeme" + (matchChar ? "[0]" : "");
                     // Need this dance because there may be different actions for the same token with different guards
                     HandlerMetaCollection resortedHandlers = new HandlerMetaCollection();
-                    foreach (var hp in Handlers[hpk]) 
+                    foreach (var hp in Handlers[hpk])
                         resortedHandlers.Add(hp);
                     foreach (var key in resortedHandlers.SortedKeys())
                         GenerateLexBranch(swLex, hpk, resortedHandlers.GuardFlags(key), resortedHandlers.Recipes(key),
