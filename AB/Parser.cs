@@ -406,7 +406,7 @@ namespace AB
             else
             {
                 t = TokenType.TId;
-                while (Pos < Input.Length && Input[Pos] != ' ' && Input[Pos] != '\r' && Input[Pos] != '\n')
+                while (Pos < Input.Length && Input[Pos] != ' ' && Input[Pos] != '\r' && Input[Pos] != '\n' && Input[Pos] != ';' && Input[Pos] != '(' && Input[Pos] != ')')
                     s += Input[Pos++];
             }
             return new Tuple<TokenType, string>(t, s);

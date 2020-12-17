@@ -32,7 +32,10 @@ namespace Engage.B
             return null;
         }
 
-        internal void AddRecipeTo(List<List<B.HandleAction>> llist)
-            => llist.Add(_recipe);
+        internal void AddRecipeTo(List<List<B.HandleAction>> listOfLists)
+            => listOfLists.Add(_recipe);
+        
+        internal void AddRecipeTo(List<B.HandleAction> list)
+            => list.AddRange(_recipe);
     }
 }

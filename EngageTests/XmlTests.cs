@@ -18,7 +18,7 @@ namespace EngageTests
         
         [TestMethod]
         [TestCategory("EAX")]
-        public void ParseOneOpenTag()
+        public void ParseOneTagOpen()
         {
             var parser = new Parser("<tag>");
             var result = parser.Parse() as EngagedXmlDoc;
@@ -27,6 +27,21 @@ namespace EngageTests
             var tag = result.tags[0] as TagOpen;
             Assert.IsNotNull(tag);
             Assert.AreEqual("tag",tag.n?.value);
+        }
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void ParseOneTagOpenClose()
+        {
+            var parser = new Parser("<tag></tag>");
+            var result = parser.Parse() as EngagedXmlDoc;
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.tags.Count);
+            var tag1 = result.tags[0] as TagOpen;
+            Assert.IsNotNull(tag1);
+            var tag2 = result.tags[1] as TagClose;
+            Assert.IsNotNull(tag2);
+            Assert.AreEqual(tag1.n?.value, tag2.n?.value);
         }
     }
 }

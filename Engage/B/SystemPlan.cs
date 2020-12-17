@@ -5,12 +5,63 @@ using System.Linq;
 
 namespace Engage.B
 {
+    // Dictionary<TokenPlan,HandlerCollection>
+
+    internal class HandlerMetaCollection
+    {
+        private readonly Dictionary<TokenPlan, HandlerCollection> _data = new Dictionary<TokenPlan, HandlerCollection>();
+
+        public void Add(HandlerPlan hp)
+        {
+            if (!_data.ContainsKey(hp.ReactOn))
+                _data[hp.ReactOn] = new HandlerCollection();
+            _data[hp.ReactOn].AddGuardAndRecipe(hp);
+        }
+
+        public IEnumerable<TokenPlan> SortedKeys()
+        {
+            var resortedKeys = _data.Keys.ToList();
+            resortedKeys.Sort((x, y) => y.Value.Length - x.Value.Length);
+            return resortedKeys;
+        }
+
+        public IReadOnlyList<string> GuardFlags(TokenPlan tp) => _data[tp].GuardFlags;
+        public IReadOnlyList<List<HandleAction>> Recipes(TokenPlan tp) => _data[tp].Recipes;
+    }
+
+    // Tuple<List<string>, List<List<HandleAction>>>
+    internal class HandlerCollection
+    {
+        private readonly List<TokenPlan> _reacts = new List<TokenPlan>();
+        private readonly List<string> _triggers = new List<string>();
+        private List<List<HandleAction>> Handlers = new List<List<HandleAction>>();
+        public IReadOnlyList<string> GuardFlags => _triggers;
+        public IReadOnlyList<List<HandleAction>> Recipes => Handlers;
+
+        public void AddGuardAndRecipe(HandlerPlan hp)
+        {
+            for (int i = 0; i < _triggers.Count; i++)
+                if (_triggers[i] == hp.GuardFlag && _reacts[i].Value == hp.ReactOn.Value)
+                {
+                    Console.WriteLine($"[?] add old <{hp.GuardFlag}> / <{hp.ReactOn.Value}> / <{hp}>");
+                    hp.AddRecipeTo(Handlers[i]);
+                    return;
+                }
+
+            // if branch not found, make a new one
+            Console.WriteLine($"[?] add new <{hp.GuardFlag}> / <{hp.ReactOn.Value}> / <{hp}>");
+            _reacts.Add(hp.ReactOn);
+            _triggers.Add(hp.GuardFlag);
+            hp.AddRecipeTo(Handlers);
+        }
+    }
+
     public class SystemPlan
     {
         internal static readonly Dictionary<string, string> RealNames = new Dictionary<string, string>()
         {
-            {"string","System.String" },
-            {"number","System.Int32" },
+            {"string", "System.String"},
+            {"number", "System.Int32"},
         };
 
         public string NS;
@@ -103,6 +154,7 @@ namespace Engage.B
                 TopType = n;
                 Console.WriteLine($"[A2B] Top type is assumed to be {TopType}");
             }
+
             if (Types.ContainsKey(n))
             {
                 if (!silent)
@@ -203,23 +255,19 @@ namespace Engage.B
                     bool matchChar = Handlers[hpk].Select(hp => hp.ReactOn.Value).All(v => v.Length == 1);
                     swLex.Expression = "lexeme" + (matchChar ? "[0]" : "");
                     // Need this dance because there may be different actions for the same token with different guards
-                    Dictionary<TokenPlan, Tuple<List<string>, List<List<HandleAction>>>> resortedHandlers = new Dictionary<TokenPlan, Tuple<List<string>, List<List<HandleAction>>>>();
-                    foreach (var hp in Handlers[hpk])
-                    {
-                        if (!resortedHandlers.ContainsKey(hp.ReactOn))
-                            resortedHandlers[hp.ReactOn] = new Tuple<List<string>, List<List<HandleAction>>>(new List<string>(), new List<List<HandleAction>>());
-                        resortedHandlers[hp.ReactOn].Item1.Add(hp.GuardFlag);
-                        hp.AddRecipeTo(resortedHandlers[hp.ReactOn].Item2);
-                    }
-                    List<TokenPlan> resortedKeys = resortedHandlers.Keys.ToList();
-                    resortedKeys.Sort((x, y) => y.Value.Length - x.Value.Length);
-                    foreach (var key in resortedKeys)
-                        GenerateLexBranch(swLex, hpk, resortedHandlers[key].Item1, resortedHandlers[key].Item2, key, matchChar);
+                    HandlerMetaCollection resortedHandlers = new HandlerMetaCollection();
+                    foreach (var hp in Handlers[hpk]) 
+                        resortedHandlers.Add(hp);
+                    foreach (var key in resortedHandlers.SortedKeys())
+                        GenerateLexBranch(swLex, hpk, resortedHandlers.GuardFlags(key), resortedHandlers.Recipes(key),
+                            key, matchChar);
                     branchType.Add(swLex);
                 }
+
                 swType.Branches["TokenType.T" + hpk] = branchType;
                 usedTokens.Add(hpk);
             }
+
             foreach (var t in Tokens.Keys)
             {
                 if (!usedTokens.Contains(t))
@@ -264,9 +312,9 @@ namespace Engage.B
         private string PossiblyWrap(string v, string key)
         {
             foreach (var x in
-                    from t in TypeAliases.Keys
-                    where TypeAliases[t] == key && Handlers.ContainsKey(t)
-                    select Handlers[t][0].IsPushFirst())
+                from t in TypeAliases.Keys
+                where TypeAliases[t] == key && Handlers.ContainsKey(t)
+                select Handlers[t][0].IsPushFirst())
                 if (String.IsNullOrEmpty(x))
                     Console.WriteLine("[B2C] some unsupported functionality found");
                 else
@@ -274,10 +322,11 @@ namespace Engage.B
             return v;
         }
 
-        private static void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, IReadOnlyList<string> guardFlags, IReadOnlyList<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
+        private static void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, IReadOnlyList<string> guardFlags,
+            IReadOnlyList<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
         {
             var branchLex = new List<C.CsStmt>();
-            //Console.WriteLine($"[IR] in '{hpk}', handle {hp.ReactOn.Value}");
+            Console.WriteLine($"[IR] in '{hpk}', handle {reactOn.Value}");
             bool onlyWraps = true;
             var ite = new C.IfThenElse();
             for (int i = 0; i < guardFlags.Count; i++)
@@ -315,6 +364,7 @@ namespace Engage.B
                         Console.WriteLine($"[B2C] Warning: no action to handle '{hpk}'/{reactOn.Value}");
                 }
             }
+
             string flags;
             if (guardFlags.Count == 1)
                 flags = "flag " + guardFlags[0] + " is not";
@@ -345,7 +395,8 @@ namespace Engage.B
             tok.AddCode("TokenType t = TokenType.TUndefined;");
             tok.AddCode("string s = \"\";");
             // EOF phase
-            tok.AddCode(new C.IfThenElse("Pos >= Input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
+            tok.AddCode(new C.IfThenElse("Pos >= Input.Length",
+                "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")"));
             // skip
             if (Tokens.ContainsKey("skip"))
             {
@@ -355,8 +406,10 @@ namespace Engage.B
             }
             else
                 Console.WriteLine($"[IR] It is suspicious that there are no tokens of type 'skip'");
+
             // EOF after skip
-            var megaIf = new C.IfThenElse("Pos >= Input.Length", "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
+            var megaIf = new C.IfThenElse("Pos >= Input.Length",
+                "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
             tok.AddCode(megaIf);
             // mark
             if (Tokens.ContainsKey("mark"))
@@ -366,6 +419,7 @@ namespace Engage.B
             }
             else
                 Console.WriteLine("[IR] It is suspicious that there are no tokens of type 'word'");
+
             // word
             if (Tokens.ContainsKey("word"))
                 GenerateBranches("word", megaIf, skipmark);
@@ -435,7 +489,8 @@ namespace Engage.B
             return new Tuple<string, IEnumerable<CsStmt>>(cond, block);
         }
 
-        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchPreciseMatch(string value, string type, List<string> skipmark)
+        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchPreciseMatch(string value, string type,
+            List<string> skipmark)
         {
             int len = value.Length;
             var block = new List<CsStmt>();
@@ -447,7 +502,8 @@ namespace Engage.B
 
             // either EOF or next is skip or mark
             if (skipmark != null && skipmark.Count > 0)
-                cond = $"({cond}) && (Pos + {len} == Input.Length || {String.Join(" || ", skipmark.Select(c => $"Input[Pos + {len}] == '{c}'"))})";
+                cond =
+                    $"({cond}) && (Pos + {len} == Input.Length || {String.Join(" || ", skipmark.Select(c => $"Input[Pos + {len}] == '{c}'"))})";
 
             cond = cond.Replace(" + 0", "");
             block.Add(new SimpleStmt($"t = TokenType.T{type}"));

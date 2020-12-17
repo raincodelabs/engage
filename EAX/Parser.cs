@@ -42,7 +42,10 @@ namespace EAX
                                 break;
                             case '/':
                                 if (TAG)
+                                {
                                     CLOSE = true;
+                                    OPEN = false;
+                                }
                                 else
                                     ERROR = "flag TAG is not lifted when expected";
                                 break;
