@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using EAX;
 using EaxOpenClose;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using takmelalexer;
 
 namespace EngageTests
 {
@@ -47,6 +49,11 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("EAX")]
+        public void TimeCountEax0k1()
+            => TimeCountEax(100);
+
+        [TestMethod]
+        [TestCategory("EAX")]
         public void TimeCountEax1k()
             => TimeCountEax(1000);
 
@@ -62,29 +69,29 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TimeCountBalancedEax100()
-            => TimeCountBalancedEax(100);
+        public void TimeDepthBalancedEax0k1()
+            => TimeDepthBalancedEax(100);
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TimeCountBalancedEax1k()
-            => TimeCountBalancedEax(1000);
-
-        [TestMethod]
-        [TestCategory("EAX")]
-        // Dies with stack overflow
-        public void TimeCountBalancedEax10k()
-            => TimeCountBalancedEax(10000);
+        public void TimeDepthBalancedEax1k()
+            => TimeDepthBalancedEax(1000);
 
         [TestMethod]
         [TestCategory("EAX")]
         // Dies with stack overflow
-        public void TimeCountBalancedEax100k()
-            => TimeCountBalancedEax(100000);
+        public void TimeDepthBalancedEax10k()
+            => TimeDepthBalancedEax(10000);
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TimeCountSax100()
+        // Dies with stack overflow
+        public void TimeDepthBalancedEax100k()
+            => TimeDepthBalancedEax(100000);
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void TimeCountSax0k1()
             => Assert.Fail(); // TODO!
 
         [TestMethod]
@@ -100,6 +107,11 @@ namespace EngageTests
         [TestMethod]
         [TestCategory("EAX")]
         public void TimeCountSax100k()
+            => Assert.Fail(); // TODO!
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void TimeCountBalancedSax0k1()
             => Assert.Fail(); // TODO!
 
         [TestMethod]
@@ -129,9 +141,14 @@ namespace EngageTests
                 $"Parsed an input with {Math.Floor((double) limit / 1000)}k tags in {timer.ElapsedMilliseconds}ms.");
             Assert.IsNotNull(output);
             Assert.AreEqual(limit, output.tags.Count);
+            timer.Restart();
+            var tags = CountTags(output);
+            timer.Stop();
+            Console.WriteLine(
+                $"Counted {tags} different tags in {timer.ElapsedTicks} ticks.");
         }
 
-        private void TimeCountBalancedEax(int limit)
+        private void TimeDepthBalancedEax(int limit)
         {
             var input = Generator.ArbitraryBalancedSequence(limit: limit);
             // Console.WriteLine(input);
@@ -147,6 +164,41 @@ namespace EngageTests
             timer.Stop();
             Console.WriteLine(
                 $"Depth measured to be {depth} in {timer.ElapsedTicks} ticks.");
+        }
+
+        private void TimeValidateBalancedEax(int limit)
+        {
+            var input = Generator.ArbitraryBalancedSequence(limit: limit);
+            // Console.WriteLine(input);
+            var timer = new Stopwatch();
+            timer.Start();
+            var output = Parsers.ParseOpenClose(input);
+            timer.Stop();
+            Console.WriteLine(
+                $"Parsed an input with {Math.Floor((double) limit / 1000)}k tags in {timer.ElapsedMilliseconds}ms.");
+            Assert.IsNotNull(output);
+            timer.Restart();
+            var depth = MeasureDepth(output);
+            timer.Stop();
+            Console.WriteLine(
+                $"Depth measured to be {depth} in {timer.ElapsedTicks} ticks.");
+        }
+
+        private int CountTags(EngagedXmlDoc tree)
+        {
+            Set<string> tags = new Set<string>();
+            foreach (var tag in tree.tags)
+                switch (tag)
+                {
+                    case TagOpen open:
+                        tags.Add(open.n.value);
+                        break;
+                    case TagClose close:
+                        tags.Add(close.n.value);
+                        break;
+                }
+
+            return tags.Count;
         }
 
         private int MeasureDepth(EngagedXmlDoc tree)
@@ -167,6 +219,25 @@ namespace EngageTests
                 }
 
             return max;
+        }
+
+        private bool ValidateBalance(EngagedXmlDoc tree)
+        {
+            Stack<string> trace = new Stack<string>();
+            foreach (var tag in tree.tags)
+                switch (tag)
+                {
+                    case TagOpen open:
+                        trace.Push(open.n.value);
+                        break;
+                    case TagClose close:
+                        var name = trace.Pop();
+                        if (name != close.n.value)
+                            return false;
+                        break;
+                }
+
+            return trace.Count == 0;
         }
     }
 }
