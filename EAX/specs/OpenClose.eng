@@ -1,5 +1,6 @@
 % EAX: Engage! API for XML
-namespace EAX
+% OpenClose: generate a list of TagOpen/TagClose objects
+namespace EaxOpenClose
 
 types
     EngagedXmlDoc;

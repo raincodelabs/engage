@@ -1,4 +1,5 @@
 using EAX;
+using EaxOpenClose;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EngageTests
@@ -10,8 +11,7 @@ namespace EngageTests
         [TestCategory("EAX")]
         public void ParseEmpty()
         {
-            var parser = new Parser("");
-            var result = parser.Parse() as EngagedXmlDoc;
+            var result = Parsers.ParseOpenClose("");
             Assert.IsNotNull(result);
             Assert.AreEqual(0,result.tags.Count);
         }
@@ -20,8 +20,7 @@ namespace EngageTests
         [TestCategory("EAX")]
         public void ParseOneTagOpen()
         {
-            var parser = new Parser("<tag>");
-            var result = parser.Parse() as EngagedXmlDoc;
+            var result = Parsers.ParseOpenClose("<tag>");
             Assert.IsNotNull(result);
             Assert.AreEqual(1,result.tags.Count);
             var tag = result.tags[0] as TagOpen;
@@ -33,8 +32,7 @@ namespace EngageTests
         [TestCategory("EAX")]
         public void ParseOneTagOpenClose()
         {
-            var parser = new Parser("<tag></tag>");
-            var result = parser.Parse() as EngagedXmlDoc;
+            var result = Parsers.ParseOpenClose("<tag></tag>");
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.tags.Count);
             var tag1 = result.tags[0] as TagOpen;

@@ -1,6 +1,6 @@
 // Engage! generated this file, please do not edit manually
 
-namespace EAX
+namespace EaxOpenClose
 {
     public partial class TagOpen : TagEvent
     {

@@ -1,7 +1,7 @@
 // Engage! generated this file, please do not edit manually
 using System.Collections.Generic;
 
-namespace EAX
+namespace EaxOpenClose
 {
     public partial class EngagedXmlDoc
     {

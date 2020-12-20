@@ -5,10 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="ast" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\EngageRuntime\EngageRuntime.csproj" />
     </ItemGroup>
 
