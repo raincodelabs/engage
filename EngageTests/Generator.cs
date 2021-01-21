@@ -35,12 +35,36 @@ namespace EngageTests
             return sb.ToString();
         }
 
-        internal static string ArbitraryBalancedSequence(int limit = 10)
+        /**
+         * Generates a shallow balanced input, by using the recursive function below and adding one root element.
+         */
+        internal static string ArbitraryBalancedSequenceShallow(int limit = 10)
+        {
+            return $"<start>{ArbitraryBalancedSequenceShallowRec(limit)}</start>";
+        }
+        
+        /**
+         * Generates a shallow balanced input
+         */
+        internal static string ArbitraryBalancedSequenceShallowRec(int limit = 10)
+        {
+            //using limit < 2 because a root element is added before this function is called.
+            if (limit < 2) 
+                return "";
+            var name = ArbitraryWord();
+            return $"<{name}></{name}>{ArbitraryBalancedSequenceShallowRec(limit - 1)}";
+
+        }
+        
+        /**
+         * Generates a deep balanced input
+         */
+        internal static string ArbitraryBalancedSequenceDeep(int limit = 10)
         {
             if (limit < 0)
                 return "";
             var name = ArbitraryWord();
-            return $"<{name}>{ArbitraryBalancedSequence(limit - 1)}</{name}>";
+            return $"<{name}>{ArbitraryBalancedSequenceDeep(limit - 1)}</{name}>";
         }
     }
 }

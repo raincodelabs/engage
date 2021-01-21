@@ -38,7 +38,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -56,7 +56,7 @@ namespace EngageTests
                 Stopwatch sw = new Stopwatch();
                 for (int i = 0; i < TestPlan[name]; i++)
                 {
-                    string fname = Path.Combine(AppBuilderCode, $"{name}10e{i}.ab");
+                    string fname = Path.Combine(AppBuilderCode, "generated", $"{name}10e{i}.ab");
                     for (int j = 0; j < RunsToAverage; j++)
                     {
                         sw.Start();
@@ -81,7 +81,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -91,7 +91,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitStackTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"stack{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"stack{i}.ab");
                 sw.Start();
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
@@ -120,7 +120,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -131,7 +131,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitStackTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"stack{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"stack{i}.ab");
                 for (int j = 0; j < RunsToAverage; j++)
                 {
                     sw.Start();
@@ -158,7 +158,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -168,7 +168,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitDeepTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"deep{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"deep{i}.ab");
                 sw.Start();
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
@@ -191,7 +191,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -202,7 +202,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitDeepTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"deep{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"deep{i}.ab");
                 for (int j = 0; j < RunsToAverage; j++)
                 {
                     sw.Start();
@@ -229,7 +229,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -238,7 +238,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitDeepExpTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"deep10e{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"deep10e{i}.ab");
                 sw.Start();
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
@@ -258,7 +258,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -268,7 +268,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitLongTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{i}.ab");
                 sw.Start();
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
@@ -291,7 +291,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -302,7 +302,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitLongTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{i}.ab");
                 for (int j = 0; j < RunsToAverage; j++)
                 {
                     sw.Start();
@@ -329,7 +329,7 @@ namespace EngageTests
             Random r = new Random();
             for (int i = 0; i < WarmUp; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long{r.Next(0, LimitLongTests)}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long{r.Next(0, LimitLongTests)}.ab");
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
             }
@@ -338,7 +338,7 @@ namespace EngageTests
             Stopwatch sw = new Stopwatch();
             for (int i = 0; i < LimitLongExpTests; i++)
             {
-                string fname = Path.Combine(AppBuilderCode, $"long10e{i}.ab");
+                string fname = Path.Combine(AppBuilderCode, "generated", $"long10e{i}.ab");
                 sw.Start();
                 var parser = new AB.Parser(File.ReadAllText(fname));
                 var spec = parser.Parse() as AB.ABProgram;
@@ -367,7 +367,7 @@ namespace EngageTests
             Assert.IsInstanceOfType(spec.code[1], typeof(AB.MapStmt));
             Assert.IsInstanceOfType(spec.code[2], typeof(AB.MapStmt));
             Assert.IsInstanceOfType(spec.code[3], typeof(AB.IfStmt));
-            Assert.IsInstanceOfType((spec.code[3] as AB.IfStmt).branch[0], typeof(AB.ReturnStmt));
+            Assert.IsInstanceOfType((spec.code[3] as AB.IfStmt)?.branch[0], typeof(AB.ReturnStmt));
         }
 
         [TestMethod]
@@ -561,7 +561,7 @@ namespace EngageTests
         [TestMethod]
         public void TryEngagedParser()
         {
-            var parser = new AB.Parser(File.ReadAllText(Path.Combine(FourUp, "example", "simple.ab")));
+            var parser = new AB.Parser(File.ReadAllText(Path.Combine(AppBuilderCode, "manual", "simple.ab")));
             AB.ABProgram spec = parser.Parse() as AB.ABProgram;
             Assert.IsNotNull(spec);
             Assert.AreEqual(1, spec.data.Count);
@@ -571,7 +571,7 @@ namespace EngageTests
         [TestMethod]
         public void TryAppBuilder()
         {
-            var spec = Engage.FrontEnd.EngSpecFromFile(Path.Combine(FourUp, "example", "appbuilder.eng"));
+            var spec = Engage.FrontEnd.EngSpecFromFile(Path.Combine(FourUp, "AB", "spec", "appbuilder.eng"));
             Assert.IsNotNull(spec);
         }
 
@@ -597,7 +597,7 @@ namespace EngageTests
         [TestMethod]
         public void TryDeep0()
         {
-            string fname = Path.Combine(AppBuilderCode, $"deep0.ab");
+            string fname = Path.Combine(AppBuilderCode, "generated", $"deep0.ab");
             var parser = new AB.Parser(File.ReadAllText(fname));
             Console.WriteLine($"Parsing '{File.ReadAllText(fname)}'");
             var spec = parser.Parse() as AB.ABProgram;
@@ -722,7 +722,7 @@ namespace EngageTests
                         = limit2 == 1
                             ? $"{name1}{i}.ab"
                             : $"{name1}{i}{name2}{j}.ab";
-                    string fname = Path.Combine(AppBuilderCode, name);
+                    string fname = Path.Combine(AppBuilderCode, "generated", name);
                     string text = File.ReadAllText(fname);
                     for (int k = 0; k < runs; k++)
                     {
@@ -803,7 +803,7 @@ namespace EngageTests
             List<long> runs1 = new List<long>();
             List<long> runs2 = new List<long>();
             Stopwatch sw = new Stopwatch();
-            string fname = Path.Combine(AppBuilderCode, name);
+            string fname = Path.Combine(AppBuilderCode, "generated", name);
             for (int k = 0; k < runs; k++)
             {
                 sw.Start();
@@ -844,7 +844,7 @@ namespace EngageTests
                         = limit2 == 1
                             ? $"{name1}{i}.ab"
                             : $"{name1}{i}{name2}{j}.ab";
-                    string fname = Path.Combine(AppBuilderCode, name);
+                    string fname = Path.Combine(AppBuilderCode, "generated", name);
                     for (int k = 0; k < runs; k++)
                     {
                         try

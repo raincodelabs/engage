@@ -7,11 +7,8 @@ namespace AB
 {
     internal class Program
     {
-#if Windows
-        private const string TestPath = @"..\..\..\..\tests\";
-#else
-        private const string TestPath = @"../../../../tests/";
-#endif
+        private static string FourUp { get; } = Path.Combine("..", "..", "..", "..");
+        private static string TestPath { get; } = Path.Combine(FourUp, "tests", "generated");
 
         private const int LimitNormal = 1001;
         private const int LimitLongTests = LimitNormal;
@@ -55,15 +52,16 @@ namespace AB
                 File.WriteAllLines(Path.Combine(TestPath, $"{name}{i}.ab"), gen(i));
             Console.WriteLine($"{limit1} test programs generated");
             for (uint i = 0; i < limit2; i++)
-                File.WriteAllLines(Path.Combine(TestPath, $"{name}10e{i}.ab"), gen((ulong)Math.Pow(10, i)));
+                File.WriteAllLines(Path.Combine(TestPath, $"{name}10e{i}.ab"),
+                    gen((ulong) Math.Pow(10, i)));
             Console.WriteLine($"{limit2} test programs generated");
         }
 
         private static void Generate2D(Func<ulong, ulong, List<string>> gen, string name, uint limit1, uint limit2)
         {
             for (uint i = 0; i < limit1; i++)
-                for (uint j = 0; j < limit2; j++)
-                    File.WriteAllLines(Path.Combine(TestPath, $"{name}{i}x{j}.ab"), gen(i, j));
+            for (uint j = 0; j < limit2; j++)
+                File.WriteAllLines(Path.Combine(TestPath, $"{name}{i}x{j}.ab"), gen(i, j));
             Console.WriteLine($"{limit1 * limit2} test programs generated");
         }
     }
