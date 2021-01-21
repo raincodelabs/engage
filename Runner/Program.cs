@@ -12,7 +12,7 @@ namespace Runner
         {
             Dictionary<string, string> compilationList = new Dictionary<string, string>
             {
-                // [Path.Combine(FourUp, "example", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
+                [Path.Combine(FourUp, "AB", "spec", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
                 [Path.Combine(FourUp, "EAX", "specs", "OpenClose.eng")] = Path.Combine(FourUp, "EAX", "OpenClose")
             };
 

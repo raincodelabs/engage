@@ -25,7 +25,7 @@ namespace EngageTests
             return sb.ToString();
         }
 
-        internal static string ArbitrarySequence(int limit =-1)
+        internal static string ArbitrarySequence(int limit = -1)
         {
             if (limit == -1)
                 limit = ArbitraryNumber(max: 100);
@@ -42,20 +42,20 @@ namespace EngageTests
         {
             return $"<start>{ArbitraryBalancedSequenceShallowRec(limit)}</start>";
         }
-        
+
         /**
          * Generates a shallow balanced input
          */
         internal static string ArbitraryBalancedSequenceShallowRec(int limit = 10)
         {
             //using limit < 2 because a root element is added before this function is called.
-            if (limit < 2) 
+            if (limit < 2)
                 return "";
             var name = ArbitraryWord();
             return $"<{name}></{name}>{ArbitraryBalancedSequenceShallowRec(limit - 1)}";
 
         }
-        
+
         /**
          * Generates a deep balanced input
          */

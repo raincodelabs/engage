@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using EAX;
 using EaxOpenClose;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using takmelalexer;
 using System.Xml;
-using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions;
 
 namespace EngageTests
 {
@@ -49,7 +47,7 @@ namespace EngageTests
             Assert.IsNotNull(tag2);
             Assert.AreEqual(tag1.n?.value, tag2.n?.value);
         }
-        
+
         [TestMethod]
         [TestCategory("EAX")]
         public void TimeCountEax0k1()
@@ -93,7 +91,7 @@ namespace EngageTests
         public void TimeDepthBalancedEax100k()
             => TimeDepthBalancedEax(100000);
             */
-        
+
         [TestMethod]
         [TestCategory("EAX")]
         public void TimeCountBalancedSaxDeep0k1()
@@ -108,14 +106,14 @@ namespace EngageTests
         [TestCategory("EAX")]
         public void TimeCountBalancedSaxDeep10k()
             => TimeCountSaxDeep(10000);
-        
+
         /*[TestMethod]
         [TestCategory("EAX")]
         //Also dies with stack overflow
         public void TimeCountBalancedSax100k()
             => Assert.Fail(); // TODO!*/
 
-        
+
         private void TimeCountEax(int limit)
         {
             var input = Generator.ArbitrarySequence(limit: limit);
@@ -206,7 +204,7 @@ namespace EngageTests
                 }
 
             return max;
-        } 
+        }
 
         private bool ValidateBalance(EngagedXmlDoc tree)
         {
@@ -227,8 +225,8 @@ namespace EngageTests
             return trace.Count == 0;
         }
 
-       
-        
+
+
         private void TimeCountSaxDeep(int limit)
         {
             var input = Generator.ArbitraryBalancedSequenceDeep(limit);
@@ -241,12 +239,10 @@ namespace EngageTests
             timer.Restart();
 
             Set<string> tags = new Set<string>();
-            
+
             timer.Stop();
             Console.WriteLine(
                 $"Counted {tags.Count} different tags in {timer.ElapsedTicks} ticks.");
         }
-        
-        
     }
 }

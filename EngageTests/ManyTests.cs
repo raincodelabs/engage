@@ -14,33 +14,35 @@ namespace EngageTests
     {
         [TestMethod]
         [TestCategory("EAX")]
-        public void testSaxShallow()
+        public void TestSaxShallow()
         {
-            SortedDictionary<int, long> totalresults = new SortedDictionary<int, long>();
-            for(int i = 0; i <= 10; i++){
-            List<Tuple<int, long>> results = new List<Tuple<int, long>>();
-            for (double j = 10; j < 12000; j = j * 1.3 + 10)
+            SortedDictionary<int, long> totalResults = new SortedDictionary<int, long>();
+            for (int i = 0; i <= 10; i++)
+            {
+                List<Tuple<int, long>> results = new List<Tuple<int, long>>();
+                for (double j = 10; j < 12000; j = j * 1.3 + 10)
                 {
                     int limit = (int) Math.Floor(j);
                     long ticks = TimeCountSaxShallow(limit);
-                    if(!totalresults.ContainsKey(limit)){
-                        totalresults.Add(limit, ticks);
+                    if (!totalResults.ContainsKey(limit))
+                    {
+                        totalResults.Add(limit, ticks);
                     }
                     else
                     {
-                        totalresults[limit] = (long) totalresults[limit] + ticks;
+                        totalResults[limit] = (long) totalResults[limit] + ticks;
                     }
                 }
             }
 
-            PrintResults(totalresults);
+            PrintResults(totalResults);
         }
 
-        private void PrintResults(SortedDictionary<int, long> totalresults)
+        private void PrintResults(SortedDictionary<int, long> totalResults)
         {
             List<int> limits = new List<int>();
             List<long> ticks = new List<long>();
-            foreach (var kvp in totalresults)
+            foreach (var kvp in totalResults)
             {
                 limits.Add(kvp.Key);
                 ticks.Add(kvp.Value);
