@@ -32,13 +32,23 @@ namespace Engage.C
         }
 
         public IfThenElse(string cond1, string code1, string cond2, string code2, string elsecode)
-           : this(cond1, code1, cond2, code2)
+            : this(cond1, code1, cond2, code2)
         {
             AddElse(elsecode);
         }
 
+        private string NormaliseCondition(string cond)
+        {
+            if (cond == null)
+                return cond;
+            if (cond.StartsWith('_'))
+                return cond;
+            return cond.Replace("_", " && ");
+        }
+
         public void AddBranch(string cond)
         {
+            cond = NormaliseCondition(cond);
             _conditions.Add(cond);
             _thenBranches[cond] = new List<CsStmt>();
         }
@@ -48,12 +58,14 @@ namespace Engage.C
 
         public void AddBranch(string cond, CsStmt code)
         {
+            cond = NormaliseCondition(cond);
             _conditions.Add(cond);
             _thenBranches[cond] = new List<CsStmt> {code};
         }
 
         public void AddBranch(string cond, IEnumerable<CsStmt> code)
         {
+            cond = NormaliseCondition(cond);
             _conditions.Add(cond);
             _thenBranches[cond] = new List<CsStmt>();
             _thenBranches[cond].AddRange(code);
@@ -61,6 +73,7 @@ namespace Engage.C
 
         public void AddToBranch(string cond, string code)
         {
+            cond = NormaliseCondition(cond);
             if (String.IsNullOrEmpty(cond))
                 AddElse(code);
             else if (!_thenBranches.ContainsKey(cond))
@@ -71,6 +84,7 @@ namespace Engage.C
 
         public void AddToBranch(string cond, CsStmt code)
         {
+            cond = NormaliseCondition(cond);
             if (String.IsNullOrEmpty(cond))
                 AddElse(code);
             else if (!_thenBranches.ContainsKey(cond))
@@ -81,6 +95,7 @@ namespace Engage.C
 
         internal void AddToBranch(string cond, IEnumerable<CsStmt> code)
         {
+            cond = NormaliseCondition(cond);
             if (String.IsNullOrEmpty(cond))
                 _elseBranch.AddRange(code);
             else if (!_thenBranches.ContainsKey(cond))
@@ -91,6 +106,8 @@ namespace Engage.C
 
         public void RenameBranch(string oldName, string newName)
         {
+            oldName = NormaliseCondition(oldName);
+            newName = NormaliseCondition(newName);
             for (int i = 0; i < _conditions.Count; i++)
             {
                 if (_conditions[i] != oldName) continue;
@@ -102,7 +119,7 @@ namespace Engage.C
         }
 
         public List<CsStmt> GetThenBranch(string name)
-            => _thenBranches[name];
+            => _thenBranches[NormaliseCondition(name)];
 
         public string FirstThenBranchKey()
             => _thenBranches.Keys.First();
@@ -134,6 +151,7 @@ namespace Engage.C
                 result.AddStmt(if1);
                 kw = "else if";
             }
+
             if (_elseBranch.Count <= 0) return result;
             {
                 var if2 = new D.CsComplexStmt
