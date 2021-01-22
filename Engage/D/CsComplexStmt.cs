@@ -48,11 +48,11 @@ namespace Engage.D
         {
             if (!String.IsNullOrEmpty(Before))
                 lines.Add(level, Before);
-            if (Embrace && _code.Count > 1)
+            if (Embrace && (_code.Count > 1 || Before.Contains("switch")))
                 lines.Open(level);
             foreach (var stmt in _code)
                 stmt.GenerateCode(lines, level + 1);
-            if (Embrace && _code.Count > 1)
+            if (Embrace && (_code.Count > 1 || Before.Contains("switch")))
                 lines.Close(level);
             if (String.IsNullOrEmpty(After)) return;
             if (!After.EndsWith(";"))
