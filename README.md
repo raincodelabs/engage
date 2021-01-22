@@ -24,5 +24,6 @@ If you want to cite it, feel free to use this:
 Contributors:
 * **Vadim Zaytsev** aka [@grammarware](https://github.com/grammarware) — the original idea and implementation
 * **Mohammed Samy** aka [@samiz](https://github.com/samiz) — a [Takmela](https://github.com/samiz/takmela)-based parser making the open-source implementation complete
+* **Frank Groeneveld** aka [@spzme](https://github.com/spzme) — reimplementation of some SAX queries as *Engage!* specifications to measure performance and explore lacking language features
 
 This generator is open source, distributed with an [MIT license](LICENSE.md).
