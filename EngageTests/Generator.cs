@@ -44,6 +44,14 @@ namespace EngageTests
         }
 
         /**
+         * Same as ArbitraryBalancedSequenceShallow but same name
+         */
+        internal static string ArbitraryBalancedSequenceShallowConstName(string name, int limit = 10)
+        {
+            return $"<start>{ArbitraryBalancedSequenceShallowRecConstName(name, limit)}</start>";
+        }
+
+        /**
          * Generates a shallow balanced input
          */
         internal static string ArbitraryBalancedSequenceShallowRec(int limit = 10)
@@ -57,14 +65,28 @@ namespace EngageTests
         }
 
         /**
+         * Same as ArbitraryBalancedSequenceShallowRec but same name
+         */
+        internal static string ArbitraryBalancedSequenceShallowRecConstName(string name, int limit = 10)
+        {
+            //using limit < 2 because a root element is added before this function is called.
+            if (limit < 2)
+                return "";
+            return $"<{name}></{name}>{ArbitraryBalancedSequenceShallowRecConstName(name, limit - 1)}";
+        }
+
+
+        /**
          * Generates a deep balanced input
          */
-        internal static string ArbitraryBalancedSequenceDeep(int limit = 10)
+        internal static string ArbitraryBalancedSequenceDeep(int limit = 10, string terminal = "")
         {
             if (limit < 0)
-                return "";
+                return terminal;
             var name = ArbitraryWord();
             return $"<{name}>{ArbitraryBalancedSequenceDeep(limit - 1)}</{name}>";
         }
+        
+        
     }
 }
