@@ -69,10 +69,14 @@ namespace EngageTests
          */
         internal static string ArbitraryBalancedSequenceShallowRecConstName(string name, int limit = 10)
         {
-            //using limit < 2 because a root element is added before this function is called.
-            if (limit < 2)
+            if (limit == 0)
                 return "";
-            return $"<{name}></{name}>{ArbitraryBalancedSequenceShallowRecConstName(name, limit - 1)}";
+            var inner = ArbitraryWord();
+            // establish uniqueness
+            while (name == inner)
+                inner = ArbitraryWord();
+            return
+                $"<{name}><{inner}></{inner}></{name}>{ArbitraryBalancedSequenceShallowRecConstName(name, limit - 1)}";
         }
 
 
