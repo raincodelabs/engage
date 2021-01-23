@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ANTLRGenerationPreferences">
+    <option name="perGrammarGenerationSettings">
+      <list>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/Engage/parsing/Engage.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="." />
+          <option name="libDir" value="" />
+          <option name="encoding" value="utf-8" />
+          <option name="pkg" value="Engage.parsing" />
+          <option name="language" value="CSharp" />
+        </PerGrammarGenerationSettings>
+      </list>
+    </option>
+  </component>
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
