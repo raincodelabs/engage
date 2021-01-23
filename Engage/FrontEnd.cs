@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using Engage.parsing;
 
 namespace Engage
@@ -9,6 +11,20 @@ namespace Engage
     public static class FrontEnd
     {
         public static A.EngSpec EngSpecFromText(string code)
+        {
+            ICharStream inputStream = CharStreams.fromString(code);
+            EngageLexer lexer = new EngageLexer(inputStream);
+            CommonTokenStream stream = new CommonTokenStream(lexer);
+            EngageParser parser = new EngageParser(stream);
+            EngageParser.EngSpecContext tree = parser.engSpec();
+            Console.WriteLine(tree.ToStringTree());
+            EngageFullListener listener = new EngageFullListener();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            walker.Walk(listener, tree);
+            return listener.Root;
+        }
+
+        public static A.EngSpec LegacyEngSpecFromText(string code)
         {
             EngageMetaParser parser = new EngageMetaParser();
             return parser.ParseGrammar(code);

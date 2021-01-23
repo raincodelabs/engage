@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Engage.A
 {
@@ -6,6 +7,17 @@ namespace Engage.A
     {
         public List<Lexeme> Names = new List<Lexeme>();
         public string Type;
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as TokenDecl;
+            if (other == null)
+                return false;
+            return Type == other.Type
+                   && Names.Count == other.Names.Count
+                   && Names.SequenceEqual(other.Names)
+                ;
+        }
 
         internal List<B.TokenPlan> MakePlans()
         {

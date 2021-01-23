@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
+[assembly:InternalsVisibleTo("EngageTests")]
 namespace Engage.A
 {
     public class EngSpec
@@ -9,6 +12,21 @@ namespace Engage.A
         internal List<TypeDecl> Types = new List<TypeDecl>();
         internal List<TokenDecl> Tokens = new List<TokenDecl>();
         internal List<HandlerDecl> Handlers = new List<HandlerDecl>();
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as EngSpec;
+            if (other == null)
+                return false;
+            return NS == other.NS
+                   && Types.Count == other.Types.Count
+                   && Tokens.Count == other.Tokens.Count
+                   && Handlers.Count == other.Handlers.Count
+                   && Types.SequenceEqual(other.Types)
+                   && Tokens.SequenceEqual(other.Tokens)
+                   && Handlers.SequenceEqual(other.Handlers)
+                ;
+        }
 
         internal B.SystemPlan MakePlan()
         {

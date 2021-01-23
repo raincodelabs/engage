@@ -24,6 +24,7 @@
     <ProjectReference Include="..\AB\AB.csproj" />
     <ProjectReference Include="..\EAX\EAX.csproj" />
     <ProjectReference Include="..\Engage\Engage.csproj" />
+    <ProjectReference Include="..\Runner\Runner.csproj" />
     <ProjectReference Include="..\TIALAA\TIALAA.csproj" />
   </ItemGroup>
 

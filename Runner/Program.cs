@@ -4,21 +4,23 @@ using Engage;
 
 namespace Runner
 {
-    internal static class Program
+    public static class Program
     {
         private static string FourUp { get; } = Path.Combine("..", "..", "..", "..");
 
+        public static readonly Dictionary<string, string> CompilationList = new Dictionary<string, string>
+        {
+            [Path.Combine(FourUp, "AB", "spec", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
+            [Path.Combine(FourUp, "EAX", "specs", "OpenClose.eng")] = Path.Combine(FourUp, "EAX", "OpenClose"),
+            [Path.Combine(FourUp, "EAX", "specs", "Fuzzy.eng")] = Path.Combine(FourUp, "EAX", "Fuzzy"),
+        };
+
         private static void Main(string[] args)
         {
-            Dictionary<string, string> compilationList = new Dictionary<string, string>
-            {
-                [Path.Combine(FourUp, "AB", "spec", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
-                [Path.Combine(FourUp, "EAX", "specs", "Fuzzy.eng")] = Path.Combine(FourUp, "EAX", "Fuzzy"),
-                [Path.Combine(FourUp, "EAX", "specs", "OpenClose.eng")] = Path.Combine(FourUp, "EAX", "OpenClose")
-            };
 
-            foreach (var spec in compilationList.Keys)
-                FrontEnd.FullPipeline(spec, compilationList[spec]);
+
+            foreach (var spec in CompilationList.Keys)
+                FrontEnd.FullPipeline(spec, CompilationList[spec]);
         }
     }
 }

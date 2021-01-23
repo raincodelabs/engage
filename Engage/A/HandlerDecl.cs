@@ -10,6 +10,18 @@ namespace Engage.A
         public Reaction RHS;
         public List<Assignment> Context = new List<Assignment>();
 
+        public override bool Equals(object obj)
+        {
+            var other = obj as HandlerDecl;
+            if (other == null)
+                return false;
+            return LHS.Equals(other.LHS)
+                   && RHS.Equals(other.RHS)
+                   && Context.Count == other.Context.Count
+                   && Context.SequenceEqual(other.Context)
+                ;
+        }
+
         internal Reaction GetContext(string name)
             => (from a in Context where a.LHS == name select a.RHS)
                 .FirstOrDefault();

@@ -5,6 +5,10 @@
     <LangVersion>9</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.1" />
+  </ItemGroup>
+
 <!--    
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="&quot;$(SolutionDir)lib\StandaloneGenerator.exe&quot; &quot;$(ProjectDir)A\Parser.g&quot; &quot;$(ProjectDir)A\GeneratedParser.cs&quot;" />
