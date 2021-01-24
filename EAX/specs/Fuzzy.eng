@@ -8,29 +8,28 @@ types
     TagOpen, TagClose <: TagEvent;
 
 tokens
-  ' ', '\r', '\n' :: skip
-  '<', '>', '!', 
-  '/' :: mark
-  'a' :: word
-  string :: Id
+    ' ', '\r', '\n' :: skip
+    '<', '>', '!', '/' :: mark
+    'a' :: word
+    string :: Id
 
 handlers
-    EOF                 -> push EngagedXmlDoc(tags)
-                           where tags := pop# TagEvent
-    'a' upon TAG_CLOSE  -> drop PARSE
-    'a' upon TAG        -> lift PARSE
-    'a' upon TAG_CLOSE  -> drop TAG
-    'a' upon TAG_CLOSE  -> drop CLOSE
-    'a' upon TAG        -> drop TAG
-    'a' upon TAG        -> drop OPEN
-    '<'                 -> lift TAG
-    '<'                 -> lift OPEN
-    '<'                 -> drop CLOSE
-    '/' upon TAG        -> lift CLOSE
-    '/' upon TAG        -> drop OPEN
-    Id upon TAG         -> push Name(this)
-    '>' upon PARSE_OPEN -> push TagOpen(n)
-                           where n := pop Name
+    EOF                  -> push EngagedXmlDoc(tags)
+                            where tags := pop# TagEvent
+    'a' upon TAG_CLOSE   -> drop PARSE
+    'a' upon TAG         -> lift PARSE
+    'a' upon TAG_CLOSE   -> drop TAG
+    'a' upon TAG_CLOSE   -> drop CLOSE
+    'a' upon TAG         -> drop TAG
+    'a' upon TAG         -> drop OPEN
+    '<'                  -> lift TAG
+    '<'                  -> lift OPEN
+    '<'                  -> drop CLOSE
+    '/' upon TAG         -> lift CLOSE
+    '/' upon TAG         -> drop OPEN
+    Id upon TAG          -> push Name(this)
+    '>' upon PARSE_OPEN  -> push TagOpen(n)
+                            where n := pop Name
     '>' upon PARSE_CLOSE -> push TagClose(n)
                             where n := pop Name
     '>' upon ANY         -> pass

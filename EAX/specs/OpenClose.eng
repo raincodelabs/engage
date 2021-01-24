@@ -8,10 +8,9 @@ types
     TagOpen, TagClose <: TagEvent;
 
 tokens
-  ' ', '\r', '\n' :: skip
-  '<', '>', '!', 
-  '/' :: mark
-  string :: Id
+    ' ', '\r', '\n' :: skip
+    '<', '>', '!', '/' :: mark
+    string :: Id
 
 handlers
     EOF                 -> push EngagedXmlDoc(tags)
