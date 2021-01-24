@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using takmelalexer;
 
 namespace EngageTests
 {
@@ -53,35 +51,38 @@ namespace EngageTests
             {
                 Console.Write("{0}, ", limit);
             }
+
             Console.WriteLine("]");
-            
+
             Console.Write("[");
             foreach (long tick in ticks)
             {
-                Console.Write("{0}, ", tick/10);
+                Console.Write("{0}, ", tick / 10);
             }
+
             Console.WriteLine("]");
         }
-        
+
         private long TimeCountSaxShallow(int limit)
         {
             var input = Generator.ArbitraryBalancedSequenceShallow(limit);
             var timer = new Stopwatch();
             timer.Start();
-            
 
-            Set<string> tags = new Set<string>();
-            
+
+            HashSet<string> tags = new HashSet<string>();
+
             using (XmlReader reader = XmlReader.Create(new StringReader(input)))
             {
                 reader.MoveToContent();
                 while (reader.Read())
-                { 
+                {
                     tags.Add(reader.Name);
                 }
             }
+
             timer.Stop();
-            
+
             return timer.ElapsedTicks;
         }
     }

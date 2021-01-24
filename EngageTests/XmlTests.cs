@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using EAX;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using takmelalexer;
 using System.Xml;
 
 namespace EngageTests
@@ -262,7 +261,7 @@ namespace EngageTests
 
         private int CountTagsOpenClose(EaxOpenClose.EngagedXmlDoc tree)
         {
-            Set<string> tags = new Set<string>();
+            HashSet<string> tags = new HashSet<string>();
             foreach (var tag in tree.tags)
                 switch (tag)
                 {
@@ -279,7 +278,7 @@ namespace EngageTests
 
         private int CountTagsFuzzy(EaxFuzzy.EngagedXmlDoc tree)
         {
-            Set<string> tags = new Set<string>();
+            HashSet<string> tags = new HashSet<string>();
             foreach (var tag in tree.tags)
                 switch (tag)
                 {
@@ -346,7 +345,7 @@ namespace EngageTests
                 $"Parsed an input with {Math.Floor((double) limit / 1000)}k tags in {timer.ElapsedMilliseconds}ms.");
             timer.Restart();
 
-            Set<string> tags = new Set<string>();
+            HashSet<string> tags = new HashSet<string>();
 
             timer.Stop();
             Console.WriteLine(
