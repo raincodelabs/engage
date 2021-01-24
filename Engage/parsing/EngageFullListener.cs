@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using Engage.A;
+using Engage.C;
 
 namespace Engage.parsing
 {
 	public class EngageFullListener : EngageBaseListener
 	{
 		public EngSpec Root;
-		/*
-EngSpec ::= i:s?
-	"namespace" i:s NS=Id i:s?
-	"types" Types=TypeDecl*,(i:s?) i:s?
-	"tokens" Tokens=TokenDecl*,(i:s?) i:s?
-	"handlers" Handlers=HandlerDecl*,(i:s?) i:s?;
-		 */
 
 		public override void EnterEngSpec(EngageParser.EngSpecContext context)
 		{
@@ -38,7 +32,7 @@ EngSpec ::= i:s?
 			var td = new TypeDecl();
 			if (typ.superType() != null)
 				td.Super = typ.superType().ID().GetText();
-			foreach (var id in typ.ID()) 
+			foreach (var id in typ.ID())
 				td.Names.Add(id.GetText());
 			return td;
 		}
@@ -49,9 +43,10 @@ EngSpec ::= i:s?
 			foreach (var lex in token.lexeme())
 			{
 				if (lex.Q != null)
-					td.Names.Add(new LiteralLex(lex.Q.Text));
+					td.Names.Add(new LiteralLex(Unquote(lex.Q.Text)));
 				else if (lex.N != null)
 					td.Names.Add(new NumberLex {Special = true});
+
 				if (lex.S != null)
 					td.Names.Add(new StringLex {Special = true});
 			}
@@ -74,7 +69,7 @@ EngSpec ::= i:s?
 		{
 			Trigger result = null;
 			if (trigger.T != null)
-				result = new Trigger {Terminal = trigger.T.Text};
+				result = new Trigger {Terminal = Unquote(trigger.T.Text)};
 			else if (trigger.Eof != null)
 				result = new Trigger {EOF = true};
 			else if (trigger.NT != null)
@@ -104,7 +99,7 @@ EngSpec ::= i:s?
 				case "drop":
 					return new DropReaction {Flag = reaction.ID()[0].GetText()};
 				case "trim":
-					return new TrimReaction {Starred = reaction.Star != null};
+					return new TrimReaction {Name = reaction.ID()[0].GetText(), Starred = reaction.Star != null};
 				default:
 					return null;
 			}
@@ -130,6 +125,7 @@ EngSpec ::= i:s?
 					return new PopHashAction {Name = operation.Name.Text};
 				case "await":
 					var a = new AwaitAction();
+					a.Name = operation.Name.Text;
 					if (operation.ExtraContext != null)
 						a.ExtraContext = operation.ExtraContext.Text;
 					if (operation.LocalContext != null)
@@ -137,6 +133,7 @@ EngSpec ::= i:s?
 					return a;
 				case "await*":
 					var s = new AwaitStarAction();
+					s.Name = operation.Name.Text;
 					if (operation.LocalContext != null)
 						s.TmpContext = operation.LocalContext.Text;
 					return s;
@@ -145,6 +142,14 @@ EngSpec ::= i:s?
 				default:
 					return null;
 			}
+		}
+
+		private string Unquote(string value)
+		{
+			if (value != null && value.Length > 1 && value[0] == '\'' && value[^1] == '\'')
+				return value.Substring(1, value.Length - 2);
+			else
+				return value;
 		}
 	}
 }

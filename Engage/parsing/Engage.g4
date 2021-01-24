@@ -29,9 +29,12 @@ operation
     : Command='pop' Name=ID
     | Command='pop*' Name=ID
     | Command='pop#' Name=ID
-    | Command='await' (
-            Name=ID |
-            ('(' Name=ID 'upon' ExtraContext=ID ')'))
+    | Command='await'
+        (
+            (Name=ID)
+        |
+            ('(' Name=ID 'upon' ExtraContext=ID ')')
+        )
         ('with' LocalContext=ID)?
     | Command='await*' Name=ID ('with' LocalContext=ID)?
     | Command='tear' Name=ID 
