@@ -23,6 +23,7 @@ reaction
     | Command='drop' flag
     | Command='trim' name (Star='*')?
     | Command='pass'
+    | Command='dump' name?
     ; 
 name : ID;
 flag : ID;

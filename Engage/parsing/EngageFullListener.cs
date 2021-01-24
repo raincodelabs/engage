@@ -104,6 +104,8 @@ namespace Engage.parsing
 					return new TrimReaction {Name = reaction.name().ID().GetText(), Starred = reaction.Star != null};
 				case "pass":
 					return new PassReaction();
+				case "dump":
+					return new DumpReaction(reaction.name()?.ID()?.GetText());
 				default:
 					return null;
 			}

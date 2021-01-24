@@ -67,6 +67,23 @@ namespace Engage.B
                 ? new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))")
                 : new C.SimpleStmt($"Push(new {Name}({Tearing}))"));
     }
+    
+    public class DumpOne : HandleAction
+    {
+        public string Name;
+
+        public DumpOne(string type)
+        {
+            Name = type;
+        }
+
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
+        {
+            code.Add(String.IsNullOrEmpty(Name)
+                ? new C.SimpleStmt("Main.Pop()")
+                : new C.SimpleStmt($"if (Main.Peek() is {Name}) Main.Pop()"));
+        }
+    }
 
     public class PopOne : HandleAction
     {
