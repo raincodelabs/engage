@@ -19,12 +19,13 @@ trigger : (T=QUOTED | Bof='BOF' | Eof='EOF' | NT=ID) ('upon' Flag=ID)?;
 reaction
     : Command='push' name ('(' ID (',' ID)* ')')?
     | Command='wrap' name ('(' ID (',' ID)* ')')?
-    | Command='lift' ID
-    | Command='drop' ID
-    | Command='trim' ID (Star='*')?
+    | Command='lift' flag
+    | Command='drop' flag
+    | Command='trim' name (Star='*')?
     | Command='pass'
     ; 
 name : ID;
+flag : ID;
 assignment : ID ':=' operation;
 operation
     : Command='pop' Name=ID

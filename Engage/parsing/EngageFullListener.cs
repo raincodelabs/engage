@@ -97,11 +97,11 @@ namespace Engage.parsing
 						w.Args.Add(id.GetText());
 					return w;
 				case "lift":
-					return new LiftReaction {Flag = reaction.ID()[0].GetText()};
+					return new LiftReaction {Flag = reaction.flag().GetText()};
 				case "drop":
-					return new DropReaction {Flag = reaction.ID()[0].GetText()};
+					return new DropReaction {Flag = reaction.flag().GetText()};
 				case "trim":
-					return new TrimReaction {Name = reaction.ID()[0].GetText(), Starred = reaction.Star != null};
+					return new TrimReaction {Name = reaction.name().ID().GetText(), Starred = reaction.Star != null};
 				case "pass":
 					return new PassReaction();
 				default:
