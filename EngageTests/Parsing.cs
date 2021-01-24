@@ -50,6 +50,25 @@ namespace EngageTests
             Assert.IsTrue(t2.Names[0].Special);
             Assert.AreEqual("Id", t2.Type);
         }
+        
+        [TestMethod]
+        [TestCategory("Engage")]
+        public void TestAntlrParserAwait()
+        {
+            string input = "namespace X " +
+                           "types tokens handlers " +
+                           "EOF -> push String(n) " +
+                           "where x := await (Lit upon BRACKET) with CHAR, n := tear x";
+            EngSpec result = Engage.parsing.TheParser.Parse(input);
+            Assert.IsNotNull(result);
+            Assert.AreEqual("X", result.NS);
+
+            Assert.AreEqual(0, result.Types.Count);
+            Assert.AreEqual(0, result.Tokens.Count);
+            Assert.AreEqual(1, result.Handlers.Count);
+            // There was a specific bug
+            Assert.AreEqual("Lit", result.Handlers[0].Context[0].RHS.Name);
+        }
 
         [TestMethod]
         [TestCategory("Engage")]
