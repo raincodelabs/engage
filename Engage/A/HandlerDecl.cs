@@ -14,12 +14,37 @@ namespace Engage.A
         {
             var other = obj as HandlerDecl;
             if (other == null)
+            {
+                Console.WriteLine("[x] HandlerDecl compared to non-HandlerDecl");
                 return false;
-            return LHS.Equals(other.LHS)
-                   && RHS.Equals(other.RHS)
-                   && Context.Count == other.Context.Count
-                   && Context.SequenceEqual(other.Context)
-                ;
+            }
+
+            if (!LHS.Equals(other.LHS))
+            {
+                Console.WriteLine("[x] HandlerDecl: LHS mismatch");
+                return false;
+            }
+
+            if (!RHS.Equals(other.RHS))
+            {
+                Console.WriteLine("[x] HandlerDecl: RHS mismatch");
+                return false;
+            }
+
+            if (Context.Count != other.Context.Count)
+            {
+                Console.WriteLine("[x] HandlerDecl: Context count mismatch");
+                return false;
+            }
+
+            if (!Context.SequenceEqual(other.Context))
+            {
+                Console.WriteLine("[x] HandlerDecl: Context mismatch");
+                return false;
+            }
+
+            Console.WriteLine("[√] HandlerDecl == HandlerDecl");
+            return true;
         }
 
         internal Reaction GetContext(string name)

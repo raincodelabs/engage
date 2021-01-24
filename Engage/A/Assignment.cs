@@ -1,4 +1,6 @@
-﻿namespace Engage.A
+﻿using System;
+
+namespace Engage.A
 {
     public class Assignment
     {
@@ -9,10 +11,25 @@
 		{
 			var other = obj as Assignment;
 			if (other == null)
+			{
+				Console.WriteLine("[x] Assignment compared to non-Assignment");
 				return false;
-			return LHS == other.LHS
-			       && RHS.Equals(other.RHS)
-				;
+			}
+
+			if (LHS != other.LHS)
+			{
+				Console.WriteLine("[x] Assignment: LHS mismatch");
+				return false;
+			}
+
+			if (!RHS.Equals(other.RHS))
+			{
+				Console.WriteLine("[x] Assignment: RHS mismatch");
+				return false;
+			}
+
+			Console.WriteLine("[√] Assignment == Assignment");
+			return true;
 		}
     }
 }

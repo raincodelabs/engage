@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Engage.A
@@ -12,11 +13,30 @@ namespace Engage.A
         {
             var other = obj as TokenDecl;
             if (other == null)
+            {
+                Console.WriteLine("[x] TokenDecl compared to non-TokenDecl");
                 return false;
-            return Type == other.Type
-                   && Names.Count == other.Names.Count
-                   && Names.SequenceEqual(other.Names)
-                ;
+            }
+
+            if (Type != other.Type)
+            {
+                Console.WriteLine($"[x] TokenDecl: Type mismatch");
+                return false;
+            }
+
+            if (Names.Count != other.Names.Count)
+            {
+                Console.WriteLine("[x] TokenDecl: Names count mismatch");
+                return false;
+            }
+
+            if (!Names.SequenceEqual(other.Names))
+            {
+                Console.WriteLine("[x] TokenDecl: Names mismatch");
+                return false;
+            }
+
+            return true;
         }
 
         internal List<B.TokenPlan> MakePlans()

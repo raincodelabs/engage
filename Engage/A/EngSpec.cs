@@ -17,15 +17,55 @@ namespace Engage.A
         {
             var other = obj as EngSpec;
             if (other == null)
+            {
+                Console.WriteLine("[x] EngSpec compared to non-EngSpec");
                 return false;
-            return NS == other.NS
-                   && Types.Count == other.Types.Count
-                   && Tokens.Count == other.Tokens.Count
-                   && Handlers.Count == other.Handlers.Count
-                   && Types.SequenceEqual(other.Types)
-                   && Tokens.SequenceEqual(other.Tokens)
-                   && Handlers.SequenceEqual(other.Handlers)
-                ;
+            }
+
+            if (NS != other.NS)
+            {
+                Console.WriteLine("[x] EngSpec: NS mismatch");
+                return false;
+            }
+
+            if (Types.Count != other.Types.Count)
+            {
+                Console.WriteLine("[x] EngSpec: Types length mismatch");
+                return false;
+            }
+
+            if (Tokens.Count != other.Tokens.Count)
+            {
+                Console.WriteLine("[x] EngSpec: Tokens length mismatch");
+                return false;
+            }
+
+            if (Handlers.Count != other.Handlers.Count)
+            {
+                Console.WriteLine("[x] EngSpec: Handlers length mismatch");
+                return false;
+            }
+
+            if (!Types.SequenceEqual(other.Types))
+            {
+                Console.WriteLine("[x] EngSpec: Types mismatch");
+                return false;
+            }
+
+            if (!Tokens.SequenceEqual(other.Tokens))
+            {
+                Console.WriteLine("[x] EngSpec: Tokens mismatch");
+                return false;
+            }
+
+            if (!Handlers.SequenceEqual(other.Handlers))
+            {
+                Console.WriteLine("[x] EngSpec: Handlers mismatch");
+                return false;
+            }
+
+            Console.WriteLine("[√] EngSpec == EngSpec");
+            return true;
         }
 
         internal B.SystemPlan MakePlan()
