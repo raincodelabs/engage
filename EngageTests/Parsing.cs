@@ -22,7 +22,7 @@ namespace EngageTests
                            "types X; Y <: Z; " +
                            "tokens 'x'::skip string :: Id " +
                            "handlers EOF -> lift TAG";
-            EngSpec result = Engage.parsing.TheParser.Parse(input);
+            EngSpec result = Engage.FrontEnd.EngSpecFromText(input);
             Assert.IsNotNull(result);
             Assert.AreEqual("abc", result.NS);
 
@@ -59,7 +59,7 @@ namespace EngageTests
                            "types tokens handlers " +
                            "EOF -> push String(n) " +
                            "where x := await (Lit upon BRACKET) with CHAR, n := tear x";
-            EngSpec result = Engage.parsing.TheParser.Parse(input);
+            EngSpec result = Engage.FrontEnd.EngSpecFromText(input);
             Assert.IsNotNull(result);
             Assert.AreEqual("X", result.NS);
 
@@ -72,7 +72,7 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("Engage")]
-        public void TestAntlrParserFiles()
+        public void TestAntlrParserAllFiles()
         {
             TraverseDir(FourUp);
         }
@@ -134,8 +134,7 @@ namespace EngageTests
         private void ProcessFile(string file)
         {
             Console.WriteLine("Found Engage! spec: " + file);
-            string input = File.ReadAllText(file);
-            EngSpec result = Engage.parsing.TheParser.Parse(input);
+            EngSpec result = Engage.FrontEnd.EngSpecFromFile(file);
             Assert.IsNotNull(result);
             Console.WriteLine("Parsed successfully");
         }
