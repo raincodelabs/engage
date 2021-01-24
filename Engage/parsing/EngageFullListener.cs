@@ -70,8 +70,10 @@ namespace Engage.parsing
 			Trigger result = null;
 			if (trigger.T != null)
 				result = new Trigger {Terminal = Unquote(trigger.T.Text)};
+			else if (trigger.Bof != null)
+				result = new Trigger {Special = SpecialTrigger.BOF};
 			else if (trigger.Eof != null)
-				result = new Trigger {EOF = true};
+				result = new Trigger {Special = SpecialTrigger.EOF};
 			else if (trigger.NT != null)
 				result = new Trigger {NonTerminal = trigger.NT.Text};
 
