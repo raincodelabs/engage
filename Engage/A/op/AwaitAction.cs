@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Engage.A
 {
     public class AwaitAction : Reaction
     {
-        public string TmpContext;
-        public string ExtraContext;
+        public string TmpContext = "";
+        public string ExtraContext = "";
 
         public override bool Equals(object obj)
         {

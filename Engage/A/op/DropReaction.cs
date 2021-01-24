@@ -5,7 +5,7 @@ namespace Engage.A
 {
     public class DropReaction : Reaction
     {
-		public string Flag;
+        public string Flag = "";
 
         public override bool Equals(object obj)
         {

@@ -2,7 +2,7 @@
 {
     public class AwaitStarAction : Reaction
     {
-        public string TmpContext;
+        public string TmpContext = "";
 
         public override bool Equals(object obj)
         {
