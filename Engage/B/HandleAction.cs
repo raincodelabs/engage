@@ -28,6 +28,13 @@ namespace Engage.B
                 : new C.SimpleStmt($"{Flag} = false"));
     }
 
+    public class DoNothing : HandleAction
+    {
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
+        {
+        }
+    }
+
     public class TrimStream : HandleAction
     {
         public string Type;

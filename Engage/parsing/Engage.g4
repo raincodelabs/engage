@@ -22,6 +22,7 @@ reaction
     | Command='lift' ID
     | Command='drop' ID
     | Command='trim' ID (Star='*')?
+    | Command='pass'
     ; 
 name : ID;
 assignment : ID ':=' operation;

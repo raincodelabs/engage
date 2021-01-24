@@ -100,6 +100,8 @@ namespace Engage.parsing
 					return new DropReaction {Flag = reaction.ID()[0].GetText()};
 				case "trim":
 					return new TrimReaction {Name = reaction.ID()[0].GetText(), Starred = reaction.Star != null};
+				case "pass":
+					return new PassReaction();
 				default:
 					return null;
 			}
