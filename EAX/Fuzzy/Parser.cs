@@ -99,7 +99,7 @@ namespace EaxFuzzy
                                     Push(new TagClose(n));
                                 }
                                 else if (IGNORE)
-                                    IGNORE = true;
+                                    ;
                                 else
                                     ERROR = "neither of the flags PARSE_OPEN, PARSE_CLOSE, IGNORE are lifted when expected";
                                 break;

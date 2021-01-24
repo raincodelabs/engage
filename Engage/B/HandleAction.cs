@@ -31,8 +31,7 @@ namespace Engage.B
     public class DoNothing : HandleAction
     {
         public override void GenerateAbstractCode(List<C.CsStmt> code)
-        {
-        }
+            => code.Add(new C.SimpleStmt(""));
     }
 
     public class TrimStream : HandleAction

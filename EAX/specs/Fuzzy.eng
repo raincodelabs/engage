@@ -34,7 +34,6 @@ handlers
     '>' upon PARSE_CLOSE -> push TagClose(n)
                             where n := pop Name
 
-    '>' upon IGNORE      -> lift IGNORE
-    % actually mean something like "pass"
+    '>' upon IGNORE      -> pass
     '<'                  -> lift IGNORE
     % actually mean that the IGNORE flag is lifted by default
