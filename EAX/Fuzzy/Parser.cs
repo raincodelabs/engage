@@ -27,6 +27,7 @@ namespace EaxFuzzy
             string ERROR = "";
             TokenType type;
             string lexeme;
+            IGNORE = true;
             do
             {
                 var _token = NextToken();
