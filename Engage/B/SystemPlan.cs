@@ -222,12 +222,12 @@ namespace Engage.B
             pf.AddCode("string ERROR = \"\"");
             pf.AddCode("TokenType type");
             pf.AddCode("string lexeme");
-            
+
             // beginning of file
             if (Handlers.ContainsKey("BOF"))
                 foreach (var plan in Handlers["BOF"])
                     plan.GenerateAbstractCode(pf);
-            
+
             // the loop
             var loop = new List<C.CsStmt>();
             var pl = new C.WhileStmt("type != TokenType.TEOF", reversed: true);
@@ -329,18 +329,24 @@ namespace Engage.B
         private static void GenerateLexBranch(SwitchCaseStmt swLex, string hpk, IReadOnlyList<string> guardFlags,
             IReadOnlyList<List<HandleAction>> recipes, TokenPlan reactOn, bool matchChar)
         {
+            bool failOtherwise = true;
             var branchLex = new List<C.CsStmt>();
             Console.WriteLine($"[IR] in '{hpk}', handle {reactOn.Value}");
             bool onlyWraps = true;
             var ite = new C.IfThenElse();
             for (int i = 0; i < guardFlags.Count; i++)
             {
-                if (!String.IsNullOrEmpty(guardFlags[i]))
-                    ite.AddBranch(guardFlags[i]);
-                var target
-                    = String.IsNullOrEmpty(guardFlags[i])
-                        ? branchLex
-                        : ite.GetThenBranch(guardFlags[i]);
+                List<C.CsStmt> target;
+                if (String.IsNullOrEmpty(guardFlags[i]))
+                    target = branchLex;
+                else if (guardFlags[i] == "ANY")
+                {
+                    failOtherwise = false;
+                    target = ite.ElseBranch;
+                }
+                else
+                    target = ite.GetThenBranch(guardFlags[i]);
+
                 foreach (var action in recipes[i])
                 {
                     if (!(action is WrapOne))
@@ -369,15 +375,21 @@ namespace Engage.B
                 }
             }
 
-            string flags;
-            if (guardFlags.Count == 1)
-                flags = "flag " + guardFlags[0] + " is not";
-            else
-                flags = "neither of the flags " + String.Join(", ", guardFlags) + " are";
             branchLex.Add(ite);
-            if (!onlyWraps)
-                if (guardFlags.Any(f => !String.IsNullOrEmpty(f)))
-                    ite.AddElse($"ERROR = \"{flags} lifted when expected\"");
+
+            if (failOtherwise)
+            {
+                string flags;
+                var realFlags = guardFlags.Where(f => f != "ANY").ToList();
+                if (realFlags.Count == 1)
+                    flags = "flag " + guardFlags[0] + " is not";
+                else
+                    flags = "neither of the flags " + String.Join(", ", realFlags) + " are";
+                if (!onlyWraps)
+                    if (realFlags.Any(f => !String.IsNullOrEmpty(f)))
+                        ite.AddElse($"ERROR = \"{flags} lifted when expected\"");
+            }
+
             if (matchChar)
                 swLex.Branches["'" + reactOn.Value + "'"] = branchLex;
             else

@@ -16,7 +16,7 @@ namespace EaxFuzzy
             TId,
         }
 
-        private bool CLOSE, IGNORE, OPEN, PARSE, TAG;
+        private bool CLOSE, OPEN, PARSE, TAG;
 
         public Parser(string _input) : base(_input)
         {
@@ -27,7 +27,6 @@ namespace EaxFuzzy
             string ERROR = "";
             TokenType type;
             string lexeme;
-            IGNORE = true;
             do
             {
                 var _token = NextToken();
@@ -63,7 +62,6 @@ namespace EaxFuzzy
                                 TAG = true;
                                 OPEN = true;
                                 CLOSE = false;
-                                IGNORE = true;
                                 break;
                             case '/':
                                 if (TAG)
@@ -99,10 +97,6 @@ namespace EaxFuzzy
                                     }
                                     Push(new TagClose(n));
                                 }
-                                else if (IGNORE)
-                                    ;
-                                else
-                                    ERROR = "neither of the flags PARSE_OPEN, PARSE_CLOSE, IGNORE are lifted when expected";
                                 break;
                         }
                         break;

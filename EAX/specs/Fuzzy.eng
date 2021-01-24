@@ -15,7 +15,6 @@ tokens
   string :: Id
 
 handlers
-    BOF                 -> lift IGNORE
     EOF                 -> push EngagedXmlDoc(tags)
                            where tags := pop# TagEvent
     'a' upon TAG_CLOSE  -> drop PARSE
@@ -34,4 +33,5 @@ handlers
                            where n := pop Name
     '>' upon PARSE_CLOSE -> push TagClose(n)
                             where n := pop Name
-    '>' upon IGNORE      -> pass
+    '>' upon ANY         -> pass
+
