@@ -15,7 +15,7 @@ lexeme : Q=QUOTED | N='number' | S='string';
 QUOTED : '\'' ~[']+ '\'';
 
 handlerDecl : trigger '->' reaction ('where' assignment (',' assignment)*)?;
-trigger : (T=QUOTED | Eof='EOF' | NT=ID) ('upon' Flag=ID)?;
+trigger : (T=QUOTED | Bof='BOF' | Eof='EOF' | NT=ID) ('upon' Flag=ID)?;
 reaction
     : Command='push' name ('(' ID (',' ID)* ')')?
     | Command='wrap' name ('(' ID (',' ID)* ')')?

@@ -2,11 +2,17 @@
 
 namespace Engage.A
 {
+    public enum SpecialTrigger
+    {
+        None,
+        BOF,
+        EOF
+    }
     public class Trigger
     {
         public string Terminal = "";
         public string NonTerminal = ""; // unused as of now
-        public bool EOF = false;
+        public SpecialTrigger Special = SpecialTrigger.None;
         public string Flag = "";
 
         public override bool Equals(object obj)
@@ -30,9 +36,9 @@ namespace Engage.A
                 return false;
             }
 
-            if (EOF != other.EOF)
+            if (Special != other.Special)
             {
-                Console.WriteLine("[x] Trigger: EOF mismatch");
+                Console.WriteLine("[x] Trigger: Special mismatch");
                 return false;
             }
 

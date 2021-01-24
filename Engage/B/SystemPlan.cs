@@ -222,6 +222,13 @@ namespace Engage.B
             pf.AddCode("string ERROR = \"\"");
             pf.AddCode("TokenType type");
             pf.AddCode("string lexeme");
+            
+            // beginning of file
+            if (Handlers.ContainsKey("BOF"))
+                foreach (var plan in Handlers["BOF"])
+                    plan.GenerateAbstractCode(pf);
+            
+            // the loop
             var loop = new List<C.CsStmt>();
             var pl = new C.WhileStmt("type != TokenType.TEOF", reversed: true);
 
@@ -230,16 +237,15 @@ namespace Engage.B
             pl.AddCode("lexeme = _token.Item2;");
             pl.AddCode("type = _token.Item1;");
 
-            var swType = new C.SwitchCaseStmt
-            {
-                Expression = "type"
-            };
+            var swType = new C.SwitchCaseStmt {Expression = "type"};
 
             var usedTokens = new HashSet<string> {"skip"};
 
             foreach (var hpk in Handlers.Keys)
             {
                 var branchType = new List<C.CsStmt>();
+                if (hpk == "BOF")
+                    continue;
                 if (hpk == "EOF")
                     branchType.Add(new C.SimpleStmt("Flush()"));
                 if (Handlers[hpk].Count == 1)

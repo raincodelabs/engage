@@ -23,6 +23,14 @@ namespace Engage.B
             }
         }
 
+        internal void GenerateAbstractCode(C.CsExeField field)
+        {
+            List<C.CsStmt> stmts = new List<C.CsStmt>();
+            GenerateAbstractCode(stmts);
+            foreach (var stmt in stmts)
+                field.AddCode(stmt);
+        }
+
         internal string IsPushFirst()
         {
             if (_recipe.Count < 1)
@@ -34,7 +42,7 @@ namespace Engage.B
 
         internal void AddRecipeTo(List<List<B.HandleAction>> listOfLists)
             => listOfLists.Add(_recipe);
-        
+
         internal void AddRecipeTo(List<B.HandleAction> list)
             => list.AddRange(_recipe);
     }

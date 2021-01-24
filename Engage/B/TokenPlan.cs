@@ -5,14 +5,17 @@
         public bool Special = false;
         public string Value;
 
+        internal static TokenPlan BOF()
+            => new B.TokenPlan() {Special = true, Value = "BOF"};
+
         internal static TokenPlan EOF()
-            => new B.TokenPlan() { Special = true, Value = "EOF" };
+            => new B.TokenPlan() {Special = true, Value = "EOF"};
 
         internal static TokenPlan FromNT(string nt)
-            => new B.TokenPlan() { Special = true, Value = nt };
+            => new B.TokenPlan() {Special = true, Value = nt};
 
         internal static TokenPlan FromT(string t)
-            => new B.TokenPlan() { Special = false, Value = t };
+            => new B.TokenPlan() {Special = false, Value = t};
 
         public override bool Equals(object obj)
         {

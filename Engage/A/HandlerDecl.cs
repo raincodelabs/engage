@@ -54,7 +54,9 @@ namespace Engage.A
         internal B.HandlerPlan MakePlan()
         {
             var hp = new B.HandlerPlan();
-            if (LHS.EOF)
+            if (LHS.Special == SpecialTrigger.BOF)
+                hp.ReactOn = B.TokenPlan.BOF();
+            else if (LHS.Special == SpecialTrigger.EOF)
                 hp.ReactOn = B.TokenPlan.EOF();
             else if (!String.IsNullOrEmpty(LHS.NonTerminal))
                 hp.ReactOn = B.TokenPlan.FromNT(LHS.NonTerminal);
