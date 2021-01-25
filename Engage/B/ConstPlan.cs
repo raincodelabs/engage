@@ -22,9 +22,6 @@ namespace Engage.B
                 case A.PopStarAction psa:
                     _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(psa.Name).Copy(true)));
                     break;
-                case A.PopHashAction pha:
-                    _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(pha.Name).Copy(true)));
-                    break;
                 case A.AwaitAction aa:
                     _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(aa.Name)));
                     break;

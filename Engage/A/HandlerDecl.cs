@@ -107,8 +107,7 @@ namespace Engage.A
                 return;
             }
 
-            if (Context.Count > 0 && (Context[0].RHS is A.AwaitAction || Context[0].RHS is A.AwaitStarAction ||
-                                      Context[0].RHS is A.PopHashAction))
+            if (Context.Count > 0 && (Context[0].RHS is A.AwaitAction || Context[0].RHS is A.AwaitStarAction))
             {
                 int limit = Context.Count - 1;
                 B.HandleAction tear = null;

@@ -141,8 +141,6 @@ namespace Engage.parsing
 					return new PopAction {Name = operation.name().GetText()};
 				case "pop*":
 					return new PopStarAction {Name = operation.name().GetText()};
-				case "pop#":
-					return new PopHashAction {Name = operation.name().GetText()};
 				case "await":
 					var a = new AwaitAction();
 					a.Name = operation.name().GetText();

@@ -31,7 +31,6 @@ assignment : (ID ':=')? operation;
 operation
     : Command='pop' name
     | Command='pop*' name
-    | Command='pop#' name
     | Command='await'
         (
             name
