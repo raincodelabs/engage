@@ -20,8 +20,8 @@ tokens
 
 handlers
     EOF                 -> push ABProgram(data,code)
-                           where code := pop# Stmt,
-                                 data := pop# Decl
+                           while code := pop Stmt,
+                                 data := pop Decl
     Num                 -> push Lit(this)
     Id                  -> push Var(this)
 

@@ -294,7 +294,7 @@ namespace Engage.B
                 code.Add(new C.SimpleStmt($"var {pair.Item1} = new List<{pair.Item2}>()"));
 
             var loop = new C.WhileStmt {Condition = "Main.Count > 0"};
-            if (Brancher.ElseBranch == null)
+            if (Brancher.ElseBranch == null || Brancher.ElseBranch.Count == 0)
                 Brancher.AddElse("break");
             loop.Code.Add(Brancher);
             code.Add(loop);
