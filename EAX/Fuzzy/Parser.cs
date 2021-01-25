@@ -107,7 +107,7 @@ namespace EaxFuzzy
                             if (Main.Peek() is TagEvent)
                                 tags.Add(Main.Pop() as TagEvent);
                             else
-                                Main.Pop(); // used to be just "break"
+                                Main.Pop();
                         tags.Reverse();
                         Push(new EngagedXmlDoc(tags));
                         break;

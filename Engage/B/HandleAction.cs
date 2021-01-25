@@ -271,4 +271,37 @@ namespace Engage.B
             code.Add(ite);
         }
     }
+
+    public class WhileStackNotEmpty : HandleAction
+    {
+        //public List<string> Conditions = new List<string>();
+        public C.IfThenElse Brancher;
+        private readonly HashSet<Tuple<string, string>> Variables;
+
+        public WhileStackNotEmpty()
+        {
+            Brancher = new C.IfThenElse();
+            Variables = new HashSet<Tuple<string, string>>();
+        }
+
+        public void AddVariable(string name, string type)
+            => Variables.Add(new Tuple<string, string>(name, type));
+
+        public override void GenerateAbstractCode(List<C.CsStmt> code)
+        {
+            // initialise lists TODO
+            foreach (var pair in Variables)
+                code.Add(new C.SimpleStmt($"var {pair.Item1} = new List<{pair.Item2}>()"));
+
+            var loop = new C.WhileStmt {Condition = "Main.Count > 0"};
+            if (Brancher.ElseBranch == null)
+                Brancher.AddElse("break");
+            loop.Code.Add(Brancher);
+            code.Add(loop);
+
+            // reverse the order because of stack vs list differences
+            foreach (var pair in Variables)
+                code.Add(new C.SimpleStmt($"{pair.Item1}.Reverse()"));
+        }
+    }
 }

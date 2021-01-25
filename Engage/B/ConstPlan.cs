@@ -14,7 +14,10 @@ namespace Engage.B
             switch (c)
             {
                 case A.PopAction pa:
-                    _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(pa.Name)));
+                    if (h.ComboType == A.ComboEnum.While)
+                        _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(pa.Name).Copy(true)));
+                    else
+                        _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(pa.Name)));
                     break;
                 case A.PopStarAction psa:
                     _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(psa.Name).Copy(true)));

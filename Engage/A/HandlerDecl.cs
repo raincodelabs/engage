@@ -4,10 +4,18 @@ using System.Linq;
 
 namespace Engage.A
 {
+    public enum ComboEnum
+    {
+        None,
+        Where,
+        While
+    }
+
     public class HandlerDecl
     {
         public Trigger LHS;
         public Reaction RHS;
+        public ComboEnum ComboType = ComboEnum.None;
         public List<Assignment> Context = new List<Assignment>();
 
         public override bool Equals(object obj)
@@ -70,7 +78,37 @@ namespace Engage.A
 
         private void ProduceActions(Action<B.HandleAction> add)
         {
-            if (Context.Count > 0 && (Context[0].RHS is A.AwaitAction || Context[0].RHS is A.AwaitStarAction || Context[0].RHS is A.PopHashAction))
+            if (ComboType == ComboEnum.While)
+            {
+                var loop = new B.WhileStackNotEmpty();
+                foreach (var assignment in Context)
+                {
+                    if (assignment.RHS is PopAction pop)
+                    {
+                        loop.Brancher.AddBranch($"Main.Peek() is {pop.Name}",
+                            $"{assignment.LHS}.Add(Main.Pop() as {pop.Name})");
+                        loop.AddVariable(assignment.LHS, pop.Name);
+                    }
+                    else if (assignment.RHS is DumpReaction dump)
+                    {
+                        if (dump.IsUniversal())
+                            loop.Brancher.AddElse("Main.Pop()");
+                        else
+                            loop.Brancher.AddBranch($"Main.Peek() is {dump.Name}", "Main.Pop()");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[A2B] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
+                    }
+                }
+
+                add(loop);
+                add(RHS.ToHandleAction());
+                return;
+            }
+
+            if (Context.Count > 0 && (Context[0].RHS is A.AwaitAction || Context[0].RHS is A.AwaitStarAction ||
+                                      Context[0].RHS is A.PopHashAction))
             {
                 int limit = Context.Count - 1;
                 B.HandleAction tear = null;

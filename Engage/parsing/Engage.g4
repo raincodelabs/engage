@@ -14,7 +14,7 @@ tokenDecl : lexeme (',' lexeme)* '::' ID;
 lexeme : Q=QUOTED | N='number' | S='string';
 QUOTED : '\'' ~[']+ '\'';
 
-handlerDecl : trigger '->' reaction ('where' assignment (',' assignment)*)?;
+handlerDecl : trigger '->' reaction (Adv=('where' | 'while') assignment (',' assignment)*)?;
 trigger : (T=QUOTED | Bof='BOF' | Eof='EOF' | NT=ID) ('upon' Flag=ID)?;
 reaction
     : Command='push' name ('(' ID (',' ID)* ')')?
@@ -27,20 +27,21 @@ reaction
     ; 
 name : ID;
 flag : ID;
-assignment : ID ':=' operation;
+assignment : (ID ':=')? operation;
 operation
-    : Command='pop' Name=ID
-    | Command='pop*' Name=ID
-    | Command='pop#' Name=ID
+    : Command='pop' name
+    | Command='pop*' name
+    | Command='pop#' name
     | Command='await'
         (
-            (Name=ID)
+            name
         |
-            ('(' Name=ID 'upon' ExtraContext=ID ')')
+            ('(' name 'upon' ExtraContext=ID ')')
         )
         ('with' LocalContext=ID)?
-    | Command='await*' Name=ID ('with' LocalContext=ID)?
-    | Command='tear' Name=ID 
+    | Command='await*' name ('with' LocalContext=ID)?
+    | Command='tear' name 
+    | Command='dump' name?
     ;
 
 WHITESPACE : (' ' | '\t' | ' ' | '\r' | '\n' | COMMENT)+ -> skip ;

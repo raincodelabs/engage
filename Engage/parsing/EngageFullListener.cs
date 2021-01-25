@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using Engage.A;
-using Engage.C;
 
 namespace Engage.parsing
 {
@@ -61,7 +59,23 @@ namespace Engage.parsing
 			var hd = new HandlerDecl();
 			hd.LHS = ToTrigger(handler.trigger());
 			hd.RHS = ToReaction(handler.reaction());
-			hd.Context.AddRange(ToContext(handler.assignment()));
+			if (handler.Adv != null)
+			{
+				hd.Context.AddRange(ToContext(handler.assignment()));
+				switch (handler.Adv.Text)
+				{
+					case "where":
+						hd.ComboType = ComboEnum.Where;
+						break;
+					case "while":
+						hd.ComboType = ComboEnum.While;
+						break;
+					default:
+						Console.WriteLine("[x] Unknown combo type in handler: " + handler.Adv.Text);
+						return null;
+				}
+			}
+
 			return hd;
 		}
 
@@ -115,7 +129,7 @@ namespace Engage.parsing
 			=> assignment
 				.Select(assignmentContext => new Assignment
 				{
-					LHS = assignmentContext.ID().GetText(),
+					LHS = assignmentContext.ID()?.GetText(),
 					RHS = ToOperation(assignmentContext.operation())
 				});
 
@@ -124,14 +138,14 @@ namespace Engage.parsing
 			switch (operation.Command.Text)
 			{
 				case "pop":
-					return new PopAction {Name = operation.Name.Text};
+					return new PopAction {Name = operation.name().GetText()};
 				case "pop*":
-					return new PopStarAction {Name = operation.Name.Text};
+					return new PopStarAction {Name = operation.name().GetText()};
 				case "pop#":
-					return new PopHashAction {Name = operation.Name.Text};
+					return new PopHashAction {Name = operation.name().GetText()};
 				case "await":
 					var a = new AwaitAction();
-					a.Name = operation.Name.Text;
+					a.Name = operation.name().GetText();
 					if (operation.ExtraContext != null)
 						a.ExtraContext = operation.ExtraContext.Text;
 					if (operation.LocalContext != null)
@@ -139,12 +153,14 @@ namespace Engage.parsing
 					return a;
 				case "await*":
 					var s = new AwaitStarAction();
-					s.Name = operation.Name.Text;
+					s.Name = operation.name().GetText();
 					if (operation.LocalContext != null)
 						s.TmpContext = operation.LocalContext.Text;
 					return s;
 				case "tear":
-					return new TearAction {Name = operation.Name.Text};
+					return new TearAction {Name = operation.name().GetText()};
+				case "dump":
+					return new DumpReaction(operation.name()?.ID().GetText());
 				default:
 					return null;
 			}
