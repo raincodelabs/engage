@@ -90,7 +90,8 @@ namespace Engage.A
             else if (RHS is A.WrapReaction)
             {
                 if (Context.Count > 1 || !(Context[0].RHS is A.PopAction))
-                    Console.WriteLine($"[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
+                    Console.WriteLine(
+                        "[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
                 // add one composite action
                 add(RHS.ToHandleAction(B.SystemPlan.Dealias((Context[0].RHS as A.PopAction)?.Name)));
             }

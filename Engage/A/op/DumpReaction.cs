@@ -9,6 +9,9 @@ namespace Engage.A
             Name = type ?? String.Empty;
         }
 
+        public bool IsUniversal()
+            => String.IsNullOrEmpty(Name);
+
         public override bool Equals(object obj)
         {
             var other = obj as DumpReaction;

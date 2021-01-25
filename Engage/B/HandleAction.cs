@@ -67,7 +67,7 @@ namespace Engage.B
                 ? new C.SimpleStmt($"Push(new {Name}({String.Join(", ", Args)}))")
                 : new C.SimpleStmt($"Push(new {Name}({Tearing}))"));
     }
-    
+
     public class DumpOne : HandleAction
     {
         public string Name;
@@ -77,9 +77,12 @@ namespace Engage.B
             Name = type;
         }
 
+        public bool IsUniversal()
+            => String.IsNullOrEmpty(Name);
+
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
-            code.Add(String.IsNullOrEmpty(Name)
+            code.Add(IsUniversal()
                 ? new C.SimpleStmt("Main.Pop()")
                 : new C.SimpleStmt($"if (Main.Peek() is {Name}) Main.Pop()"));
         }
@@ -131,7 +134,8 @@ namespace Engage.B
         public override void GenerateAbstractCode(List<C.CsStmt> code)
         {
             code.Add(new C.SimpleStmt($"var {Target} = new List<{Name}>()"));
-            code.Add(new C.WhileStmt($"Main.Count > 0 && Main.Peek() is {Name}", $"{Target}.Add(Main.Pop() as {Name})"));
+            code.Add(new C.WhileStmt($"Main.Count > 0 && Main.Peek() is {Name}",
+                $"{Target}.Add(Main.Pop() as {Name})"));
             code.Add(new C.SimpleStmt($"{Target}.Reverse()"));
         }
     }
@@ -192,16 +196,18 @@ namespace Engage.B
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new LiftFlag() { Flag = Flag };
+                tmp = new LiftFlag() {Flag = Flag};
                 tmp.GenerateAbstractCode(code);
             }
+
             var lambda = new C.ScheduleStmt(Name, "_" + Target);
             lambda.AddCode($"var {Target} = {$"_{Target}".CastAs(Name)};");
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new DropFlag() { Flag = Flag };
+                tmp = new DropFlag() {Flag = Flag};
                 tmp.GenerateAbstractCode(lambda.Code);
             }
+
             if (!String.IsNullOrEmpty(ExtraFlag))
                 lambda.AddCode(new C.IfThenElse($"!{ExtraFlag}", "return Message.Misfire"));
             BaseAction?.GenerateAbstractCode(lambda.Code);
@@ -223,9 +229,10 @@ namespace Engage.B
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new LiftFlag { Flag = Flag };
+                tmp = new LiftFlag {Flag = Flag};
                 tmp.GenerateAbstractCode(code);
             }
+
             code.Add(new C.SimpleStmt($"List<{Name}> {Target} = new List<{Name}>()"));
             var lambda = new C.ScheduleStmt(Name, "_" + Target);
             var ite = new C.IfThenElse();
@@ -234,9 +241,10 @@ namespace Engage.B
             BaseAction?.GenerateAbstractCode(ite.GetThenBranch(cond));
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new DropFlag { Flag = Flag };
+                tmp = new DropFlag {Flag = Flag};
                 tmp.GenerateAbstractCode(lambda.Code);
             }
+
             ite.AddToBranch(cond, "return Message.Perfect");
             lambda.AddCode(ite);
             lambda.AddCode($"var {Target}1 = _{Target} as {Name};");
