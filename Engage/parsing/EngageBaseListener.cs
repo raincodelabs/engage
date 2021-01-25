@@ -145,6 +145,18 @@ public partial class EngageBaseListener : IEngageListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitName([NotNull] EngageParser.NameContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="EngageParser.flag"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterFlag([NotNull] EngageParser.FlagContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="EngageParser.flag"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitFlag([NotNull] EngageParser.FlagContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="EngageParser.assignment"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

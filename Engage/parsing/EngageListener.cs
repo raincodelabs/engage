@@ -122,6 +122,16 @@ public interface IEngageListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitName([NotNull] EngageParser.NameContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="EngageParser.flag"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterFlag([NotNull] EngageParser.FlagContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="EngageParser.flag"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitFlag([NotNull] EngageParser.FlagContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="EngageParser.assignment"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
