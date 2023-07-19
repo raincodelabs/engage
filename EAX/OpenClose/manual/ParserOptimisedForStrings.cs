@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace EaxOpenClose
 {
-    public partial class AltParser : BaseParser
+    public class ParserOptimisedForStrings : BaseParser
     {
         private enum TokenType
         {
@@ -16,7 +16,7 @@ namespace EaxOpenClose
 
         private bool CLOSE, OPEN, TAG;
 
-        public AltParser(string _input) : base(_input)
+        public ParserOptimisedForStrings(string _input) : base(_input)
         {
         }
 

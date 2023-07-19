@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EaxOpenClose
 {
-    public class FlatParser //: BaseParser
+    public class ParserCollapsedToFlatStructure //: BaseParser
     {
         private enum ParserState
         {
@@ -15,7 +15,7 @@ namespace EaxOpenClose
         private readonly string _input;
         private ParserState _state;
 
-        public FlatParser(string input)
+        public ParserCollapsedToFlatStructure(string input)
         {
             _input = input;
             _state = ParserState.SawStart;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EaxOpenClose
 {
-    public class CollapsedParser //: BaseParser
+    public class ParserCollapsedToMinimum //: BaseParser
     {
         private enum ParserState
         {
@@ -15,7 +15,7 @@ namespace EaxOpenClose
         private readonly string _input;
         private ParserState _state;
 
-        public CollapsedParser(string input)
+        public ParserCollapsedToMinimum(string input)
         {
             _input = input;
             _state = ParserState.SawStart;
