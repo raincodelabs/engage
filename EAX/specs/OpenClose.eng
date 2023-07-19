@@ -9,7 +9,7 @@ types
 
 tokens
     ' ', '\r', '\n' :: skip
-    '<', '>', '!', '/' :: mark
+    '<', '>', '/' :: mark
     string :: Id
 
 handlers

@@ -124,12 +124,6 @@ namespace EaxOpenClose
                 s = ">";
                 Pos++;
             }
-            else if (Input[Pos] == '!')
-            {
-                t = TokenType.Tmark;
-                s = "!";
-                Pos++;
-            }
             else if (Input[Pos] == '/')
             {
                 t = TokenType.Tmark;
@@ -139,7 +133,7 @@ namespace EaxOpenClose
             else
             {
                 t = TokenType.TId;
-                while (Pos < Input.Length && Input[Pos] != ' ' && Input[Pos] != '\r' && Input[Pos] != '\n' && Input[Pos] != '<' && Input[Pos] != '>' && Input[Pos] != '!' && Input[Pos] != '/')
+                while (Pos < Input.Length && Input[Pos] != ' ' && Input[Pos] != '\r' && Input[Pos] != '\n' && Input[Pos] != '<' && Input[Pos] != '>' && Input[Pos] != '/')
                     s += Input[Pos++];
             }
             return new Tuple<TokenType, string>(t, s);
