@@ -9,6 +9,8 @@ namespace EaxOpenClose
         {
             SawStart,
             SawLess,
+            SawSlash,
+            SawSlashWillClose,
             SawTagName,
         }
 
@@ -24,7 +26,7 @@ namespace EaxOpenClose
         public EngagedXmlDoc Parse()
         {
             var events = new List<TagEvent>();
-            int pos = 0, end;
+            int pos = 0, end = 0;
             string name = "";
 
             while (pos < _input.Length)
@@ -36,30 +38,40 @@ namespace EaxOpenClose
                             _state = ParserState.SawLess;
                         break;
                     case ParserState.SawLess:
-                        end = pos;
-                        while (Char.IsLetter(_input[end++])) ;
-                        if (end == pos)
-                            _state = ParserState.SawStart;
+                        if (_input[pos] == '/')
+                            _state = ParserState.SawSlash;
                         else
                         {
-                            name = _input.Substring(pos, end - pos);
-                            pos = end;
-                            _state = ParserState.SawTagName;
+                            end = pos;
+                            while (Char.IsLetter(_input[end++])) ;
+                            if (end == pos)
+                                _state = ParserState.SawStart;
+                            else
+                            {
+                                name = _input.Substring(pos, end - pos - 1);
+                                pos = end - 2;
+                                _state = ParserState.SawTagName;
+                            }
+                        }
+
+                        break;
+                    case ParserState.SawSlash:
+                        end = pos;
+                        _state = ParserState.SawSlashWillClose;
+                        break;
+                    case ParserState.SawSlashWillClose:
+                        if (_input[pos] == '>')
+                        {
+                            events.Add(new TagClose(new Name(_input.Substring(end, pos - end))));
+                            _state = ParserState.SawStart;
                         }
 
                         break;
                     case ParserState.SawTagName:
-                        switch (_input[pos])
+                        if (_input[pos] == '>')
                         {
-                            case '>':
-                                events.Add(new TagOpen(new Name(name)));
-                                _state = ParserState.SawStart;
-                                break;
-                            case '/' when pos + 1 < _input.Length && _input[pos + 1] == '>':
-                                pos++;
-                                events.Add(new TagClose(new Name(name)));
-                                _state = ParserState.SawStart;
-                                break;
+                            events.Add(new TagOpen(new Name(name)));
+                            _state = ParserState.SawStart;
                         }
 
                         break;

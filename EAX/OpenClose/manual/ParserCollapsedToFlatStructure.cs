@@ -9,6 +9,7 @@ namespace EaxOpenClose
         {
             SawStart,
             SawLess,
+            SawSlash,
             SawTagName,
         }
 
@@ -24,7 +25,7 @@ namespace EaxOpenClose
         public IEnumerable<string> Parse()
         {
             var result = new List<string>();
-            
+
             int pos = 0, end;
             string name = "";
 
@@ -37,17 +38,26 @@ namespace EaxOpenClose
                             _state = ParserState.SawLess;
                         break;
                     case ParserState.SawLess:
-                        end = pos;
-                        while (Char.IsLetter(_input[end++])) ;
-                        if (end == pos)
-                            _state = ParserState.SawStart;
+                        if (_input[pos] == '/')
+                            _state = ParserState.SawSlash;
                         else
                         {
-                            name = _input.Substring(pos, end - pos);
-                            pos = end;
-                            _state = ParserState.SawTagName;
+                            end = pos;
+                            while (Char.IsLetter(_input[end++])) ;
+                            if (end == pos)
+                                _state = ParserState.SawStart;
+                            else
+                            {
+                                name = _input.Substring(pos, end - pos - 1);
+                                pos = end - 2;
+                                _state = ParserState.SawTagName;
+                            }
                         }
 
+                        break;
+                    case ParserState.SawSlash:
+                        if (_input[pos] == '>')
+                            _state = ParserState.SawStart;
                         break;
                     case ParserState.SawTagName:
                         if (_input[pos] == '>')

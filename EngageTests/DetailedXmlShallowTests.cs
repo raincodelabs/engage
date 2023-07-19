@@ -548,7 +548,7 @@ namespace EngageTests
                 if (tag is TagOpen oTag)
                     tagsEaxO1.Add(oTag.n.value);
                 if (tag is TagClose cTag)
-                    tagsEaxO1.Add(cTag.n.value);
+                    tagsEaxC1.Add(cTag.n.value);
             }
 
             tagsEaxO2.AddRange(Parsers.ParseOpenCloseO5(input));
