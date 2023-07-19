@@ -50,6 +50,7 @@ namespace EaxOpenClose
                                     ERROR = "flag TAG is not lifted when expected";
                                 break;
                             case '>':
+                                TAG = false;
                                 if (OPEN)
                                 {
                                     Name n;
@@ -74,8 +75,6 @@ namespace EaxOpenClose
                                     }
                                     Push(new TagClose(n));
                                 }
-                                else
-                                    ERROR = "neither of the flags OPEN, CLOSE are lifted when expected";
                                 break;
                         }
                         break;

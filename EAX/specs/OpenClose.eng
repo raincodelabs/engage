@@ -24,3 +24,4 @@ handlers
                            where n := pop Name
     '>' upon CLOSE      -> push TagClose(n)
                            where n := pop Name
+    '>'                 -> drop TAG
