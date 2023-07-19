@@ -32,6 +32,7 @@ namespace EngageTests
             var ticksEaz = new List<List<long>>();
             var ticksCax = new List<List<long>>();
             var ticksFax = new List<List<long>>();
+            var ticksNon = new List<List<long>>();
 
             for (var i = 0; i < length; i++)
             {
@@ -40,6 +41,7 @@ namespace EngageTests
                 ticksEaz.Add(new List<long>());
                 ticksCax.Add(new List<long>());
                 ticksFax.Add(new List<long>());
+                ticksNon.Add(new List<long>());
             }
 
             // run several times 
@@ -53,6 +55,7 @@ namespace EngageTests
                     ticksEaz[j].Add(TimeCountEazShallow(input));
                     ticksCax[j].Add(TimeCountCaxShallow(input));
                     ticksFax[j].Add(TimeCountFaxShallow(input));
+                    ticksNon[j].Add(TimeCountNonShallow(input));
                 }
             }
 
@@ -62,7 +65,8 @@ namespace EngageTests
                 ticksEax.Select(Median),
                 ticksEaz.Select(Median),
                 ticksCax.Select(Median),
-                ticksFax.Select(Median));
+                ticksFax.Select(Median),
+                ticksNon.Select(Median));
         }
 
         [TestMethod]
@@ -202,6 +206,17 @@ namespace EngageTests
 
             Timer.Stop();
             // Console.WriteLine($"Tags found: {tags.Count}");
+            _dump = result.Count;
+
+            return Timer.ElapsedTicks;
+        }
+
+        private long TimeCountNonShallow(string input)
+        {
+            Timer.Restart();
+            var result = Parsers.ParseOpenCloseNon(input);
+            Timer.Stop();
+
             _dump = result.Count;
 
             return Timer.ElapsedTicks;

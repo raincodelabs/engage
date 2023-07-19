@@ -16,6 +16,9 @@ namespace EAX
         public static HashSet<string> ParseOpenCloseF(string input)
             => new EaxOpenClose.FlatParser(input).Parse();
 
+        public static HashSet<string> ParseOpenCloseNon(string input)
+            => new EaxOpenClose.NonParser(input).Parse();
+
         public static EaxFuzzy.EngagedXmlDoc ParseFuzzy(string input)
             => new EaxFuzzy.Parser(input).Parse() as EaxFuzzy.EngagedXmlDoc;
     }
