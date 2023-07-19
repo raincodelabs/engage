@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using EAX;
+using EaxOpenClose;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EngageTests
@@ -11,32 +13,40 @@ namespace EngageTests
     [TestClass]
     public class ManyTests
     {
-        private static Stopwatch _timer = new Stopwatch();
+        private static readonly Stopwatch Timer = new Stopwatch();
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TestEaxShallow()
+        public void TestXmlShallow()
         {
-            const int maxLimit = 2000; // the higher, the longer test time and the higher chances to crash
+            const int maxLimit = 1000; // the higher, the longer test time and the higher chances to crash
             const int maxReruns = 20; // the higher, the smoother
-            
+
             // all the limits/depths/… we will use
             var limits = Enumerable.Range(1, maxLimit).Where(n => n % 10 == 0).ToList();
             var length = limits.Count;
             // prepare to collect data
-            var ticks = new List<List<long>>();
+            var ticksSax = new List<List<long>>();
+            var ticksEax = new List<List<long>>();
             for (var i = 0; i < length; i++)
-                ticks.Add(new List<long>());
+            {
+                ticksSax.Add(new List<long>());
+                ticksEax.Add(new List<long>());
+            }
 
             // run several times 
             for (var i = 0; i < maxReruns; i++)
             {
                 for (var j = 0; j < length; j++)
-                    ticks[j].Add(TimeCountSaxShallow(limits[j]));
+                {
+                    string input = GenerateShallowTestInput(limits[j]);
+                    ticksSax[j].Add(TimeCountSaxShallow(input));
+                    ticksEax[j].Add(TimeCountEaxShallow(input));
+                }
             }
 
             // print only the median from each measurement
-            PrintResults(limits, ticks.Select(Median));
+            PrintResults(limits, ticksSax.Select(Median), ticksEax.Select(Median));
         }
 
         private static long Median(IEnumerable<long> list)
@@ -50,19 +60,19 @@ namespace EngageTests
             return array[middle];
         }
 
-        private static void PrintResults(IEnumerable<int> limits, IEnumerable<long> ticks)
+        private static void PrintResults(IEnumerable<int> limits, IEnumerable<long> ticks1, IEnumerable<long> ticks2)
         {
-            Console.WriteLine($"Limits: [{String.Join(", ", limits.Select(limit => limit.ToString()))}]");
-            Console.WriteLine($"Times:  [{String.Join(", ", ticks.Select(tick => (tick / 10).ToString()))}]");
+            Console.WriteLine($"Limits: [{CommaSep(limits)}]");
+            Console.WriteLine($"Times1: [{CommaSep(ticks1)}]");
+            Console.WriteLine($"Times2: [{CommaSep(ticks2)}]");
         }
 
-        private long TimeCountSaxShallow(int limit)
-        {
-            var input = Generator.ArbitraryBalancedSequenceShallow(limit);
-            // Console.WriteLine(input);
-            var timer = new Stopwatch();
-            timer.Start();
+        private static string CommaSep<T>(IEnumerable<T> list)
+            => String.Join(", ", list.Select(e => e.ToString()));
 
+        private long TimeCountSaxShallow(string input)
+        {
+            Timer.Restart();
 
             HashSet<string> tags = new HashSet<string>();
 
@@ -70,14 +80,34 @@ namespace EngageTests
             {
                 reader.MoveToContent();
                 while (reader.Read())
-                {
                     tags.Add(reader.Name);
-                }
             }
 
-            timer.Stop();
+            Timer.Stop();
 
-            return timer.ElapsedTicks;
+            return Timer.ElapsedTicks;
         }
+
+        private long TimeCountEaxShallow(string input)
+        {
+            Timer.Restart();
+
+            HashSet<string> tags = new HashSet<string>();
+
+            var result = Parsers.ParseOpenClose(input);
+
+            foreach (var tag in result.tags)
+            {
+                if (tag is TagOpen oTag)
+                    tags.Add(oTag.n.value);
+            }
+
+            Timer.Stop();
+
+            return Timer.ElapsedTicks;
+        }
+
+        private static string GenerateShallowTestInput(int limit)
+            => Generator.ArbitraryBalancedSequenceShallow(limit);
     }
 }
