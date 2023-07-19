@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EngageTests
 {
     [TestClass]
-    public class ManyTests
+    public class DetailedXmlShallowTests
     {
         static string _input100 = GenerateShallowTestInput(100);
         private static readonly Stopwatch Timer = new Stopwatch();
@@ -19,7 +19,7 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TestXmlShallowProfiling()
+        public void TestForProfiling()
         {
             var p = new EaxOpenClose.ParserOptimisedForStrings(_input100);
             var r = p.Parse();
@@ -27,7 +27,7 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TestXmlShallowPerformanceOne()
+        public void TestPerformanceOne()
         {
             const int maxLimit = 100; // the higher, the longer test time and the higher chances to crash
             const int stepLimit = 1; // the lower, the denser the coverage of all limits
@@ -64,7 +64,7 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TestXmlShallowPerformance()
+        public void TestPerformanceAll()
         {
             const int maxLimit = 1000; // the higher, the longer test time and the higher chances to crash
             const int stepLimit = 10; // the lower, the denser the coverage of all limits
@@ -120,7 +120,7 @@ namespace EngageTests
 
         [TestMethod]
         [TestCategory("EAX")]
-        public void TestXmlShallowCorrectness()
+        public void TestCorrectnessBasic()
         {
             const int maxLimit = 1000; // the higher, the longer test time and the higher chances to crash
             const int maxReruns = 50; // the higher, the more thorough
@@ -135,9 +135,57 @@ namespace EngageTests
                 for (var j = 0; j < length; j++)
                 {
                     string input = GenerateShallowTestInput(limits[j]);
-                    if (!CompareSaxEaxShallow(input))
+                    if (!CompareSaxEaxBasic(input))
                         Console.WriteLine($"DIFF for {input}");
-                    Assert.IsTrue(CompareSaxEaxShallow(input));
+                    Assert.IsTrue(CompareSaxEaxBasic(input));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void TestCorrectnessOptimised()
+        {
+            const int maxLimit = 1000; // the higher, the longer test time and the higher chances to crash
+            const int maxReruns = 50; // the higher, the more thorough
+
+            // all the limits/depths/… we will use
+            var limits = Enumerable.Range(1, maxLimit).Where(n => n % 10 == 0).ToList();
+            var length = limits.Count;
+
+            // run several times 
+            for (var i = 0; i < maxReruns; i++)
+            {
+                for (var j = 0; j < length; j++)
+                {
+                    string input = GenerateShallowTestInput(limits[j]);
+                    if (!CompareSaxEaxOptimised(input))
+                        Console.WriteLine($"DIFF for {input}");
+                    Assert.IsTrue(CompareSaxEaxOptimised(input));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void TestCorrectnessCollapsed()
+        {
+            const int maxLimit = 1000; // the higher, the longer test time and the higher chances to crash
+            const int maxReruns = 50; // the higher, the more thorough
+
+            // all the limits/depths/… we will use
+            var limits = Enumerable.Range(1, maxLimit).Where(n => n % 10 == 0).ToList();
+            var length = limits.Count;
+
+            // run several times 
+            for (var i = 0; i < maxReruns; i++)
+            {
+                for (var j = 0; j < length; j++)
+                {
+                    string input = GenerateShallowTestInput(limits[j]);
+                    if (!CompareSaxEaxCollapsed(input))
+                        Console.WriteLine($"DIFF for {input}");
+                    Assert.IsTrue(CompareSaxEaxCollapsed(input));
                 }
             }
         }
@@ -323,12 +371,10 @@ namespace EngageTests
             return Timer.ElapsedTicks;
         }
 
-        private bool CompareSaxEaxShallow(string input)
+        private bool CompareSaxEaxBasic(string input)
         {
             HashSet<string> tagsSax = new HashSet<string>();
             HashSet<string> tagsEax = new HashSet<string>();
-            HashSet<string> tagsEaxO1 = new HashSet<string>();
-            HashSet<string> tagsEaxO2 = new HashSet<string>();
 
             using (XmlReader reader = XmlReader.Create(new StringReader(input)))
             {
@@ -343,6 +389,23 @@ namespace EngageTests
                     tagsEax.Add(oTag.n.value);
             }
 
+            return tagsSax.SetEquals(tagsEax);
+        }
+
+        private bool CompareSaxEaxOptimised(string input)
+        {
+            HashSet<string> tagsSax = new HashSet<string>();
+            HashSet<string> tagsEaxO1 = new HashSet<string>();
+            HashSet<string> tagsEaxO2 = new HashSet<string>();
+            HashSet<string> tagsEaxO3 = new HashSet<string>();
+
+            using (XmlReader reader = XmlReader.Create(new StringReader(input)))
+            {
+                reader.MoveToContent();
+                while (reader.Read())
+                    tagsSax.Add(reader.Name);
+            }
+
             foreach (var tag in Parsers.ParseOpenCloseO1(input).tags)
             {
                 if (tag is TagOpen oTag)
@@ -355,7 +418,44 @@ namespace EngageTests
                     tagsEaxO2.Add(oTag.n.value);
             }
 
-            return tagsSax.SetEquals(tagsEax) && tagsSax.SetEquals(tagsEaxO1) && tagsSax.SetEquals(tagsEaxO2);
+            foreach (var tag in Parsers.ParseOpenCloseO3(input).tags)
+            {
+                if (tag is TagOpen2 oTag)
+                    tagsEaxO3.Add(oTag.n);
+            }
+
+            return tagsSax.SetEquals(tagsEaxO1) &&
+                   tagsSax.SetEquals(tagsEaxO2) &&
+                   tagsSax.SetEquals(tagsEaxO3);
+        }
+
+        private bool CompareSaxEaxCollapsed(string input)
+        {
+            HashSet<string> tagsSax = new HashSet<string>();
+            HashSet<string> tagsEaxO1 = new HashSet<string>();
+            HashSet<string> tagsEaxO2 = new HashSet<string>();
+
+            using (XmlReader reader = XmlReader.Create(new StringReader(input)))
+            {
+                reader.MoveToContent();
+                while (reader.Read())
+                    tagsSax.Add(reader.Name);
+            }
+
+            foreach (var tag in Parsers.ParseOpenCloseO4(input).tags)
+            {
+                if (tag is TagOpen oTag)
+                    tagsEaxO1.Add(oTag.n.value);
+            }
+
+            tagsEaxO2.UnionWith(Parsers.ParseOpenCloseO5(input));
+
+            Console.WriteLine(String.Join(", ", tagsSax));
+            Console.WriteLine(String.Join(", ", tagsEaxO1));
+            Console.WriteLine(String.Join(", ", tagsEaxO2));
+
+            return tagsSax.SetEquals(tagsEaxO1) &&
+                   tagsSax.SetEquals(tagsEaxO2);
         }
 
         private static string GenerateShallowTestInput(int limit)
