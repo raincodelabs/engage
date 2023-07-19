@@ -14,12 +14,15 @@ namespace EAX
             => new EaxOpenClose.ParserOptimisedForTokens(input).Parse() as EaxOpenClose.EngagedXmlDoc;
 
         public static EaxOpenClose.EngagedXmlDoc ParseOpenCloseO3(string input)
+            => new EaxOpenClose.ParserOptimisedForLevels(input).Parse() as EaxOpenClose.EngagedXmlDoc;
+
+        public static EaxOpenClose.EngagedXmlDoc ParseOpenCloseO4(string input)
             => new EaxOpenClose.ParserCollapsedToMinimum(input).Parse();
 
-        public static HashSet<string> ParseOpenCloseO4(string input)
+        public static HashSet<string> ParseOpenCloseO5(string input)
             => new EaxOpenClose.ParserCollapsedToFlatStructure(input).Parse();
 
-        public static HashSet<string> ParseOpenCloseO5(string input)
+        public static HashSet<string> ParseOpenCloseO6(string input)
             => new EaxOpenClose.NonParser(input).Parse();
 
         public static EaxFuzzy.EngagedXmlDoc ParseFuzzy(string input)

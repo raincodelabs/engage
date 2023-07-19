@@ -13,27 +13,75 @@ namespace EngageTests
     [TestClass]
     public class ManyTests
     {
+        static string _input100 = GenerateShallowTestInput(100);
         private static readonly Stopwatch Timer = new Stopwatch();
         private int _dump;
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void TestXmlShallowProfiling()
+        {
+            var p = new EaxOpenClose.ParserOptimisedForStrings(_input100);
+            var r = p.Parse();
+        }
+
+        [TestMethod]
+        [TestCategory("EAX")]
+        public void TestXmlShallowPerformanceOne()
+        {
+            const int maxLimit = 100; // the higher, the longer test time and the higher chances to crash
+            const int stepLimit = 1; // the lower, the denser the coverage of all limits
+            const int maxReruns = 10; // the higher, the smoother
+
+            // all the limits/depths/… we will use
+            var limits = Enumerable.Range(1, maxLimit).Where(n => n % stepLimit == 0).ToList();
+            var length = limits.Count;
+            // prepare to collect data
+            var ticksSax = new List<List<long>>();
+            var ticksEax = new List<List<long>>();
+            for (var i = 0; i < length; i++)
+            {
+                ticksSax.Add(new List<long>());
+                ticksEax.Add(new List<long>());
+            }
+
+            // run several times 
+            for (var i = 0; i < maxReruns; i++)
+            {
+                for (var j = 0; j < length; j++)
+                {
+                    string input = GenerateShallowTestInput(limits[j]);
+                    ticksSax[j].Add(TimeCountSaxShallow(input));
+                    ticksEax[j].Add(TimeCountEaxShallow(input));
+                }
+            }
+
+            // print only the median from each measurement
+            PrintResultsReadable(limits,
+                ticksSax.Select(Median),
+                new List<IEnumerable<long>> { ticksEax.Select(Median) });
+        }
 
         [TestMethod]
         [TestCategory("EAX")]
         public void TestXmlShallowPerformance()
         {
             const int maxLimit = 1000; // the higher, the longer test time and the higher chances to crash
-            const int maxReruns = 20; // the higher, the smoother
-            var knownParsers = new List<Func<string, long>>()
+            const int stepLimit = 10; // the lower, the denser the coverage of all limits
+            const int maxReruns = 30; // the higher, the smoother
+            var knownParsers = new List<Func<string, long>>
             {
                 TimeCountEaxShallow,
                 TimeCountEaxShallowO1,
                 TimeCountEaxShallowO2,
                 TimeCountEaxShallowO3,
                 TimeCountEaxShallowO4,
-                TimeCountEaxShallowO5
+                TimeCountEaxShallowO5,
+                TimeCountEaxShallowO6,
             };
 
             // all the limits/depths/… we will use
-            var limits = Enumerable.Range(1, maxLimit).Where(n => n % 10 == 0).ToList();
+            var limits = Enumerable.Range(1, maxLimit).Where(n => n % stepLimit == 0).ToList();
             var length = limits.Count;
             // prepare to collect data
             var ticksSax = new List<List<long>>();
@@ -61,9 +109,9 @@ namespace EngageTests
             }
 
             // print only the median from each measurement
-            PrintResultsReadable(limits,
-                ticksSax.Select(Median),
-                ticksEax.Select(ticks => ticks.Select(Median)));
+            // PrintResultsReadable(limits,
+            //     ticksSax.Select(Median),
+            //     ticksEax.Select(ticks => ticks.Select(Median)));
 
             PrintResultsCSV(limits,
                 ticksSax.Select(Median).ToList(),
@@ -221,8 +269,8 @@ namespace EngageTests
 
             foreach (var tag in result.tags)
             {
-                if (tag is TagOpen oTag)
-                    tags.Add(oTag.n.value);
+                if (tag is TagOpen2 oTag)
+                    tags.Add(oTag.n);
             }
 
             Timer.Stop();
@@ -234,11 +282,21 @@ namespace EngageTests
 
         private long TimeCountEaxShallowO4(string input)
         {
-            Timer.Restart();
-            var result = Parsers.ParseOpenCloseO4(input);
-            Timer.Stop();
+            HashSet<string> tags = new HashSet<string>();
 
-            _dump = result.Count;
+            Timer.Restart();
+
+            var result = Parsers.ParseOpenCloseO4(input);
+
+            foreach (var tag in result.tags)
+            {
+                if (tag is TagOpen oTag)
+                    tags.Add(oTag.n.value);
+            }
+
+            Timer.Stop();
+            // Console.WriteLine($"Tags found: {tags.Count}");
+            _dump = tags.Count;
 
             return Timer.ElapsedTicks;
         }
@@ -247,6 +305,17 @@ namespace EngageTests
         {
             Timer.Restart();
             var result = Parsers.ParseOpenCloseO5(input);
+            Timer.Stop();
+
+            _dump = result.Count;
+
+            return Timer.ElapsedTicks;
+        }
+
+        private long TimeCountEaxShallowO6(string input)
+        {
+            Timer.Restart();
+            var result = Parsers.ParseOpenCloseO6(input);
             Timer.Stop();
 
             _dump = result.Count;
