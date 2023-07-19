@@ -386,7 +386,7 @@ namespace Engage.B
                 else
                     flags = "neither of the flags " + String.Join(", ", realFlags) + " are";
                 if (!onlyWraps)
-                    if (realFlags.Any(f => !String.IsNullOrEmpty(f)))
+                    if (realFlags.All(f => !String.IsNullOrEmpty(f)))
                         ite.AddElse($"ERROR = \"{flags} lifted when expected\"");
             }
 
