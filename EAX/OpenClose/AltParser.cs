@@ -1,4 +1,3 @@
-// Engage! generated this file, please do not edit manually
 using EngageRuntime;
 using System;
 using System.Collections.Generic;

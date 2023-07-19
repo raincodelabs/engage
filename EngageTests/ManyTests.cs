@@ -30,11 +30,16 @@ namespace EngageTests
             var ticksSax = new List<List<long>>();
             var ticksEax = new List<List<long>>();
             var ticksEaz = new List<List<long>>();
+            var ticksCax = new List<List<long>>();
+            var ticksFax = new List<List<long>>();
+
             for (var i = 0; i < length; i++)
             {
                 ticksSax.Add(new List<long>());
                 ticksEax.Add(new List<long>());
                 ticksEaz.Add(new List<long>());
+                ticksCax.Add(new List<long>());
+                ticksFax.Add(new List<long>());
             }
 
             // run several times 
@@ -45,12 +50,19 @@ namespace EngageTests
                     string input = GenerateShallowTestInput(limits[j]);
                     ticksSax[j].Add(TimeCountSaxShallow(input));
                     ticksEax[j].Add(TimeCountEaxShallow(input));
-                    ticksEaz[j].Add(TimeCountEaxxShallow(input));
+                    ticksEaz[j].Add(TimeCountEazShallow(input));
+                    ticksCax[j].Add(TimeCountCaxShallow(input));
+                    ticksFax[j].Add(TimeCountFaxShallow(input));
                 }
             }
 
             // print only the median from each measurement
-            PrintResults(limits, ticksSax.Select(Median), ticksEax.Select(Median), ticksEaz.Select(Median));
+            PrintResults(limits,
+                ticksSax.Select(Median),
+                ticksEax.Select(Median),
+                ticksEaz.Select(Median),
+                ticksCax.Select(Median),
+                ticksFax.Select(Median));
         }
 
         [TestMethod]
@@ -86,15 +98,12 @@ namespace EngageTests
             return array[middle];
         }
 
-        private static void PrintResults(IEnumerable<int> limits,
-            IEnumerable<long> ticks1,
-            IEnumerable<long> ticks2,
-            IEnumerable<long> ticks3)
+        private static void PrintResults(IEnumerable<int> limits, params IEnumerable<long>[] tickses)
         {
             Console.WriteLine($"Limits: [{CommaSep(limits)}]");
-            Console.WriteLine($"Times1: [{CommaSep(ticks1)}]");
-            Console.WriteLine($"Times2: [{CommaSep(ticks2)}]");
-            Console.WriteLine($"Times3: [{CommaSep(ticks3)}]");
+            var cx = 1;
+            foreach (var ticks in tickses)
+                Console.WriteLine($"Times{cx++}: [{CommaSep(ticks)}]");
         }
 
         private static string CommaSep<T>(IEnumerable<T> list)
@@ -102,9 +111,9 @@ namespace EngageTests
 
         private long TimeCountSaxShallow(string input)
         {
-            Timer.Restart();
-
             HashSet<string> tags = new HashSet<string>();
+
+            Timer.Restart();
 
             using (XmlReader reader = XmlReader.Create(new StringReader(input)))
             {
@@ -122,9 +131,9 @@ namespace EngageTests
 
         private long TimeCountEaxShallow(string input)
         {
-            Timer.Restart();
-
             HashSet<string> tags = new HashSet<string>();
+
+            Timer.Restart();
 
             var result = Parsers.ParseOpenClose(input);
 
@@ -141,11 +150,11 @@ namespace EngageTests
             return Timer.ElapsedTicks;
         }
 
-        private long TimeCountEaxxShallow(string input)
+        private long TimeCountEazShallow(string input)
         {
-            Timer.Restart();
-
             HashSet<string> tags = new HashSet<string>();
+
+            Timer.Restart();
 
             var result = Parsers.ParseOpenCloseX(input);
 
@@ -158,6 +167,42 @@ namespace EngageTests
             Timer.Stop();
             // Console.WriteLine($"Tags found: {tags.Count}");
             _dump = tags.Count;
+
+            return Timer.ElapsedTicks;
+        }
+
+        private long TimeCountCaxShallow(string input)
+        {
+            HashSet<string> tags = new HashSet<string>();
+
+            Timer.Restart();
+
+            var result = Parsers.ParseOpenCloseC(input);
+
+            foreach (var tag in result.tags)
+            {
+                if (tag is TagOpen oTag)
+                    tags.Add(oTag.n.value);
+            }
+
+            Timer.Stop();
+            // Console.WriteLine($"Tags found: {tags.Count}");
+            _dump = tags.Count;
+
+            return Timer.ElapsedTicks;
+        }
+
+        private long TimeCountFaxShallow(string input)
+        {
+            HashSet<string> tags = new HashSet<string>();
+
+            Timer.Restart();
+
+            var result = Parsers.ParseOpenCloseF(input);
+
+            Timer.Stop();
+            // Console.WriteLine($"Tags found: {tags.Count}");
+            _dump = result.Count;
 
             return Timer.ElapsedTicks;
         }
