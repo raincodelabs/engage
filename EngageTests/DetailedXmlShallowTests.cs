@@ -234,7 +234,8 @@ namespace EngageTests
             {
                 reader.MoveToContent();
                 while (reader.Read())
-                    tags.Add(reader.Name);
+                    if (reader.NodeType == XmlNodeType.Element)
+                        tags.Add(reader.Name);
             }
 
             Timer.Stop();
@@ -355,7 +356,7 @@ namespace EngageTests
             var result = Parsers.ParseOpenCloseO5(input);
             Timer.Stop();
 
-            _dump = result.Count;
+            _dump = result.Count();
 
             return Timer.ElapsedTicks;
         }
@@ -373,89 +374,209 @@ namespace EngageTests
 
         private bool CompareSaxEaxBasic(string input)
         {
-            HashSet<string> tagsSax = new HashSet<string>();
-            HashSet<string> tagsEax = new HashSet<string>();
+            List<string> tagsSaxO = new List<string>();
+            List<string> tagsEaxO = new List<string>();
+            List<string> tagsSaxC = new List<string>();
+            List<string> tagsEaxC = new List<string>();
 
             using (XmlReader reader = XmlReader.Create(new StringReader(input)))
             {
-                reader.MoveToContent();
+                //reader.MoveToContent();
                 while (reader.Read())
-                    tagsSax.Add(reader.Name);
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            tagsSaxO.Add(reader.Name);
+                            break;
+                        case XmlNodeType.EndElement:
+                            tagsSaxC.Add(reader.Name);
+                            break;
+                    }
             }
 
             foreach (var tag in Parsers.ParseOpenClose(input).tags)
             {
                 if (tag is TagOpen oTag)
-                    tagsEax.Add(oTag.n.value);
+                    tagsEaxO.Add(oTag.n.value);
+                if (tag is TagClose cTag)
+                    tagsEaxC.Add(cTag.n.value);
             }
 
-            return tagsSax.SetEquals(tagsEax);
+            if (!tagsSaxO.SequenceEqual(tagsEaxO))
+            {
+                Console.WriteLine("DIFF in openings:");
+                Console.WriteLine(String.Join(", ", tagsSaxO));
+                Console.WriteLine(String.Join(", ", tagsEaxO));
+            }
+
+            if (!tagsSaxC.SequenceEqual(tagsEaxC))
+            {
+                Console.WriteLine("DIFF in closings:");
+                Console.WriteLine(String.Join(", ", tagsSaxC));
+                Console.WriteLine(String.Join(", ", tagsEaxC));
+            }
+
+            return tagsSaxO.SequenceEqual(tagsEaxO) && tagsSaxC.SequenceEqual(tagsEaxC);
         }
 
         private bool CompareSaxEaxOptimised(string input)
         {
-            HashSet<string> tagsSax = new HashSet<string>();
-            HashSet<string> tagsEaxO1 = new HashSet<string>();
-            HashSet<string> tagsEaxO2 = new HashSet<string>();
-            HashSet<string> tagsEaxO3 = new HashSet<string>();
+            List<string> tagsSaxO = new List<string>();
+            List<string> tagsEaxO1 = new List<string>();
+            List<string> tagsEaxO2 = new List<string>();
+            List<string> tagsEaxO3 = new List<string>();
+            List<string> tagsSaxC = new List<string>();
+            List<string> tagsEaxC1 = new List<string>();
+            List<string> tagsEaxC2 = new List<string>();
+            List<string> tagsEaxC3 = new List<string>();
 
             using (XmlReader reader = XmlReader.Create(new StringReader(input)))
             {
-                reader.MoveToContent();
+                //reader.MoveToContent();
                 while (reader.Read())
-                    tagsSax.Add(reader.Name);
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            tagsSaxO.Add(reader.Name);
+                            break;
+                        case XmlNodeType.EndElement:
+                            tagsSaxC.Add(reader.Name);
+                            break;
+                    }
             }
 
             foreach (var tag in Parsers.ParseOpenCloseO1(input).tags)
             {
                 if (tag is TagOpen oTag)
                     tagsEaxO1.Add(oTag.n.value);
+                if (tag is TagClose cTag)
+                    tagsEaxC1.Add(cTag.n.value);
             }
 
             foreach (var tag in Parsers.ParseOpenCloseO2(input).tags)
             {
                 if (tag is TagOpen oTag)
                     tagsEaxO2.Add(oTag.n.value);
+                if (tag is TagClose cTag)
+                    tagsEaxC2.Add(cTag.n.value);
             }
 
             foreach (var tag in Parsers.ParseOpenCloseO3(input).tags)
             {
                 if (tag is TagOpen2 oTag)
                     tagsEaxO3.Add(oTag.n);
+                if (tag is TagClose2 cTag)
+                    tagsEaxC3.Add(cTag.n);
             }
 
-            return tagsSax.SetEquals(tagsEaxO1) &&
-                   tagsSax.SetEquals(tagsEaxO2) &&
-                   tagsSax.SetEquals(tagsEaxO3);
+            if (!tagsSaxO.SequenceEqual(tagsEaxO1))
+            {
+                Console.WriteLine("DIFF in openings vs #1:");
+                Console.WriteLine(String.Join(", ", tagsSaxO));
+                Console.WriteLine(String.Join(", ", tagsEaxO1));
+            }
+
+            if (!tagsSaxO.SequenceEqual(tagsEaxO2))
+            {
+                Console.WriteLine("DIFF in openings vs #2:");
+                Console.WriteLine(String.Join(", ", tagsSaxO));
+                Console.WriteLine(String.Join(", ", tagsEaxO2));
+            }
+
+            if (!tagsSaxO.SequenceEqual(tagsEaxO3))
+            {
+                Console.WriteLine("DIFF in openings vs #3:");
+                Console.WriteLine(String.Join(", ", tagsSaxO));
+                Console.WriteLine(String.Join(", ", tagsEaxO3));
+            }
+
+            if (!tagsSaxC.SequenceEqual(tagsEaxC1))
+            {
+                Console.WriteLine("DIFF in closings vs #1:");
+                Console.WriteLine(String.Join(", ", tagsSaxC));
+                Console.WriteLine(String.Join(", ", tagsEaxC1));
+            }
+
+            if (!tagsSaxC.SequenceEqual(tagsEaxC2))
+            {
+                Console.WriteLine("DIFF in closings vs #2:");
+                Console.WriteLine(String.Join(", ", tagsSaxC));
+                Console.WriteLine(String.Join(", ", tagsEaxC2));
+            }
+
+            if (!tagsSaxC.SequenceEqual(tagsEaxC3))
+            {
+                Console.WriteLine("DIFF in closings vs #3:");
+                Console.WriteLine(String.Join(", ", tagsSaxC));
+                Console.WriteLine(String.Join(", ", tagsEaxC3));
+            }
+
+            return tagsSaxO.SequenceEqual(tagsEaxO1) &&
+                   tagsSaxO.SequenceEqual(tagsEaxO2) &&
+                   tagsSaxO.SequenceEqual(tagsEaxO3) &&
+                   tagsSaxC.SequenceEqual(tagsEaxC1) &&
+                   tagsSaxC.SequenceEqual(tagsEaxC2) &&
+                   tagsSaxC.SequenceEqual(tagsEaxC3);
         }
 
         private bool CompareSaxEaxCollapsed(string input)
         {
-            HashSet<string> tagsSax = new HashSet<string>();
-            HashSet<string> tagsEaxO1 = new HashSet<string>();
-            HashSet<string> tagsEaxO2 = new HashSet<string>();
+            List<string> tagsSaxO = new List<string>();
+            List<string> tagsEaxO1 = new List<string>();
+            List<string> tagsEaxO2 = new List<string>();
+            List<string> tagsSaxC = new List<string>();
+            List<string> tagsEaxC1 = new List<string>();
+            List<string> tagsEaxC2 = new List<string>();
 
             using (XmlReader reader = XmlReader.Create(new StringReader(input)))
             {
-                reader.MoveToContent();
+                //reader.MoveToContent();
                 while (reader.Read())
-                    tagsSax.Add(reader.Name);
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            tagsSaxO.Add(reader.Name);
+                            break;
+                        case XmlNodeType.EndElement:
+                            tagsSaxC.Add(reader.Name);
+                            break;
+                    }
             }
 
             foreach (var tag in Parsers.ParseOpenCloseO4(input).tags)
             {
                 if (tag is TagOpen oTag)
                     tagsEaxO1.Add(oTag.n.value);
+                if (tag is TagClose cTag)
+                    tagsEaxO1.Add(cTag.n.value);
             }
 
-            tagsEaxO2.UnionWith(Parsers.ParseOpenCloseO5(input));
+            tagsEaxO2.AddRange(Parsers.ParseOpenCloseO5(input));
 
-            Console.WriteLine(String.Join(", ", tagsSax));
-            Console.WriteLine(String.Join(", ", tagsEaxO1));
-            Console.WriteLine(String.Join(", ", tagsEaxO2));
+            if (!tagsSaxO.SequenceEqual(tagsEaxO1))
+            {
+                Console.WriteLine("DIFF in openings vs #1:");
+                Console.WriteLine(String.Join(", ", tagsSaxO));
+                Console.WriteLine(String.Join(", ", tagsEaxO1));
+            }
 
-            return tagsSax.SetEquals(tagsEaxO1) &&
-                   tagsSax.SetEquals(tagsEaxO2);
+            if (!tagsSaxO.SequenceEqual(tagsEaxO2))
+            {
+                Console.WriteLine("DIFF in openings vs #2:");
+                Console.WriteLine(String.Join(", ", tagsSaxO));
+                Console.WriteLine(String.Join(", ", tagsEaxO2));
+            }
+
+            if (!tagsSaxC.SequenceEqual(tagsEaxC1))
+            {
+                Console.WriteLine("DIFF in closings vs #1:");
+                Console.WriteLine(String.Join(", ", tagsSaxC));
+                Console.WriteLine(String.Join(", ", tagsEaxC1));
+            }
+
+            return tagsSaxO.SequenceEqual(tagsEaxO1) &&
+                   tagsSaxC.SequenceEqual(tagsEaxC1) &&
+                   tagsSaxO.SequenceEqual(tagsEaxO2);
         }
 
         private static string GenerateShallowTestInput(int limit)

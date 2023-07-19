@@ -19,7 +19,7 @@ namespace EAX
         public static EaxOpenClose.EngagedXmlDoc ParseOpenCloseO4(string input)
             => new EaxOpenClose.ParserCollapsedToMinimum(input).Parse();
 
-        public static HashSet<string> ParseOpenCloseO5(string input)
+        public static IEnumerable<string> ParseOpenCloseO5(string input)
             => new EaxOpenClose.ParserCollapsedToFlatStructure(input).Parse();
 
         public static HashSet<string> ParseOpenCloseO6(string input)

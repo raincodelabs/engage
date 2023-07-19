@@ -21,9 +21,9 @@ namespace EaxOpenClose
             _state = ParserState.SawStart;
         }
 
-        public HashSet<string> Parse()
+        public IEnumerable<string> Parse()
         {
-            var result = new HashSet<string>();
+            var result = new List<string>();
             
             int pos = 0, end;
             string name = "";
@@ -50,17 +50,10 @@ namespace EaxOpenClose
 
                         break;
                     case ParserState.SawTagName:
-                        switch (_input[pos])
+                        if (_input[pos] == '>')
                         {
-                            case '>':
-                                result.Add(name);
-                                _state = ParserState.SawStart;
-                                break;
-                            case '/' when pos + 1 < _input.Length && _input[pos + 1] == '>':
-                                pos++;
-                                //events.Add(new TagClose(new Name(name)));
-                                _state = ParserState.SawStart;
-                                break;
+                            result.Add(name);
+                            _state = ParserState.SawStart;
                         }
 
                         break;
