@@ -5,11 +5,11 @@ namespace Engage.NA
 {
     public class HandlerPlan
     {
-        internal TokenPlan ReactOn;
+        internal NA.TokenPlan ReactOn;
         internal string GuardFlag;
-        private readonly List<HandleAction> _recipe = new List<HandleAction>();
+        private readonly List<NA.HandleAction> _recipe = new();
 
-        internal void AddAction(HandleAction action)
+        internal void AddAction(NA.HandleAction action)
             => _recipe.Add(action);
 
         internal void GenerateAbstractCode(List<GA.CsStmt> stmts)
@@ -19,7 +19,7 @@ namespace Engage.NA
                 if (action != null)
                     action.GenerateAbstractCode(stmts);
                 else
-                    Console.WriteLine($"[B2C] Warning: no action to handle '{ReactOn.Value}'");
+                    Console.WriteLine($"[NA->GA] Warning: no action to handle '{ReactOn.Value}'");
             }
         }
 

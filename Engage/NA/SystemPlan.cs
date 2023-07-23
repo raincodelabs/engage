@@ -53,7 +53,7 @@ namespace Engage.NA
 
     public class SystemPlan
     {
-        internal static readonly Dictionary<string, string> RealNames = new Dictionary<string, string>()
+        internal static readonly Dictionary<string, string> RealNames = new()
         {
             { "string", "System.String" },
             { "number", "System.Int32" },
@@ -114,7 +114,7 @@ namespace Engage.NA
                 if (Tokens[k].Contains(hp.ReactOn))
                     type = k;
             if (String.IsNullOrEmpty(type))
-                Console.WriteLine($"[A2B] Cannot determine type of token '{hp.ReactOn.Value}'");
+                Console.WriteLine($"[NC->NA] Cannot determine type of token '{hp.ReactOn.Value}'");
             if (!Handlers.ContainsKey(type))
                 Handlers[type] = new List<NA.HandlerPlan>();
             Handlers[type].Add(hp);
@@ -147,18 +147,18 @@ namespace Engage.NA
             if (Types.Count == 0)
             {
                 TopType = n;
-                Console.WriteLine($"[A2B] Top type is assumed to be {TopType}");
+                Console.WriteLine($"[NC->NA] Top type is assumed to be {TopType}");
             }
 
             if (Types.ContainsKey(n))
             {
                 if (!silent)
-                    Console.WriteLine($"[A2B] Cannot add type '{n}' the second time");
+                    Console.WriteLine($"[NC->NA] Cannot add type '{n}' the second time");
                 return;
             }
 
             var tp = new NA.TypePlan(n) { Super = super };
-            Console.WriteLine($"[A2B] Added type '{n}' to the plan");
+            Console.WriteLine($"[NC->NA] Added type '{n}' to the plan");
             Types[tp.Name] = tp;
         }
 
@@ -272,7 +272,7 @@ namespace Engage.NA
             foreach (var t in Tokens.Keys)
             {
                 if (!usedTokens.Contains(t))
-                    Console.WriteLine($"[B2C] unused token {t}");
+                    Console.WriteLine($"[NA->GA] unused token {t}");
                 foreach (NA.TokenPlan tok in Tokens[t])
                 {
                     if (!tok.Special)
@@ -317,7 +317,7 @@ namespace Engage.NA
                      where TypeAliases[t] == key && Handlers.ContainsKey(t)
                      select Handlers[t][0].IsPushFirst())
                 if (String.IsNullOrEmpty(x))
-                    Console.WriteLine("[B2C] some unsupported functionality found");
+                    Console.WriteLine("[NA->GA] some unsupported functionality found");
                 else
                     return $"new {x}({v})";
             return v;
@@ -368,7 +368,7 @@ namespace Engage.NA
                             action.GenerateAbstractCode(target);
                     }
                     else
-                        Console.WriteLine($"[B2C] Warning: no action to handle '{hpk}'/{reactOn.Value}");
+                        Console.WriteLine($"[NA->GA] Warning: no action to handle '{hpk}'/{reactOn.Value}");
                 }
             }
 

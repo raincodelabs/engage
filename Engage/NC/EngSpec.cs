@@ -102,14 +102,14 @@ namespace Engage.NC
                     if (plan.HasType(pr.Name))
                         plan.GetTypePlan(pr.Name).InferConstructor(pr.Args, h, plan.GetTypePlan);
                     else
-                        Console.WriteLine($"[A2B] Unknown pushed type '{pr.Name}'");
+                        Console.WriteLine($"[NC->NA] Unknown pushed type '{pr.Name}'");
                 }
                 else if (h.RHS is NC.WrapReaction wr)
                 {
                     if (plan.HasType(wr.Name))
                         plan.GetTypePlan(wr.Name).InferConstructor(wr.Args, h, plan.GetTypePlan);
                     else
-                        Console.WriteLine($"[A2B] Unknown wrapped type '{wr.Name}'");
+                        Console.WriteLine($"[NC->NA] Unknown wrapped type '{wr.Name}'");
                 }
         }
 

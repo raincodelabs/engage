@@ -98,7 +98,7 @@ namespace Engage.NC
                     }
                     else
                     {
-                        Console.WriteLine($"[A2B] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
+                        Console.WriteLine($"[NC->NA] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
                     }
                 }
 
