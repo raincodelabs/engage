@@ -133,5 +133,24 @@ namespace Engage.NC
                 add(RHS.ToHandleAction());
             }
         }
+
+        internal FC.Formula MakeFormula()
+        {
+            List<FC.StackAction> sActions = new();
+            foreach (var assignment in Context)
+            {
+                Console.WriteLine($"/// {assignment.ToString()}");
+                sActions.AddRange(assignment.RHS.ToStackActions());
+            }
+
+            sActions.AddRange(RHS.ToStackActions());
+
+            return new FC.Formula(
+                LHS.Flags,
+                LHS.ToString(),
+                RHS.ToTagActions(),
+                sActions
+            );
+        }
     }
 }

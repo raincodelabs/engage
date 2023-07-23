@@ -136,21 +136,7 @@ namespace Engage.NC
             var result = new FC.Specification();
             foreach (var handler in Handlers)
             {
-                // public Trigger LHS;
-                // public Reaction RHS;
-                // public ComboEnum ComboType = ComboEnum.None;
-                // public readonly List<Assignment> Context = new();
-                result.AddFormula(new Formula(
-                    handler.LHS.Flags,
-                    handler.LHS.ToString(), // ???
-                    handler.RHS.ToTagActions(),
-                    handler.RHS.ToStackActions()
-                ));
-                // public Formula(
-                //     IEnumerable<string> tags,
-                //     string input,
-                //     IEnumerable<TagAction> tActions,
-                //     IEnumerable<StackAction> sActions)
+                result.AddFormula(handler.MakeFormula());
             }
 
             return result;

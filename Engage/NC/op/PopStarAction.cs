@@ -19,8 +19,6 @@ namespace Engage.NC
             => new List<FC.TagAction>();
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
-        {
-            throw new System.NotImplementedException();
-        }
+            => new List<FC.StackAction> { new FC.StackPopS(Name) };
     }
 }

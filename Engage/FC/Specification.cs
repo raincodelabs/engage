@@ -92,6 +92,17 @@ public class StackPop : StackAction
     }
 }
 
+public class StackPopS : StackAction
+{
+    public override string ToString()
+        => $"-{Type}*";
+
+    public StackPopS(string type)
+    {
+        Type = type;
+    }
+}
+
 public class StackPush : StackAction
 {
     public override string ToString()
