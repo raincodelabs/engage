@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Engage.FC;
+using Engage.NA;
 
 [assembly: InternalsVisibleTo("EngageTests")]
 
@@ -127,6 +129,31 @@ namespace Engage.NC
             plan.NormaliseFlags();
 
             Console.WriteLine($"[NC->NA] Inferred flags: Boolean {plan.AllBoolFlags()}; counter {plan.AllIntFlags()}");
+        }
+
+        internal FC.Specification Formalise()
+        {
+            var result = new FC.Specification();
+            foreach (var handler in Handlers)
+            {
+                // public Trigger LHS;
+                // public Reaction RHS;
+                // public ComboEnum ComboType = ComboEnum.None;
+                // public readonly List<Assignment> Context = new();
+                result.AddFormula(new Formula(
+                    handler.LHS.Flags,
+                    handler.LHS.Terminal,
+                    null,
+                    null
+                ));
+                // public Formula(
+                //     IEnumerable<string> tags,
+                //     string input,
+                //     IEnumerable<TagAction> tActions,
+                //     IEnumerable<StackAction> sActions)
+            }
+
+            return result;
         }
     }
 }

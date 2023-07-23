@@ -35,6 +35,14 @@ namespace Engage
         public static NC.EngSpec EngSpecFromFile(string filename)
             => EngSpecFromText(File.ReadAllText(filename));
 
+        private static void FormalPipeline(NC.EngSpec eventSpec)
+        {
+            FC.Specification spec = eventSpec.Formalise();
+            Console.WriteLine("---------- FORMAL ----------");
+            Console.WriteLine(spec);
+            Console.WriteLine("----------INFORMAL----------");
+        }
+
         public static void FullPipeline(string inputFile, string outputFolder, bool verbose = true)
         {
             if (verbose)
@@ -42,6 +50,7 @@ namespace Engage
             NC.EngSpec spec = EngSpecFromFile(inputFile);
             if (verbose)
                 Console.WriteLine("NC-level spec read!");
+            FormalPipeline(spec);
             NA.SystemPlan plan = spec.MakePlan();
             if (verbose)
                 Console.WriteLine("NA-level plan made!");

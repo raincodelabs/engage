@@ -16,7 +16,7 @@ namespace Engage.NC
         public Trigger LHS;
         public Reaction RHS;
         public ComboEnum ComboType = ComboEnum.None;
-        public List<Assignment> Context = new List<Assignment>();
+        public readonly List<Assignment> Context = new();
 
         public override bool Equals(object obj)
         {
