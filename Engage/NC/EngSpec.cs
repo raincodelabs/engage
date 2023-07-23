@@ -142,7 +142,7 @@ namespace Engage.NC
                 // public readonly List<Assignment> Context = new();
                 result.AddFormula(new Formula(
                     handler.LHS.Flags,
-                    handler.LHS.Terminal,
+                    handler.LHS.ToString(), // ???
                     null,
                     null
                 ));

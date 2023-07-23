@@ -62,15 +62,7 @@ namespace Engage.NC
         internal NA.HandlerPlan MakePlan()
         {
             var hp = new NA.HandlerPlan();
-            if (LHS.Special == SpecialTrigger.BOF)
-                hp.ReactOn = NA.TokenPlan.BOF();
-            else if (LHS.Special == SpecialTrigger.EOF)
-                hp.ReactOn = NA.TokenPlan.EOF();
-            else if (!String.IsNullOrEmpty(LHS.NonTerminal))
-                hp.ReactOn = NA.TokenPlan.FromNT(LHS.NonTerminal);
-            else
-                hp.ReactOn = NA.TokenPlan.FromT(LHS.Terminal);
-            if (!String.IsNullOrEmpty(LHS.Flag))
+            hp.ReactOn = LHS.MakeTokenPlan();
                 hp.GuardFlag = LHS.Flag;
             ProduceActions(hp.AddAction);
             return hp;

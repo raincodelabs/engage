@@ -47,7 +47,7 @@ namespace Engage.NA
                 }
                 case null when a == "this":
                     _args.Add(new Tuple<string, NA.TypePlan>(a,
-                        new NA.TypePlan(NA.SystemPlan.Unalias(h.LHS.NonTerminal))));
+                        new NA.TypePlan(NA.SystemPlan.Unalias(h.LHS.ToString()))));
                     break;
             }
         }
