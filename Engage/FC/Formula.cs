@@ -124,4 +124,17 @@ public class Formula
 
         return result;
     }
+
+    public Stack<StackAction> ChangeStack(Stack<StackAction> stackState)
+    {
+        // looks weird but this is the true way because IEnumerable iterates by popping
+        Stack<StackAction> result = new Stack<StackAction>(new Stack<StackAction>(stackState));
+
+        foreach (var stackAction in _stackActions)
+        {
+            stackAction.Apply(result);
+        }
+        
+        return result;
+    }
 }
