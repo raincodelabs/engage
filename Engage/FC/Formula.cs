@@ -6,29 +6,30 @@ namespace Engage.FC;
 
 public class Formula
 {
-    private readonly List<SignedTag> Tags = new();
-    private readonly string Input;
-    private readonly List<SignedTag> TagActions = new();
-    private readonly List<StackAction> StackActions = new();
+    private readonly List<SignedFlag> _flags = new();
+    private readonly string _input;
+    private readonly List<SignedFlag> _flagActions = new();
+    private readonly List<StackAction> _stackActions = new();
 
-    public bool Tagged => Tags.Any();
+    public bool Tagged => _flags.Any();
+    public string Input => _input;
 
     public Formula(
         IEnumerable<string> tags,
         string input,
-        IEnumerable<SignedTag> tActions,
+        IEnumerable<SignedFlag> tActions,
         IEnumerable<StackAction> sActions)
     {
         if (tags != null)
             foreach (var tag in tags)
                 if (!String.IsNullOrWhiteSpace(tag))
-                    Tags.Add(new TagUp(tag));
-        Tags.Sort();
-        Input = input;
+                    _flags.Add(new FlagUp(tag));
+        _flags.Sort((x, y) => String.Compare(x.ToString(), y.ToString(), StringComparison.Ordinal));
+        _input = input;
         if (tActions != null)
-            TagActions.AddRange(tActions);
+            _flagActions.AddRange(tActions);
         if (sActions != null)
-            StackActions.AddRange(sActions);
+            _stackActions.AddRange(sActions);
     }
 
     /// <summary>
@@ -37,12 +38,12 @@ public class Formula
     /// </summary>
     public Formula(Formula f1, Formula f2)
     {
-        Tags.AddRange(f1.Tags); // assume f2.Tags are the same
-        Input = f1.Input; // assume f2.Input is the same
-        TagActions.AddRange(f1.TagActions);
-        TagActions.AddRange(f2.TagActions);
-        StackActions.AddRange(f1.StackActions);
-        StackActions.AddRange(f2.StackActions);
+        _flags.AddRange(f1._flags); // assume f2.Tags are the same
+        _input = f1._input; // assume f2.Input is the same
+        _flagActions.AddRange(f1._flagActions);
+        _flagActions.AddRange(f2._flagActions);
+        _stackActions.AddRange(f1._stackActions);
+        _stackActions.AddRange(f2._stackActions);
     }
 
     /// <summary>
@@ -51,34 +52,44 @@ public class Formula
     /// </summary>
     public Formula(Formula f1, IEnumerable<Formula> revFs)
     {
-        Tags.AddRange(f1.Tags);
+        _flags.AddRange(f1._flags);
         foreach (var formula in revFs)
-        foreach (var tag in formula.Tags)
-            Tags.Add(tag.Reversed());
+        foreach (var flag in formula._flags)
+            _flags.Add(flag.Reversed());
 
-        Input = f1.Input; // assume Input is the same for all revFs
-        TagActions.AddRange(f1.TagActions);
-        StackActions.AddRange(f1.StackActions);
+        _input = f1._input; // assume Input is the same for all revFs
+        _flagActions.AddRange(f1._flagActions);
+        _stackActions.AddRange(f1._stackActions);
     }
 
     internal bool LeftEquals(Formula other)
-        => Tags.SequenceEqual(other.Tags) && InputEquals(other);
+        => _flags.SequenceEqual(other._flags) && InputEquals(other);
 
     internal bool InputEquals(Formula other)
-        => Input.Equals(other.Input);
+        => _input.Equals(other._input);
+
+    internal void DepositFlags(HashSet<SignedFlag> flags)
+    {
+        flags.UnionWith(_flags);
+        // for a stupid but valid situation when a tag only occurs on the right hand side of an equation
+        flags.UnionWith(_flagActions);
+    }
+
+    internal bool IsEnabled(IEnumerable<SignedFlag> flags)
+        => _flags.All(tag => !flags.Contains(tag.Reversed()));
 
     public override string ToString()
     {
         List<string> elements = new();
-        if (Tags != null && Tags.Count > 0)
-            elements.Add("[" + String.Join(",", Tags) + "]");
-        if (!String.IsNullOrEmpty(Input))
-            elements.Add(Input);
+        if (_flags != null && _flags.Count > 0)
+            elements.Add("[" + String.Join(",", _flags) + "]");
+        if (!String.IsNullOrEmpty(_input))
+            elements.Add(_input);
         elements.Add("-->");
-        if (TagActions != null && TagActions.Count > 0)
-            elements.Add("[" + String.Join(",", TagActions) + "]");
-        if (StackActions != null && StackActions.Count > 0)
-            elements.Add("{" + String.Join(",", StackActions) + "}");
+        if (_flagActions != null && _flagActions.Count > 0)
+            elements.Add("[" + String.Join(",", _flagActions) + "]");
+        if (_stackActions != null && _stackActions.Count > 0)
+            elements.Add("{" + String.Join(",", _stackActions) + "}");
         return String.Join(" ", elements);
     }
 
@@ -87,14 +98,30 @@ public class Formula
         var other = obj as FC.Formula;
         if (other == null)
             return false;
-        return Tags.SequenceEqual(other.Tags)
-               && Input.Equals(other.Input)
-               && TagActions.SequenceEqual(other.TagActions)
-               && StackActions.SequenceEqual(other.StackActions);
+        return _flags.SequenceEqual(other._flags)
+               && _input.Equals(other._input)
+               && _flagActions.SequenceEqual(other._flagActions)
+               && _stackActions.SequenceEqual(other._stackActions);
     }
 
     public override int GetHashCode()
+        => _flags.GetHashCode() + _input.GetHashCode() + _flagActions.GetHashCode() + _stackActions.GetHashCode();
+
+    public HashSet<SignedFlag> ChangeFlags(HashSet<SignedFlag> initial)
     {
-        return Tags.GetHashCode() + Input.GetHashCode() + TagActions.GetHashCode() + StackActions.GetHashCode();
+        HashSet<SignedFlag> result = new();
+        foreach (var flag in initial)
+        {
+            var up = new FC.FlagUp(flag);
+            var dn = new FC.FlagDown(flag);
+            if (_flagActions.Contains(up))
+                result.Add(up);
+            else if (_flagActions.Contains(dn))
+                result.Add(dn);
+            else
+                result.Add(flag);
+        }
+
+        return result;
     }
 }

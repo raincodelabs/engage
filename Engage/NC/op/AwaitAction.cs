@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engage.FC;
 
 namespace Engage.NC;
 
@@ -55,11 +56,9 @@ public class AwaitAction : Reaction
     internal override IEnumerable<string> GetFlags()
         => new List<string> { TmpContext, ExtraContext };
 
-    internal override IEnumerable<FC.SignedTag> ToTagActions()
-        => new List<FC.SignedTag>();
+    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+        => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()
-    {
-        throw new NotImplementedException();
-    }
+        => new List<FC.StackAction> { new StackAwait(Name) };
 }

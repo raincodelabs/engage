@@ -24,11 +24,9 @@ public class DumpReaction : Reaction
     public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
         => new NA.DumpOne(Name);
 
-    internal override IEnumerable<FC.SignedTag> ToTagActions()
-        => new List<FC.SignedTag>();
+    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+        => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()
-    {
-        throw new NotImplementedException();
-    }
+        => new List<FC.StackAction> { new FC.StackPop(Name) };
 }

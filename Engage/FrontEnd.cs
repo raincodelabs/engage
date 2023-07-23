@@ -39,7 +39,7 @@ public static class FrontEnd
     {
         FC.Specification spec = eventSpec.Formalise();
         spec.PrintThis();
-
+        FA.StateMachine sm = new(spec);
     }
 
     public static void FullPipeline(string inputFile, string outputFolder, bool verbose = true)

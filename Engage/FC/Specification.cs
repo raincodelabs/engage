@@ -16,62 +16,52 @@ public class Specification
         Console.WriteLine("Merging duplicates...");
         MergeLeftDuplicates();
         Console.WriteLine("Distributing triggers...");
-        DistributeUntaggedTriggers();
+        DistributeUnflaggedTriggers();
+        Console.WriteLine("Normalised specification:");
+        PrintThis();
     }
 
-    private void DistributeUntaggedTriggers()
+    private void DistributeUnflaggedTriggers()
     {
         bool fixPoint = false;
         while (!fixPoint)
         {
-            PrintThis();
-            List<Formula> untagged = new();
-            List<Formula> tagged = new();
+            // PrintThis();
+            List<Formula> unflagged = new();
+            List<Formula> flagged = new();
             List<Formula> adequate = new();
 
             foreach (var formula in _formulae)
             {
                 if (formula.Tagged)
-                    tagged.Add(formula);
+                    flagged.Add(formula);
                 else
-                    untagged.Add(formula);
+                    unflagged.Add(formula);
             }
 
-            // Console.WriteLine($"// Found {untagged.Count} untagged + {tagged.Count} tagged formulae out of {_formulae.Count}");
-
-            foreach (var untaggedFormula in untagged)
+            foreach (var unflaggedFormula in unflagged)
             {
                 List<Formula> toReverse = new();
-                foreach (var taggedFormula in tagged)
+                foreach (var flaggedFormula in flagged)
                 {
-                    if (taggedFormula.InputEquals(untaggedFormula))
+                    if (flaggedFormula.InputEquals(unflaggedFormula))
                     {
-                        adequate.Add(new Formula(taggedFormula, untaggedFormula));
-                        toReverse.Add(taggedFormula);
+                        adequate.Add(new Formula(flaggedFormula, unflaggedFormula));
+                        toReverse.Add(flaggedFormula);
                     }
                 }
 
                 if (toReverse.Any())
-                    adequate.Add(new Formula(untaggedFormula, toReverse));
+                    adequate.Add(new Formula(unflaggedFormula, toReverse));
                 else
-                    adequate.Add(untaggedFormula);
+                    adequate.Add(unflaggedFormula);
             }
 
-            foreach (var taggedFormula in tagged)
-            {
-                bool witnessedInput = false;
-                foreach (var untaggedFormula in untagged)
-                    if (untaggedFormula.InputEquals(taggedFormula))
-                    {
-                        witnessedInput = true;
-                        break;
-                    }
+            adequate.AddRange(
+                flagged.Where(flaggedFormula =>
+                    !unflagged.Any(untaggedFormula => untaggedFormula.InputEquals(flaggedFormula))));
 
-                if (!witnessedInput)
-                    adequate.Add(taggedFormula);
-            }
-
-            adequate.Sort((x, y) => x.ToString().CompareTo(y.ToString()));
+            adequate.Sort((x, y) => String.Compare(x.ToString(), y.ToString(), StringComparison.Ordinal));
             fixPoint = _formulae.SequenceEqual(adequate);
             _formulae = adequate;
         }
@@ -82,7 +72,7 @@ public class Specification
         bool fixPoint = false;
         while (!fixPoint)
         {
-            PrintThis();
+            // PrintThis();
             List<Formula> adequate = new();
             List<Formula> discarded = new();
             bool breaking = false;
@@ -90,6 +80,7 @@ public class Specification
             {
                 foreach (var formula2 in _formulae)
                 {
+                    // Yes, we want referential equality here
                     if (formula1 == formula2)
                         continue;
                     if (formula1.LeftEquals(formula2))
@@ -112,10 +103,33 @@ public class Specification
                     adequate.Add(formula);
             }
 
-            adequate.Sort((x, y) => x.ToString().CompareTo(y.ToString()));
+            adequate.Sort((x, y) => String.Compare(x.ToString(), y.ToString(), StringComparison.Ordinal));
             fixPoint = _formulae.SequenceEqual(adequate);
             _formulae = adequate;
         }
+    }
+
+    public IEnumerable<SignedFlag> AllFlags()
+    {
+        HashSet<SignedFlag> flags = new();
+        foreach (var formula in _formulae)
+            formula.DepositFlags(flags);
+
+        return flags;
+    }
+
+    public List<FA.Transition> FindNextSteps(FA.StateMachine machine, FA.State state)
+    {
+        HashSet<FC.Formula> possible = new();
+        possible.UnionWith(_formulae.Where(formula => formula.IsEnabled(state.Flags)));
+
+        foreach (var formula in possible)
+        {
+            var target = state.Apply(formula, machine);
+            machine.CreateTransition(state, target, formula.Input);
+        }
+
+        return null;
     }
 
     public void PrintThis()
@@ -127,42 +141,4 @@ public class Specification
 
     public override string ToString()
         => String.Join(Environment.NewLine, _formulae.Select(f => f.ToString()));
-}
-
-public abstract class StackAction
-{
-    public string Type { get; init; }
-}
-
-public class StackPop : StackAction
-{
-    public override string ToString()
-        => $"-{Type}";
-
-    public StackPop(string type)
-    {
-        Type = type;
-    }
-}
-
-public class StackPopS : StackAction
-{
-    public override string ToString()
-        => $"-{Type}*";
-
-    public StackPopS(string type)
-    {
-        Type = type;
-    }
-}
-
-public class StackPush : StackAction
-{
-    public override string ToString()
-        => $"+{Type}";
-
-    public StackPush(string type)
-    {
-        Type = type;
-    }
 }
