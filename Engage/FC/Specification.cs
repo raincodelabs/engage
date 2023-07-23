@@ -13,7 +13,68 @@ public class Specification
 
     public void Normalise()
     {
+        Console.WriteLine("Merging duplicates...");
         MergeLeftDuplicates();
+        Console.WriteLine("Distributing triggers...");
+        DistributeUntaggedTriggers();
+    }
+
+    private void DistributeUntaggedTriggers()
+    {
+        bool fixPoint = false;
+        while (!fixPoint)
+        {
+            PrintThis();
+            List<Formula> untagged = new();
+            List<Formula> tagged = new();
+            List<Formula> adequate = new();
+
+            foreach (var formula in _formulae)
+            {
+                if (formula.Tagged)
+                    tagged.Add(formula);
+                else
+                    untagged.Add(formula);
+            }
+
+            // Console.WriteLine($"// Found {untagged.Count} untagged + {tagged.Count} tagged formulae out of {_formulae.Count}");
+
+            foreach (var untaggedFormula in untagged)
+            {
+                List<Formula> toReverse = new();
+                foreach (var taggedFormula in tagged)
+                {
+                    if (taggedFormula.InputEquals(untaggedFormula))
+                    {
+                        adequate.Add(new Formula(taggedFormula, untaggedFormula));
+                        toReverse.Add(taggedFormula);
+                    }
+                }
+
+                if (toReverse.Any())
+                    adequate.Add(new Formula(untaggedFormula, toReverse));
+                else
+                    adequate.Add(untaggedFormula);
+            }
+
+            foreach (var taggedFormula in tagged)
+            {
+                bool witnessedInput = false;
+                foreach (var untaggedFormula in untagged)
+                    if (untaggedFormula.InputEquals(taggedFormula))
+                    {
+                        witnessedInput = true;
+                        break;
+                    }
+
+                if (!witnessedInput)
+                    adequate.Add(taggedFormula);
+            }
+
+            adequate.Sort((x, y) => x.ToString().CompareTo(y.ToString()));
+            fixPoint = _formulae.SequenceEqual(adequate);
+            _formulae = adequate;
+        }
     }
 
     private void MergeLeftDuplicates()

@@ -3,6 +3,8 @@ namespace Engage.FC;
 public abstract class SignedTag
 {
     protected string Name { get; init; }
+
+    public abstract SignedTag Reversed();
 }
 
 public class TagUp : SignedTag
@@ -11,6 +13,9 @@ public class TagUp : SignedTag
     {
         Name = name;
     }
+
+    public override SignedTag Reversed()
+        => new TagDown(Name);
 
     public override string ToString()
         => Name;
@@ -28,6 +33,9 @@ public class TagDown : SignedTag
     {
         Name = name;
     }
+
+    public override SignedTag Reversed()
+        => new TagUp(Name);
 
     public override string ToString()
         => "!" + Name;

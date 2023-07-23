@@ -21,7 +21,8 @@ public class Formula
     {
         if (tags != null)
             foreach (var tag in tags)
-                Tags.Add(new TagUp(tag));
+                if (!String.IsNullOrWhiteSpace(tag))
+                    Tags.Add(new TagUp(tag));
         Tags.Sort();
         Input = input;
         if (tActions != null)
@@ -30,6 +31,10 @@ public class Formula
             StackActions.AddRange(sActions);
     }
 
+    /// <summary>
+    ///     Creates an new formula based on the left side of the first of the given two formulae
+    ///     and both right sides.
+    /// </summary>
     public Formula(Formula f1, Formula f2)
     {
         Tags.AddRange(f1.Tags); // assume f2.Tags are the same
@@ -38,6 +43,22 @@ public class Formula
         TagActions.AddRange(f2.TagActions);
         StackActions.AddRange(f1.StackActions);
         StackActions.AddRange(f2.StackActions);
+    }
+
+    /// <summary>
+    ///     Creates an new formula based on the left side of the first of the given two formulae
+    ///     and both right sides.
+    /// </summary>
+    public Formula(Formula f1, IEnumerable<Formula> revFs)
+    {
+        Tags.AddRange(f1.Tags);
+        foreach (var formula in revFs)
+        foreach (var tag in formula.Tags)
+            Tags.Add(tag.Reversed());
+
+        Input = f1.Input; // assume Input is the same for all revFs
+        TagActions.AddRange(f1.TagActions);
+        StackActions.AddRange(f1.StackActions);
     }
 
     internal bool LeftEquals(Formula other)
@@ -53,7 +74,7 @@ public class Formula
             elements.Add("[" + String.Join(",", Tags) + "]");
         if (!String.IsNullOrEmpty(Input))
             elements.Add(Input);
-        elements.Add("->");
+        elements.Add("-->");
         if (TagActions != null && TagActions.Count > 0)
             elements.Add("[" + String.Join(",", TagActions) + "]");
         if (StackActions != null && StackActions.Count > 0)
