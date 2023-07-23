@@ -134,7 +134,15 @@ public class Formula
         {
             stackAction.Apply(result);
         }
-        
+
         return result;
+    }
+
+    public bool StackCompatible(Stack<StackAction> stackState)
+    {
+        // looks weird but this is the true way because IEnumerable iterates by popping
+        Stack<StackAction> result = new Stack<StackAction>(new Stack<StackAction>(stackState));
+
+        return _stackActions.All(stackAction => stackAction.Apply(result));
     }
 }

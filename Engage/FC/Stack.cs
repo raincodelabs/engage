@@ -46,14 +46,10 @@ public class StackPopS : StackAction
 
     public override bool Apply(Stack<StackAction> stack)
     {
-        if (stack.Count > 0 && stack.Peek() is FC.StackPush top && top.Type == Type)
-        {
-            while (stack.Peek() is FC.StackPush push && push.Type == Type)
-                stack.Pop();
-            return true;
-        }
-
-        return false;
+        // zero is also allowed
+        while (stack.Count > 0 && stack.Peek() is FC.StackPush top && top.Type == Type)
+            stack.Pop();
+        return true;
     }
 }
 

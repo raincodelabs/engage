@@ -121,7 +121,8 @@ public class Specification
     public List<FA.Transition> FindNextSteps(FA.StateMachine machine, FA.State state)
     {
         HashSet<FC.Formula> possible = new();
-        possible.UnionWith(_formulae.Where(formula => formula.IsEnabled(state.Flags)));
+        possible.UnionWith(_formulae.Where(formula =>
+            formula.IsEnabled(state.Flags) && formula.StackCompatible(state.StackState)));
 
         foreach (var formula in possible)
         {

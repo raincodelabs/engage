@@ -17,6 +17,8 @@ public class State
 {
     private readonly int _id;
 
+    public string Name => $"State{_id}";
+
     public HashSet<FC.SignedFlag> Flags { get; } = new();
     public Stack<FC.StackAction> StackState { get; } = new();
 
@@ -31,15 +33,6 @@ public class State
         Console.WriteLine($"CREATE {ToString()}");
     }
 
-    public override bool Equals(object obj)
-        => obj is State other && Flags.SetEquals(other.Flags);
-
-    public override int GetHashCode()
-        => Flags.GetHashCode();
-
-    public override string ToString() =>
-        $"State{_id} [" + String.Join(";", Flags) + "] {" + String.Join(";", StackState) + "}";
-
     public FA.State Apply(Formula formula, FA.StateMachine machine)
         => machine.ForgeState(formula.ChangeFlags(Flags), formula.ChangeStack(StackState));
 
@@ -53,6 +46,21 @@ public class State
 
     public bool StackExpectationsEqual(Stack<StackAction> stack)
         => StackState.SequenceEqual(stack);
+
+    public string ToLabel()
+        => "[" + String.Join(";", Flags) + "] {" + String.Join(";", StackState) + "}";
+
+    public string ToDot()
+        => $"{Name} [label=\"{ToLabel()}\"];";
+
+    public override bool Equals(object obj)
+        => obj is State other && Flags.SetEquals(other.Flags) && StackState.SequenceEqual(other.StackState);
+
+    public override int GetHashCode()
+        => Flags.GetHashCode() + StackState.GetHashCode();
+
+    public override string ToString()
+        => $"{Name} {ToLabel()}";
 }
 
 public class Transition
@@ -69,8 +77,23 @@ public class Transition
         Console.WriteLine($"NEW LINK {ToString()}");
     }
 
+    public string ToDot()
+        => $"{_from.Name} -> {_to.Name} [label=\"{_token}\"];";
+
     public override string ToString()
         => $"{_from} =={_token}==> {_to}";
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as Transition;
+        return other != null
+               && _from.Equals(other._from)
+               && _to.Equals(other._to)
+               && _token.Equals(other._token);
+    }
+
+    public override int GetHashCode()
+        => _from.GetHashCode() + _to.GetHashCode() + _token.GetHashCode();
 }
 
 public class StateMachine
@@ -85,6 +108,20 @@ public class StateMachine
         _start = ForgeState(AllDownFlags(spec.AllFlags()), null);
         Console.WriteLine($"START STATE: {_start}");
         var _first = spec.FindNextSteps(this, _start);
+        // take more steps
+        ComputeOneStep(spec);
+        ComputeOneStep(spec);
+        ComputeOneStep(spec);
+        ComputeOneStep(spec);
+    }
+
+    private void ComputeOneStep(Specification spec)
+    {
+        List<FA.State> _savedStates = new();
+        _savedStates.AddRange(_states);
+        foreach (var state in _savedStates)
+            if (!_final.Contains(state))
+                spec.FindNextSteps(this, state);
     }
 
     private HashSet<SignedFlag> AllDownFlags(IEnumerable<SignedFlag> allFlags)
@@ -116,8 +153,24 @@ public class StateMachine
     public void CreateTransition(State source, State target, string token)
     {
         var transition = new FA.Transition(source, target, token);
+        if (_transitions.Contains(transition))
+            return;
+        _transitions.Add(transition);
         if (token == "EOF")
             _final.Add(target);
-        _transitions.Add(transition);
+    }
+
+    public string ToDot()
+    {
+        List<string> result = new();
+        result.Add("digraph sm {");
+        result.Add(_start.Name + " [shape=invhouse];");
+        result.AddRange(_final.Select(state => state.Name + " [shape=house];"));
+        result.Add(String.Empty);
+        result.AddRange(_states.Select(state => state.ToDot()));
+        result.Add(String.Empty);
+        result.AddRange(_transitions.Select(transition => transition.ToDot()));
+        result.Add("}");
+        return String.Join("\n\t", result);
     }
 }
