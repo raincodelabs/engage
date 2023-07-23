@@ -6,7 +6,7 @@ namespace EngageTests
     internal static class Generator
     {
         private const string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        private static readonly Random _random = new Random();
+        private static readonly Random _random = new();
 
         internal static bool ArbitraryBoolean()
             => _random.NextDouble() < .5;

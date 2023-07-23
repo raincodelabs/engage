@@ -14,7 +14,7 @@ namespace EngageTests
     public class DetailedXmlShallowTests
     {
         static string _input100 = GenerateShallowTestInput(100);
-        private static readonly Stopwatch Timer = new Stopwatch();
+        private static readonly Stopwatch Timer = new();
         private int _dump;
 
         [TestMethod]
