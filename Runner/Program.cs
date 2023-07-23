@@ -17,8 +17,6 @@ namespace Runner
 
         private static void Main(string[] args)
         {
-
-
             foreach (var spec in CompilationList.Keys)
                 FrontEnd.FullPipeline(spec, CompilationList[spec]);
         }

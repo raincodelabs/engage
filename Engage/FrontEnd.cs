@@ -24,20 +24,6 @@ namespace Engage
             return listener.Root;
         }
 
-        /// <summary>
-        ///     This method doesn't do anything useful any more: it used to call the old parser
-        ///     (the second one, from Takmela), but now calls the new one (the third one)
-        ///     because the first (PEG) and the second are removed from the codebase.
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        public static A.EngSpec LegacyEngSpecFromText(string code)
-        {
-            //EngageMetaParser parser = new EngageMetaParser();
-            //return parser.ParseGrammar(code);
-            return EngSpecFromText(code);
-        }
-
         public static A.EngSpec EngSpecFromFile(string filename)
             => EngSpecFromText(File.ReadAllText(filename));
 

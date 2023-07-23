@@ -50,7 +50,7 @@ namespace EngageTests
             Assert.IsTrue(t2.Names[0].Special);
             Assert.AreEqual("Id", t2.Type);
         }
-        
+
         [TestMethod]
         [TestCategory("Engage")]
         public void TestAntlrParserAwait()
@@ -81,21 +81,21 @@ namespace EngageTests
         [TestCategory("Engage")]
         public void TestAntlrParserOnAppbuilder()
         {
-            CompareGrammar(KnownGrammars[0]);
+            ProcessFile(KnownGrammars[0]);
         }
 
         [TestMethod]
         [TestCategory("Engage")]
         public void TestAntlrParserOnOpenClose()
         {
-            CompareGrammar(KnownGrammars[1]);
+            ProcessFile(KnownGrammars[1]);
         }
 
         [TestMethod]
         [TestCategory("Engage")]
         public void TestAntlrParserOnFuzzy()
         {
-            CompareGrammar(KnownGrammars[2]);
+            ProcessFile(KnownGrammars[2]);
         }
 
         private void TraverseDir(string folder)
@@ -119,16 +119,6 @@ namespace EngageTests
             {
                 Console.WriteLine(ex.Message);
             }
-        }
-
-        private void CompareGrammar(string file)
-        {
-            Console.WriteLine("Found Engage! spec: " + file);
-            string input = File.ReadAllText(file);
-            EngSpec result1 = Engage.FrontEnd.EngSpecFromText(input);
-            EngSpec result2 = Engage.FrontEnd.LegacyEngSpecFromText(input);
-            Assert.IsTrue(result1.Equals(result2));
-            Console.WriteLine("Compared successfully");
         }
 
         private void ProcessFile(string file)
