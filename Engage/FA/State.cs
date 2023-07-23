@@ -20,10 +20,10 @@ public class State
     public HashSet<FC.SignedFlag> Flags { get; } = new();
     // TODO: stack state
 
-    public State(IEnumerable<FC.SignedFlag> tags)
+    public State(IEnumerable<FC.SignedFlag> flags)
     {
-        if (tags != null)
-            Flags.UnionWith(tags);
+        if (flags != null)
+            Flags.UnionWith(flags);
         _id = Enumerator.GetId();
         Console.WriteLine($"CREATE {ToString()}");
     }
@@ -40,7 +40,7 @@ public class State
     public FA.State Apply(Formula formula, FA.StateMachine machine)
         => machine.ForgeState(formula.ChangeFlags(Flags));
 
-    public bool TagsEqual(HashSet<SignedFlag> flags)
+    public bool FlagsEqual(HashSet<SignedFlag> flags)
     {
         var t1 = String.Join(";", Flags);
         var t2 = String.Join(";", flags);
@@ -84,8 +84,8 @@ public class StateMachine
         HashSet<SignedFlag> result = new();
         foreach (var flag in allFlags)
         {
-            if (flag is FlagDown dTag)
-                result.Add(dTag);
+            if (flag is FlagDown down)
+                result.Add(down);
             else
                 result.Add(flag.Reversed() as FlagDown);
         }
@@ -95,7 +95,7 @@ public class StateMachine
 
     public FA.State ForgeState(HashSet<FC.SignedFlag> flags)
     {
-        foreach (var state in _states.Where(state => state.TagsEqual(flags)))
+        foreach (var state in _states.Where(state => state.FlagsEqual(flags)))
             return state;
 
         var newState = new State(flags);

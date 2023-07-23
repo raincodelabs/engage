@@ -20,7 +20,7 @@ public class WrapReaction : Reaction
     public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
         => new NA.WrapOne(Name, target, Args[0]);
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

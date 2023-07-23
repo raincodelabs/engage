@@ -38,7 +38,7 @@ public class LiftReaction : Reaction
     internal override IEnumerable<string> GetFlags()
         => new List<string> { Flag };
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag> { new FC.FlagUp(Flag) };
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

@@ -12,6 +12,6 @@ public abstract class Reaction
     internal virtual IEnumerable<string> GetFlags()
         => new List<string>();
 
-    internal abstract IEnumerable<FC.SignedFlag> ToTagActions();
+    internal abstract IEnumerable<FC.SignedFlag> ToFlagActions();
     internal abstract IEnumerable<FC.StackAction> ToStackActions();
 }

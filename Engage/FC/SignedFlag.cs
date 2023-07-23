@@ -18,10 +18,10 @@ public class FlagUp : SignedFlag
     
     public FlagUp(SignedFlag flag)
     {
-        if (flag is FlagUp upTag1)
-            Name = upTag1.Name;
-        else if (flag.Reversed() is FlagUp upTag2)
-            Name = upTag2.Name;
+        if (flag is FlagUp up1)
+            Name = up1.Name;
+        else if (flag.Reversed() is FlagUp up2)
+            Name = up2.Name;
         else
             Console.WriteLine($"[ERROR] Cannot make a FlagUp from {flag}");
     }
@@ -48,10 +48,10 @@ public class FlagDown : SignedFlag
     
     public FlagDown(SignedFlag flag)
     {
-        if (flag is FlagDown downTag1)
-            Name = downTag1.Name;
-        else if (flag.Reversed() is FlagDown downTag2)
-            Name = downTag2.Name;
+        if (flag is FlagDown down1)
+            Name = down1.Name;
+        else if (flag.Reversed() is FlagDown down2)
+            Name = down2.Name;
         else
             Console.WriteLine($"[ERROR] Cannot make a FlagDown from {flag}");
     }

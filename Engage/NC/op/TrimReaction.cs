@@ -18,7 +18,7 @@ public class TrimReaction : Reaction
     public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
         => new NA.TrimStream { Type = Name, Starred = Starred };
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     // TODO: refine!

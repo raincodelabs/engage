@@ -17,7 +17,7 @@ public class TearAction : Reaction
     public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
         => new NA.TearOne { Name = NA.SystemPlan.Dealias(Name), Target = "value" };
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

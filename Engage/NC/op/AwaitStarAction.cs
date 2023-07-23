@@ -27,7 +27,7 @@ public class AwaitStarAction : Reaction
         return a;
     }
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

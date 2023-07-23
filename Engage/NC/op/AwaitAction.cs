@@ -56,7 +56,7 @@ public class AwaitAction : Reaction
     internal override IEnumerable<string> GetFlags()
         => new List<string> { TmpContext, ExtraContext };
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

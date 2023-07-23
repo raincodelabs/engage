@@ -39,7 +39,7 @@ public class DropReaction : Reaction
     internal override IEnumerable<string> GetFlags()
         => new List<string> { Flag };
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag> { new FlagDown(Flag) };
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

@@ -145,7 +145,7 @@ public class HandlerDecl
         return new FC.Formula(
             LHS.Flags,
             LHS.ToString(),
-            RHS.ToTagActions(),
+            RHS.ToFlagActions(),
             sActions
         );
     }

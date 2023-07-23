@@ -10,7 +10,7 @@ public class PassReaction : Reaction
     public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
         => new NA.DoNothing();
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

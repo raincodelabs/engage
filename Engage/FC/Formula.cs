@@ -11,19 +11,19 @@ public class Formula
     private readonly List<SignedFlag> _flagActions = new();
     private readonly List<StackAction> _stackActions = new();
 
-    public bool Tagged => _flags.Any();
+    public bool Flagged => _flags.Any();
     public string Input => _input;
 
     public Formula(
-        IEnumerable<string> tags,
+        IEnumerable<string> flags,
         string input,
         IEnumerable<SignedFlag> tActions,
         IEnumerable<StackAction> sActions)
     {
-        if (tags != null)
-            foreach (var tag in tags)
-                if (!String.IsNullOrWhiteSpace(tag))
-                    _flags.Add(new FlagUp(tag));
+        if (flags != null)
+            foreach (var flag in flags)
+                if (!String.IsNullOrWhiteSpace(flag))
+                    _flags.Add(new FlagUp(flag));
         _flags.Sort((x, y) => String.Compare(x.ToString(), y.ToString(), StringComparison.Ordinal));
         _input = input;
         if (tActions != null)
@@ -38,7 +38,7 @@ public class Formula
     /// </summary>
     public Formula(Formula f1, Formula f2)
     {
-        _flags.AddRange(f1._flags); // assume f2.Tags are the same
+        _flags.AddRange(f1._flags); // assume f2.Flags are the same
         _input = f1._input; // assume f2.Input is the same
         _flagActions.AddRange(f1._flagActions);
         _flagActions.AddRange(f2._flagActions);
@@ -71,12 +71,12 @@ public class Formula
     internal void DepositFlags(HashSet<SignedFlag> flags)
     {
         flags.UnionWith(_flags);
-        // for a stupid but valid situation when a tag only occurs on the right hand side of an equation
+        // for a stupid but valid situation when a flag only occurs on the right hand side of an equation
         flags.UnionWith(_flagActions);
     }
 
     internal bool IsEnabled(IEnumerable<SignedFlag> flags)
-        => _flags.All(tag => !flags.Contains(tag.Reversed()));
+        => _flags.All(flag => !flags.Contains(flag.Reversed()));
 
     public override string ToString()
     {

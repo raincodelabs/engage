@@ -15,7 +15,7 @@ public class PopStarAction : Reaction
     public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
         => new NA.PopAll { Name = NA.SystemPlan.Dealias(Name), Target = target };
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

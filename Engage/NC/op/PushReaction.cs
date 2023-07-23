@@ -38,7 +38,7 @@ public class PushReaction : Reaction
             ? new NA.PushNew(Name, Args, "")
             : new NA.PushNew(Name, Args, $"{t.Name}.{t.Target}");
 
-    internal override IEnumerable<FC.SignedFlag> ToTagActions()
+    internal override IEnumerable<FC.SignedFlag> ToFlagActions()
         => new List<FC.SignedFlag>();
 
     internal override IEnumerable<FC.StackAction> ToStackActions()

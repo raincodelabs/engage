@@ -33,7 +33,7 @@ public class Specification
 
             foreach (var formula in _formulae)
             {
-                if (formula.Tagged)
+                if (formula.Flagged)
                     flagged.Add(formula);
                 else
                     unflagged.Add(formula);
@@ -59,7 +59,7 @@ public class Specification
 
             adequate.AddRange(
                 flagged.Where(flaggedFormula =>
-                    !unflagged.Any(untaggedFormula => untaggedFormula.InputEquals(flaggedFormula))));
+                    !unflagged.Any(unflaggedFormula => unflaggedFormula.InputEquals(flaggedFormula))));
 
             adequate.Sort((x, y) => String.Compare(x.ToString(), y.ToString(), StringComparison.Ordinal));
             fixPoint = _formulae.SequenceEqual(adequate);
