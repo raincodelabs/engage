@@ -55,8 +55,8 @@ namespace Engage.NC
         internal override IEnumerable<string> GetFlags()
             => new List<string> { TmpContext, ExtraContext };
 
-        internal override IEnumerable<FC.TagAction> ToTagActions()
-            => new List<FC.TagAction>();
+        internal override IEnumerable<FC.SignedTag> ToTagActions()
+            => new List<FC.SignedTag>();
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
         {

@@ -139,6 +139,8 @@ namespace Engage.NC
                 result.AddFormula(handler.MakeFormula());
             }
 
+            result.Normalise();
+
             return result;
         }
     }

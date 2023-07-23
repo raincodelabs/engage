@@ -6,74 +6,66 @@ namespace Engage.FC;
 
 public class Specification
 {
-    private readonly List<Formula> _formulae = new();
+    private List<Formula> _formulae = new();
 
     public void AddFormula(Formula f)
         => _formulae.Add(f);
 
-    public override string ToString()
+    public void Normalise()
     {
-        var fs = _formulae.Select(f => f.ToString());
-        return String.Join(Environment.NewLine, fs);
-    }
-}
-
-public class Formula
-{
-    private List<string> Tags = new();
-    private string Input;
-    private List<TagAction> TagActions = new();
-    private List<StackAction> StackActions = new();
-
-    public Formula(
-        IEnumerable<string> tags,
-        string input,
-        IEnumerable<TagAction> tActions,
-        IEnumerable<StackAction> sActions)
-    {
-        if (tags != null)
-            Tags.AddRange(tags);
-        Input = input;
-        if (tActions != null)
-            TagActions.AddRange(tActions);
-        if (sActions != null)
-            StackActions.AddRange(sActions);
+        MergeLeftDuplicates();
     }
 
-    public override string ToString()
+    private void MergeLeftDuplicates()
     {
-        List<string> elements = new();
-        if (Tags != null && Tags.Count > 0)
-            elements.Add("[" + String.Join(",", Tags) + "]");
-        if (!String.IsNullOrEmpty(Input))
-            elements.Add(Input);
-        elements.Add("->");
-        if (TagActions != null && TagActions.Count > 0)
-            elements.Add("[" + String.Join(",", TagActions) + "]");
-        if (StackActions != null && StackActions.Count > 0)
-            elements.Add("{" + String.Join(",", StackActions) + "}");
-        return String.Join(" ", elements);
+        bool fixPoint = false;
+        while (!fixPoint)
+        {
+            PrintThis();
+            List<Formula> adequate = new();
+            List<Formula> discarded = new();
+            bool breaking = false;
+            foreach (var formula1 in _formulae)
+            {
+                foreach (var formula2 in _formulae)
+                {
+                    if (formula1 == formula2)
+                        continue;
+                    if (formula1.LeftEquals(formula2))
+                    {
+                        adequate.Add(new Formula(formula1, formula2));
+                        discarded.Add(formula1);
+                        discarded.Add(formula2);
+                        breaking = true;
+                        break;
+                    }
+                }
+
+                if (breaking)
+                    break;
+            }
+
+            foreach (var formula in _formulae)
+            {
+                if (!discarded.Contains(formula))
+                    adequate.Add(formula);
+            }
+
+            adequate.Sort((x, y) => x.ToString().CompareTo(y.ToString()));
+            fixPoint = _formulae.SequenceEqual(adequate);
+            _formulae = adequate;
+        }
     }
-}
 
-public class TagAction
-{
-    private bool flag;
-    public bool Lift => flag;
-    public bool Drop => !flag;
-
-    public readonly string Name;
-
-    public TagAction(bool flag, string name)
+    public void PrintThis()
     {
-        this.flag = flag;
-        Name = name;
+        Console.WriteLine("---------- FORMAL ----------");
+        Console.WriteLine(ToString());
+        Console.WriteLine("----------INFORMAL----------");
     }
 
     public override string ToString()
-        => flag
-            ? Name
-            : "!" + Name;
+        => String.Join(Environment.NewLine, _formulae.Select(f => f.ToString()));
 }
 
 public abstract class StackAction

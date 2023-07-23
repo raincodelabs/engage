@@ -38,9 +38,8 @@ namespace Engage
         private static void FormalPipeline(NC.EngSpec eventSpec)
         {
             FC.Specification spec = eventSpec.Formalise();
-            Console.WriteLine("---------- FORMAL ----------");
-            Console.WriteLine(spec);
-            Console.WriteLine("----------INFORMAL----------");
+            spec.PrintThis();
+
         }
 
         public static void FullPipeline(string inputFile, string outputFolder, bool verbose = true)

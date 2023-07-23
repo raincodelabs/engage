@@ -38,8 +38,8 @@ namespace Engage.NC
                 ? new NA.PushNew(Name, Args, "")
                 : new NA.PushNew(Name, Args, $"{t.Name}.{t.Target}");
 
-        internal override IEnumerable<FC.TagAction> ToTagActions()
-            => new List<FC.TagAction>();
+        internal override IEnumerable<FC.SignedTag> ToTagActions()
+            => new List<FC.SignedTag>();
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
             => new List<FC.StackAction> { new FC.StackPush(Name) };

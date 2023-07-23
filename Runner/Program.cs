@@ -10,9 +10,9 @@ namespace Runner
 
         public static readonly Dictionary<string, string> CompilationList = new Dictionary<string, string>
         {
-            [Path.Combine(FourUp, "AB", "spec", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
+            // [Path.Combine(FourUp, "AB", "spec", "appbuilder.eng")] = Path.Combine(FourUp, "AB"),
             [Path.Combine(FourUp, "EAX", "specs", "OpenClose.eng")] = Path.Combine(FourUp, "EAX", "OpenClose"),
-            [Path.Combine(FourUp, "EAX", "specs", "Fuzzy.eng")] = Path.Combine(FourUp, "EAX", "Fuzzy"),
+            // [Path.Combine(FourUp, "EAX", "specs", "Fuzzy.eng")] = Path.Combine(FourUp, "EAX", "Fuzzy"),
         };
 
         private static void Main(string[] args)

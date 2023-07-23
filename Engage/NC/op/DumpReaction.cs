@@ -24,8 +24,8 @@ namespace Engage.NC
         public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
             => new NA.DumpOne(Name);
 
-        internal override IEnumerable<FC.TagAction> ToTagActions()
-            => new List<FC.TagAction>();
+        internal override IEnumerable<FC.SignedTag> ToTagActions()
+            => new List<FC.SignedTag>();
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
         {

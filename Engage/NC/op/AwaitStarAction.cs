@@ -27,8 +27,8 @@ namespace Engage.NC
             return a;
         }
 
-        internal override IEnumerable<FC.TagAction> ToTagActions()
-            => new List<FC.TagAction>();
+        internal override IEnumerable<FC.SignedTag> ToTagActions()
+            => new List<FC.SignedTag>();
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
         {

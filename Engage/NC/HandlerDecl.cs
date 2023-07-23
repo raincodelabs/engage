@@ -138,10 +138,7 @@ namespace Engage.NC
         {
             List<FC.StackAction> sActions = new();
             foreach (var assignment in Context)
-            {
-                Console.WriteLine($"/// {assignment.ToString()}");
                 sActions.AddRange(assignment.RHS.ToStackActions());
-            }
 
             sActions.AddRange(RHS.ToStackActions());
 

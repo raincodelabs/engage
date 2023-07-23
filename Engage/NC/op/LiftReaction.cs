@@ -38,8 +38,8 @@ namespace Engage.NC
         internal override IEnumerable<string> GetFlags()
             => new List<string> { Flag };
 
-        internal override IEnumerable<FC.TagAction> ToTagActions()
-            => new List<FC.TagAction> { new(true, Flag) };
+        internal override IEnumerable<FC.SignedTag> ToTagActions()
+            => new List<FC.SignedTag> { new FC.TagUp(Flag) };
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
             => new List<FC.StackAction>();

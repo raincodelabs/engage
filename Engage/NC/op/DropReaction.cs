@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engage.FC;
 
 namespace Engage.NC
 {
@@ -38,8 +39,8 @@ namespace Engage.NC
         internal override IEnumerable<string> GetFlags()
             => new List<string> { Flag };
 
-        internal override IEnumerable<FC.TagAction> ToTagActions()
-            => new List<FC.TagAction> { new(false, Flag) };
+        internal override IEnumerable<FC.SignedTag> ToTagActions()
+            => new List<FC.SignedTag> { new TagDown(Flag) };
 
         internal override IEnumerable<FC.StackAction> ToStackActions()
             => new List<FC.StackAction>();
