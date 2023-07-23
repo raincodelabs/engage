@@ -6,11 +6,19 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Engage.parsing;
 
+// Notation-related syntax:
+//      C = concrete (as parsed)
+//      A = abstract (as processed)
+// Generation-related syntax:
+//      A = abstract (parser as produced)
+//      C = concrete (parser code as serialised)
+// Formal-related syntax:
+//      C = concrete (specification as inferred)
 namespace Engage
 {
     public static class FrontEnd
     {
-        public static A.EngSpec EngSpecFromText(string code)
+        public static NC.EngSpec EngSpecFromText(string code)
         {
             ICharStream inputStream = CharStreams.fromString(code);
             EngageLexer lexer = new EngageLexer(inputStream);
@@ -24,36 +32,36 @@ namespace Engage
             return listener.Root;
         }
 
-        public static A.EngSpec EngSpecFromFile(string filename)
+        public static NC.EngSpec EngSpecFromFile(string filename)
             => EngSpecFromText(File.ReadAllText(filename));
 
         public static void FullPipeline(string inputFile, string outputFolder, bool verbose = true)
         {
             if (verbose)
                 Console.WriteLine("Engage!");
-            A.EngSpec spec = EngSpecFromFile(inputFile);
+            NC.EngSpec spec = EngSpecFromFile(inputFile);
             if (verbose)
                 Console.WriteLine("A-level spec read!");
-            B.SystemPlan plan = spec.MakePlan();
+            NA.SystemPlan plan = spec.MakePlan();
             if (verbose)
                 Console.WriteLine("B-level plan made!");
-            IEnumerable<C.CsClass> data = plan.GenerateDataClasses();
+            IEnumerable<GA.CsClass> data = plan.GenerateDataClasses();
             if (verbose)
                 Console.WriteLine("C-level abstract code for data classes generated!");
-            C.CsClass cp = plan.GenerateParser();
+            GA.CsClass cp = plan.GenerateParser();
             if (verbose)
                 Console.WriteLine("C-level abstract code for the parser generated!");
 
-            IEnumerable<D.CsTop> css = data.Select(c => c.Concretise());
+            IEnumerable<GC.CsTop> css = data.Select(c => c.Concretise());
             if (verbose)
                 Console.WriteLine("D-level abstract code for data classes generated!");
-            D.CsClass dp = cp.Concretise() as D.CsClass;
+            GC.CsClass dp = cp.Concretise() as GC.CsClass;
             if (verbose)
                 Console.WriteLine("D-level abstract code for the parser generated!");
 
             foreach (var csTop in css)
             {
-                if (csTop is D.CsClass cs)
+                if (csTop is GC.CsClass cs)
                     File.WriteAllLines(Path.Combine(outputFolder, "ast", $"{cs.Name}.cs"), cs.GenerateFileCode());
                 else
                     Console.WriteLine($"Unexpected type on the D-level: {csTop.GetType().Name}");
