@@ -6,14 +6,14 @@ namespace Engage.D
 {
     public class CsClass : CsTop
     {
-        public string NS;
-        public string Super;
-        public bool Partial = true;
+        public readonly string NS;
+        public readonly string Super;
+        public readonly bool Partial = true;
         private readonly Dictionary<string, string> _publicFields;
         private readonly Dictionary<string, string> _privateFields;
-        private readonly HashSet<CsExeField> _methods = new HashSet<CsExeField>();
-        private readonly HashSet<string> _usings = new HashSet<string>();
-        private readonly List<CsTop> _inners = new List<CsTop>();
+        private readonly HashSet<CsExeField> _methods = new();
+        private readonly HashSet<string> _usings = new();
+        private readonly List<CsTop> _inners = new();
 
         public CsClass(string name, string ns, string super,
             Dictionary<string, string> publicFields,
@@ -79,13 +79,16 @@ namespace Engage.D
 
         public override void GenerateCode(List<string> lines, int level)
         {
-            lines.Add(level, $"public{(Partial ? " partial" : "")} class {Name}" + (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
+            lines.Add(level,
+                $"public{(Partial ? " partial" : "")} class {Name}" +
+                (String.IsNullOrEmpty(Super) ? "" : $" : {Super}"));
             lines.Open(level);
             foreach (var inner in _inners)
             {
                 inner.GenerateCode(lines, level + 1);
                 lines.Empty();
             }
+
             foreach (var fn in _publicFields.Keys)
                 GenerateCodeForField(lines, level + 1, fn, _publicFields[fn]);
             foreach (var fn in _privateFields.Keys)
@@ -96,6 +99,7 @@ namespace Engage.D
                 m.GenerateCode(lines, level + 1, Name);
                 lines.Empty();
             }
+
             //lines.Comment(level + 1, "TODO");
             lines.Close(level);
         }

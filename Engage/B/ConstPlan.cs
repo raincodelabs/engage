@@ -37,14 +37,17 @@ namespace Engage.B
                             idx = i;
                             break;
                         }
+
                     idx--; // previous
                     if (idx < 0)
                         Console.WriteLine($"the TEAR action must not be the first one");
-                    _args.Add(new Tuple<string, B.TypePlan>(a, getTypePlan(h.Context[idx].RHS.Name).FirstConstructor._args[0].Item2));
+                    _args.Add(new Tuple<string, B.TypePlan>(a,
+                        getTypePlan(h.Context[idx].RHS.Name).FirstConstructor._args[0].Item2));
                     break;
                 }
                 case null when a == "this":
-                    _args.Add(new Tuple<string, B.TypePlan>(a, new B.TypePlan(B.SystemPlan.Unalias(h.LHS.NonTerminal))));
+                    _args.Add(new Tuple<string, B.TypePlan>(a,
+                        new B.TypePlan(B.SystemPlan.Unalias(h.LHS.NonTerminal))));
                     break;
             }
         }
@@ -65,6 +68,7 @@ namespace Engage.B
                 c1ass.AddField(name, type);
                 cc.AddArgument(name, type);
             }
+
             c1ass.AddConstructor(cc);
         }
 
@@ -75,7 +79,8 @@ namespace Engage.B
                 result += ":" + super;
             if (_args.Count == 0) return result;
             result += "(";
-            result += String.Join(",", _args.Select(a => $"{a.Item1}:{(a.Item2 == null ? "object" : a.Item2.ToString())}"));
+            result += String.Join(",",
+                _args.Select(a => $"{a.Item1}:{(a.Item2 == null ? "object" : a.Item2.ToString())}"));
             result += ")";
             return result;
         }
@@ -87,7 +92,8 @@ namespace Engage.B
                 return false;
             if (this._args.Count != other._args.Count)
                 return false;
-            return !_args.Where((t, i) => this._args[i].Item1 != other._args[i].Item1 || this._args[i].Item2 != other._args[i].Item2).Any();
+            return !_args.Where((t, i) =>
+                this._args[i].Item1 != other._args[i].Item1 || this._args[i].Item2 != other._args[i].Item2).Any();
         }
     }
 }

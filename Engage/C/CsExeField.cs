@@ -6,10 +6,10 @@ namespace Engage.C
     public abstract class CsExeField
     {
         public bool IsPublic = true;
-        protected readonly List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
-        protected readonly List<CsStmt> Code = new List<CsStmt>();
+        protected readonly List<Tuple<string, string>> Args = new();
+        protected readonly List<CsStmt> Code = new();
 
-        public abstract D.CsExeField Concretize();
+        public abstract D.CsExeField Concretise();
 
         public void AddArgument(string name, string type)
         {

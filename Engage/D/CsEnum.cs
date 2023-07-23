@@ -4,8 +4,8 @@ namespace Engage.D
 {
     public class CsEnum : CsTop
     {
-        public bool IsPublic = true;
-        private readonly List<string> _values = new List<string>();
+        public readonly bool IsPublic;
+        private readonly List<string> _values;
 
         public CsEnum(string name, bool isPublic, List<string> values)
         {

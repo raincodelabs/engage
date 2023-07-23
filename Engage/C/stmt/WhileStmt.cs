@@ -6,8 +6,8 @@ namespace Engage.C
     public class WhileStmt : CsStmt
     {
         public string Condition;
-        public bool Reversed = false;
-        public readonly List<CsStmt> Code = new List<CsStmt>();
+        public readonly bool Reversed = false;
+        public readonly List<CsStmt> Code = new();
 
         public WhileStmt()
         {
@@ -40,9 +40,9 @@ namespace Engage.C
             Code.Add(new SimpleStmt(stmt));
         }
 
-        public override D.CsStmt Concretize()
+        public override D.CsStmt Concretise()
             => Reversed
-            ? new D.CsComplexStmt("do", Code.Select(x => x.Concretize()), $"while ({Condition})")
-            : new D.CsComplexStmt($"while ({Condition})", Code.Select(x => x.Concretize()), "");
+                ? new D.CsComplexStmt("do", Code.Select(x => x.Concretise()), $"while ({Condition})")
+                : new D.CsComplexStmt($"while ({Condition})", Code.Select(x => x.Concretise()), "");
     }
 }

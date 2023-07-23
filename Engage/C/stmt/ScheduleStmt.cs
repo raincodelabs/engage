@@ -7,7 +7,7 @@ namespace Engage.C
     {
         public string Type;
         public string Var;
-        public readonly List<CsStmt> Code = new List<CsStmt>();
+        public readonly List<CsStmt> Code = new();
 
         public ScheduleStmt()
         {
@@ -29,14 +29,14 @@ namespace Engage.C
             Code.Add(stmt);
         }
 
-        public override D.CsStmt Concretize()
+        public override D.CsStmt Concretise()
         {
             var lambda = new D.CsComplexStmt
             {
                 Before = $"Schedule(typeof({Type}), {Var} =>",
                 After = ");"
             };
-            lambda.AddCode(Code.Select(x => x.Concretize()));
+            lambda.AddCode(Code.Select(x => x.Concretise()));
             return lambda;
         }
     }

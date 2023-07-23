@@ -44,10 +44,10 @@ namespace Engage
             if (verbose)
                 Console.WriteLine("C-level abstract code for the parser generated!");
 
-            IEnumerable<D.CsTop> css = data.Select(c => c.Concretize());
+            IEnumerable<D.CsTop> css = data.Select(c => c.Concretise());
             if (verbose)
                 Console.WriteLine("D-level abstract code for data classes generated!");
-            D.CsClass dp = cp.Concretize() as D.CsClass;
+            D.CsClass dp = cp.Concretise() as D.CsClass;
             if (verbose)
                 Console.WriteLine("D-level abstract code for the parser generated!");
 

@@ -6,9 +6,9 @@ namespace Engage.C
 {
     public class IfThenElse : CsStmt
     {
-        private readonly List<string> _conditions = new List<string>();
-        private readonly Dictionary<string, List<CsStmt>> _thenBranches = new Dictionary<string, List<CsStmt>>();
-        internal readonly List<CsStmt> ElseBranch = new List<CsStmt>();
+        private readonly List<string> _conditions = new();
+        private readonly Dictionary<string, List<CsStmt>> _thenBranches = new();
+        internal readonly List<CsStmt> ElseBranch = new();
 
         public IfThenElse()
         {
@@ -39,9 +39,7 @@ namespace Engage.C
 
         private string NormaliseCondition(string cond)
         {
-            if (cond == null)
-                return cond;
-            if (cond.StartsWith('_'))
+            if (cond == null || cond.StartsWith('_'))
                 return cond;
             return cond.Replace("_", " && ");
         }
@@ -60,7 +58,7 @@ namespace Engage.C
         {
             cond = NormaliseCondition(cond);
             _conditions.Add(cond);
-            _thenBranches[cond] = new List<CsStmt> {code};
+            _thenBranches[cond] = new List<CsStmt> { code };
         }
 
         public void AddBranch(string cond, IEnumerable<CsStmt> code)
@@ -141,13 +139,13 @@ namespace Engage.C
         {
             ElseBranch.Add(code);
         }
-        
+
         public void AddElse(IEnumerable<CsStmt> codes)
         {
             ElseBranch.AddRange(codes);
         }
 
-        public override D.CsStmt Concretize()
+        public override D.CsStmt Concretise()
         {
             var result = new D.CsStmtList();
             var kw = "if";
@@ -157,25 +155,25 @@ namespace Engage.C
                 {
                     Before = $"{kw} ({cond})"
                 };
-                if1.AddCode(_thenBranches[cond].Select(x => x.Concretize()));
+                if1.AddCode(_thenBranches[cond].Select(x => x.Concretise()));
                 result.AddStmt(if1);
                 kw = "else if";
             }
 
             // if there is no else, no need to generate code for it
             if (ElseBranch.Count == 0) return result;
-            
+
             // if there is only one empty statement, we can consider it empty
             if (ElseBranch.Count == 1 &&
                 ElseBranch[0] is C.SimpleStmt elseSingleton &&
                 String.IsNullOrEmpty(elseSingleton.Code))
                 return result;
-            
+
             var if2 = new D.CsComplexStmt
             {
                 Before = "else"
             };
-            if2.AddCode(ElseBranch.Select(x => x.Concretize()));
+            if2.AddCode(ElseBranch.Select(x => x.Concretise()));
             result.AddStmt(if2);
             return result;
         }

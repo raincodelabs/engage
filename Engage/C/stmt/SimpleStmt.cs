@@ -2,7 +2,7 @@
 {
     public class SimpleStmt : CsStmt
     {
-        public string Code;
+        public readonly string Code;
 
         public SimpleStmt()
         {
@@ -13,7 +13,7 @@
             Code = code;
         }
 
-        public override D.CsStmt Concretize()
+        public override D.CsStmt Concretise()
             => new D.CsSimpleStmt(Code);
     }
 }

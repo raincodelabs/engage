@@ -8,6 +8,7 @@ namespace Engage.A
         BOF,
         EOF
     }
+
     public class Trigger
     {
         public string Terminal = "";

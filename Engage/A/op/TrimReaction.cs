@@ -14,6 +14,6 @@
         }
 
         public override B.HandleAction ToHandleAction(string target = "", B.HandleAction prev = null)
-            => new B.TrimStream {Type = Name, Starred = Starred};
+            => new B.TrimStream { Type = Name, Starred = Starred };
     }
 }

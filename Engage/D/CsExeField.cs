@@ -6,8 +6,8 @@ namespace Engage.D
     public abstract class CsExeField
     {
         public bool IsPublic = true;
-        protected readonly List<Tuple<string, string>> Args = new List<Tuple<string, string>>();
-        protected readonly List<CsStmt> Code = new List<CsStmt>();
+        protected readonly List<Tuple<string, string>> Args = new();
+        protected readonly List<CsStmt> Code = new();
 
         public void AddArgument(string name, string type)
         {

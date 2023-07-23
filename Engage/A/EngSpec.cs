@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("EngageTests")]
+[assembly: InternalsVisibleTo("EngageTests")]
+
 namespace Engage.A
 {
     public class EngSpec
@@ -94,6 +95,7 @@ namespace Engage.A
                     plan.AddType(n, t.Super);
                 plan.AddType(t.Super, null, silent: true);
             }
+
             foreach (A.HandlerDecl h in Handlers)
                 if (h.RHS is A.PushReaction pr)
                 {
@@ -118,9 +120,10 @@ namespace Engage.A
                 foreach (var flag in h.RHS.GetFlags())
                     plan.AddBoolFlag(flag);
                 foreach (var a in h.Context)
-                    foreach (var flag in a.RHS.GetFlags())
-                        plan.AddBoolFlag(flag);
+                foreach (var flag in a.RHS.GetFlags())
+                    plan.AddBoolFlag(flag);
             }
+
             plan.NormaliseFlags();
 
             Console.WriteLine($"[A2B] Inferred flags: Boolean {plan.AllBoolFlags()}; counter {plan.AllIntFlags()}");

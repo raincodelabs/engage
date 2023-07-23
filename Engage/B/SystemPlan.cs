@@ -13,8 +13,7 @@ namespace Engage.B
 
         public void Add(HandlerPlan hp)
         {
-            if (!_data.ContainsKey(hp.ReactOn))
-                _data[hp.ReactOn] = new HandlerCollection();
+            _data.TryAdd(hp.ReactOn, new HandlerCollection());
             _data[hp.ReactOn].AddGuardAndRecipe(hp);
         }
 
@@ -34,23 +33,23 @@ namespace Engage.B
     {
         private readonly List<TokenPlan> _reacts = new List<TokenPlan>();
         private readonly List<string> _triggers = new List<string>();
-        private List<List<HandleAction>> Handlers = new List<List<HandleAction>>();
+        private readonly List<List<HandleAction>> _handlers = new List<List<HandleAction>>();
         public IReadOnlyList<string> GuardFlags => _triggers;
-        public IReadOnlyList<List<HandleAction>> Recipes => Handlers;
+        public IReadOnlyList<List<HandleAction>> Recipes => _handlers;
 
         public void AddGuardAndRecipe(HandlerPlan hp)
         {
             for (int i = 0; i < _triggers.Count; i++)
                 if (_triggers[i] == hp.GuardFlag && _reacts[i].Value == hp.ReactOn.Value)
                 {
-                    hp.AddRecipeTo(Handlers[i]);
+                    hp.AddRecipeTo(_handlers[i]);
                     return;
                 }
 
             // if branch not found, make a new one
             _reacts.Add(hp.ReactOn);
             _triggers.Add(hp.GuardFlag);
-            hp.AddRecipeTo(Handlers);
+            hp.AddRecipeTo(_handlers);
         }
     }
 
@@ -58,12 +57,12 @@ namespace Engage.B
     {
         internal static readonly Dictionary<string, string> RealNames = new Dictionary<string, string>()
         {
-            {"string", "System.String"},
-            {"number", "System.Int32"},
+            { "string", "System.String" },
+            { "number", "System.Int32" },
         };
 
-        public string NS;
-        public string TopType;
+        private readonly string NS;
+        private string TopType;
         private readonly Dictionary<string, TypePlan> Types = new Dictionary<string, TypePlan>();
         private static Dictionary<string, string> TypeAliases = new Dictionary<string, string>();
         private readonly HashSet<string> BoolFlags = new HashSet<string>();
@@ -130,12 +129,12 @@ namespace Engage.B
 
         internal TypePlan GetTypePlan(string name)
         {
-            if (Types.ContainsKey(name))
-                return Types[name];
-            if (TypeAliases.ContainsKey(name))
-                return GetTypePlan(TypeAliases[name]);
-            if (RealNames.ContainsKey(name))
-                return new TypePlan(RealNames[name]);
+            if (Types.TryGetValue(name, out var typePlan))
+                return typePlan;
+            if (TypeAliases.TryGetValue(name, out var typeAlias))
+                return GetTypePlan(typeAlias);
+            if (RealNames.TryGetValue(name, out var realName))
+                return new TypePlan(realName);
             Console.WriteLine($"[ B ] Failed to get a type plan for '{name}'");
             return null;
         }
@@ -160,7 +159,7 @@ namespace Engage.B
                 return;
             }
 
-            var tp = new TypePlan(n) {Super = super};
+            var tp = new TypePlan(n) { Super = super };
             Console.WriteLine($"[A2B] Added type '{n}' to the plan");
             Types[tp.Name] = tp;
         }
@@ -169,7 +168,7 @@ namespace Engage.B
         {
             foreach (var t in Tokens.Keys)
             {
-                if (t == "mark" || t == "skip" || t == "word")
+                if (t is "mark" or "skip" or "word")
                     continue;
                 foreach (var tok in Tokens[t].Where(tok => tok.Special))
                     TypeAliases[t] = tok.Value;
@@ -224,8 +223,8 @@ namespace Engage.B
             pf.AddCode("string lexeme");
 
             // beginning of file
-            if (Handlers.ContainsKey("BOF"))
-                foreach (var plan in Handlers["BOF"])
+            if (Handlers.TryGetValue("BOF", out var bofHanfler))
+                foreach (var plan in bofHanfler)
                     plan.GenerateAbstractCode(pf);
 
             // the loop
@@ -237,9 +236,9 @@ namespace Engage.B
             pl.AddCode("lexeme = _token.Item2;");
             pl.AddCode("type = _token.Item1;");
 
-            var swType = new C.SwitchCaseStmt {Expression = "type"};
+            var swType = new C.SwitchCaseStmt { Expression = "type" };
 
-            var usedTokens = new HashSet<string> {"skip"};
+            var usedTokens = new HashSet<string> { "skip" };
 
             foreach (var hpk in Handlers.Keys)
             {
@@ -316,9 +315,9 @@ namespace Engage.B
         private string PossiblyWrap(string v, string key)
         {
             foreach (var x in
-                from t in TypeAliases.Keys
-                where TypeAliases[t] == key && Handlers.ContainsKey(t)
-                select Handlers[t][0].IsPushFirst())
+                     from t in TypeAliases.Keys
+                     where TypeAliases[t] == key && Handlers.ContainsKey(t)
+                     select Handlers[t][0].IsPushFirst())
                 if (String.IsNullOrEmpty(x))
                     Console.WriteLine("[B2C] some unsupported functionality found");
                 else
@@ -428,9 +427,9 @@ namespace Engage.B
                 "return new Tuple<TokenType, string>(TokenType.TEOF, \"\")");
             tok.AddCode(megaIf);
             // mark
-            if (Tokens.ContainsKey("mark"))
+            if (Tokens.TryGetValue("mark", out var markTokens))
             {
-                Tokens["mark"].ForEach(t => skipmark.Add(t.Value));
+                markTokens.ForEach(t => skipmark.Add(t.Value));
                 GenerateBranches("mark", megaIf, null);
             }
             else
@@ -454,16 +453,21 @@ namespace Engage.B
         {
             if (!Tokens.ContainsKey(tokenName))
                 return;
-            foreach (var tm in Tokens[tokenName])
-            {
-                var res
-                    = tm.Special
-                        ? GenerateBranchSpecialMatch(tm.Value, tokenName)
-                        : GenerateBranchPreciseMatch(tm.Value, tokenName, skipMark);
-                if (res != null)
-                    ite.AddToBranch(res.Item1, res.Item2);
-            }
+            Tokens[tokenName]
+                .Select(tm => GenerateOneBranch(tm.Special, tm.Value, tokenName, skipMark))
+                .Where(res => res != null)
+                .ToList()
+                .ForEach(res => ite.AddToBranch(res.Item1, res.Item2));
         }
+
+        private Tuple<string, IEnumerable<C.CsStmt>> GenerateOneBranch(
+            bool special,
+            string value,
+            string tokenName,
+            IEnumerable<string> skipMarks)
+            => special
+                ? GenerateBranchSpecialMatch(value, tokenName)
+                : GenerateBranchPreciseMatch(value, tokenName, skipMarks);
 
         private Tuple<string, IEnumerable<CsStmt>> GenerateBranchSpecialMatch(string value, string type)
         {
@@ -484,19 +488,21 @@ namespace Engage.B
         private Tuple<string, IEnumerable<CsStmt>> GenerateBranchStringMatch(string type)
         {
             string cond = "";
-            if (Tokens.ContainsKey("skip"))
-                foreach (var t in Tokens["skip"])
+            if (Tokens.TryGetValue("skip", out var skipTokens))
+                foreach (var t in skipTokens)
                     cond += $" && Input[Pos] != '{t.Value}'";
-            if (Tokens.ContainsKey("mark"))
-                foreach (var t in Tokens["mark"])
+            if (Tokens.TryGetValue("mark", out var markTokens))
+                foreach (var t in markTokens)
                     cond += $" && Input[Pos] != '{t.Value}'";
-            var block = new List<CsStmt>();
-            block.Add(new SimpleStmt($"t = TokenType.T{type}"));
-            block.Add(new C.WhileStmt($"Pos < Input.Length{cond}", "s += Input[Pos++]"));
+            var block = new List<CsStmt>
+            {
+                new C.SimpleStmt($"t = TokenType.T{type}"),
+                new C.WhileStmt($"Pos < Input.Length{cond}", "s += Input[Pos++]")
+            };
             return new Tuple<string, IEnumerable<CsStmt>>(null, block); // null condition means the ELSE branch
         }
 
-        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchNumberMatch(string type)
+        private static Tuple<string, IEnumerable<CsStmt>> GenerateBranchNumberMatch(string type)
         {
             var block = new List<CsStmt>();
             string cond = string.Join(" || ", "0123456789".Select(c => $"Input[Pos] == '{c}'"));
@@ -505,8 +511,8 @@ namespace Engage.B
             return new Tuple<string, IEnumerable<CsStmt>>(cond, block);
         }
 
-        private Tuple<string, IEnumerable<CsStmt>> GenerateBranchPreciseMatch(string value, string type,
-            List<string> skipmark)
+        private static Tuple<string, IEnumerable<CsStmt>> GenerateBranchPreciseMatch(string value, string type,
+            IEnumerable<string> skipmark)
         {
             int len = value.Length;
             var block = new List<CsStmt>();
@@ -514,10 +520,10 @@ namespace Engage.B
             for (int i = 0; i < len; i++)
                 cond += $" && Input[Pos + {i}] == '{value[i]}'";
             if (cond.StartsWith(" && "))
-                cond = cond.Substring(4);
+                cond = cond[4..];
 
             // either EOF or next is skip or mark
-            if (skipmark != null && skipmark.Count > 0)
+            if (skipmark != null && skipmark.Any())
                 cond =
                     $"({cond}) && (Pos + {len} == Input.Length || {String.Join(" || ", skipmark.Select(c => $"Input[Pos + {len}] == '{c}'"))})";
 

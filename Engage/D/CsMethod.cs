@@ -6,10 +6,11 @@ namespace Engage.D
 {
     public class CsMethod : CsExeField
     {
-        public string Name;
-        public string RetType;
+        public readonly string Name;
+        public readonly string RetType;
 
-        public CsMethod(string name, string retType, bool isPublic, IEnumerable<Tuple<string, string>> args, IEnumerable<CsStmt> code)
+        public CsMethod(string name, string retType, bool isPublic, IEnumerable<Tuple<string, string>> args,
+            IEnumerable<CsStmt> code)
         {
             Name = name;
             RetType = retType;

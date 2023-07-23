@@ -6,7 +6,7 @@ namespace Engage.D
     public class CsComplexStmt : CsStmt
     {
         public string Before, After;
-        private readonly List<CsStmt> _code = new List<CsStmt>();
+        private readonly List<CsStmt> _code = new();
         public bool Embrace = true;
 
         public CsComplexStmt()

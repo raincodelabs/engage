@@ -53,6 +53,6 @@ namespace Engage.A
         }
 
         internal override IEnumerable<string> GetFlags()
-            => new List<string>() {TmpContext, ExtraContext};
+            => new List<string>() { TmpContext, ExtraContext };
     }
 }

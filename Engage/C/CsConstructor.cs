@@ -6,7 +6,7 @@ namespace Engage.C
     {
         public bool InheritFromBase = false;
 
-        public override D.CsExeField Concretize()
-            => new D.CsConstructor(InheritFromBase, IsPublic, Args, Code.Select(c => c.Concretize()));
+        public override D.CsExeField Concretise()
+            => new D.CsConstructor(InheritFromBase, IsPublic, Args, Code.Select(c => c.Concretise()));
     }
 }

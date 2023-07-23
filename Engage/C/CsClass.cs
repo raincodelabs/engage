@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Engage.C
@@ -8,15 +7,15 @@ namespace Engage.C
     {
         public string NS;
         public string Super;
-        private readonly Dictionary<string, string> _publicFields = new Dictionary<string, string>();
-        private readonly Dictionary<string, string> _privateFields = new Dictionary<string, string>();
-        private readonly HashSet<CsExeField> _methods = new HashSet<CsExeField>();
-        private readonly HashSet<string> _usings = new HashSet<string>();
-        private readonly List<CsTop> _inners = new List<CsTop>();
+        private readonly Dictionary<string, string> _publicFields = new();
+        private readonly Dictionary<string, string> _privateFields = new();
+        private readonly HashSet<CsExeField> _methods = new();
+        private readonly HashSet<string> _usings = new();
+        private readonly List<CsTop> _inners = new();
 
-        public override D.CsTop Concretize()
-            => new D.CsClass(Name, NS, Super, _publicFields, _privateFields, _methods.Select(m => m.Concretize()),
-                _usings, _inners.Select(x => x.Concretize()));
+        public override D.CsTop Concretise()
+            => new D.CsClass(Name, NS, Super, _publicFields, _privateFields, _methods.Select(m => m.Concretise()),
+                _usings, _inners.Select(x => x.Concretise()));
 
         public void AddUsing(string name)
             => _usings.Add(name);

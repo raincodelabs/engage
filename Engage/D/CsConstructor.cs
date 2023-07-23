@@ -8,7 +8,8 @@ namespace Engage.D
     {
         public bool InheritFromBase = false;
 
-        public CsConstructor(bool inheritFromBase, bool isPublic, IEnumerable<Tuple<string, string>> args, IEnumerable<CsStmt> code)
+        public CsConstructor(bool inheritFromBase, bool isPublic, IEnumerable<Tuple<string, string>> args,
+            IEnumerable<CsStmt> code)
         {
             InheritFromBase = inheritFromBase;
             IsPublic = isPublic;
@@ -20,7 +21,8 @@ namespace Engage.D
         {
             string args1 = String.Join(", ", Args.Select(a => $"{a.Item2} _{a.Item1}"));
             string args2 = String.Join(", ", Args.Select(a => $"_{a.Item1}"));
-            lines.Add(level, $"{(IsPublic ? "public" : "private")} {className}({args1}){(InheritFromBase ? $" : base({args2})" : "")}");
+            lines.Add(level,
+                $"{(IsPublic ? "public" : "private")} {className}({args1}){(InheritFromBase ? $" : base({args2})" : "")}");
             lines.Open(level);
             if (!InheritFromBase)
                 foreach (var a in Args)

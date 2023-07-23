@@ -155,7 +155,7 @@ namespace Engage.B
                 if (sa is PopSeveral ps)
                     ps.GenerateInitialisationCode(code);
 
-            var loop = new C.WhileStmt {Condition = "Main.Count > 0"};
+            var loop = new C.WhileStmt { Condition = "Main.Count > 0" };
             var ite = new C.IfThenElse($"Main.Peek() is {Name}", $"{Target}.Add(Main.Pop() as {Name})");
             foreach (var sa in SiblingActions)
                 if (sa is PopSeveral ps)
@@ -196,7 +196,7 @@ namespace Engage.B
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new LiftFlag() {Flag = Flag};
+                tmp = new LiftFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
 
@@ -204,7 +204,7 @@ namespace Engage.B
             lambda.AddCode($"var {Target} = {$"_{Target}".CastAs(Name)};");
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new DropFlag() {Flag = Flag};
+                tmp = new DropFlag() { Flag = Flag };
                 tmp.GenerateAbstractCode(lambda.Code);
             }
 
@@ -229,7 +229,7 @@ namespace Engage.B
             HandleAction tmp;
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new LiftFlag {Flag = Flag};
+                tmp = new LiftFlag { Flag = Flag };
                 tmp.GenerateAbstractCode(code);
             }
 
@@ -241,7 +241,7 @@ namespace Engage.B
             BaseAction?.GenerateAbstractCode(ite.GetThenBranch(cond));
             if (!String.IsNullOrEmpty(Flag))
             {
-                tmp = new DropFlag {Flag = Flag};
+                tmp = new DropFlag { Flag = Flag };
                 tmp.GenerateAbstractCode(lambda.Code);
             }
 
@@ -293,7 +293,7 @@ namespace Engage.B
             foreach (var pair in Variables)
                 code.Add(new C.SimpleStmt($"var {pair.Item1} = new List<{pair.Item2}>()"));
 
-            var loop = new C.WhileStmt {Condition = "Main.Count > 0"};
+            var loop = new C.WhileStmt { Condition = "Main.Count > 0" };
             if (Brancher.ElseBranch == null || Brancher.ElseBranch.Count == 0)
                 Brancher.AddElse("break");
             loop.Code.Add(Brancher);

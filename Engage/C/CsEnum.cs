@@ -5,15 +5,15 @@ namespace Engage.C
     public class CsEnum : CsTop
     {
         public bool IsPublic = true;
-        private List<string> Values = new List<string>();
+        private readonly List<string> _values = new();
 
-        public override D.CsTop Concretize()
-            => new D.CsEnum(Name, IsPublic, Values);
+        public override D.CsTop Concretise()
+            => new D.CsEnum(Name, IsPublic, _values);
 
         internal void Add(string v)
-            => Values.Add(v);
+            => _values.Add(v);
 
         internal void Add(IEnumerable<string> vs)
-            => Values.AddRange(vs);
+            => _values.AddRange(vs);
     }
 }
