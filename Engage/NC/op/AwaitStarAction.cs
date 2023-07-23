@@ -1,38 +1,37 @@
 ﻿using System.Collections.Generic;
 
-namespace Engage.NC
+namespace Engage.NC;
+
+public class AwaitStarAction : Reaction
 {
-    public class AwaitStarAction : Reaction
+    public string TmpContext = "";
+
+    public override bool Equals(object obj)
     {
-        public string TmpContext = "";
+        var other = obj as AwaitStarAction;
+        if (other == null)
+            return false;
+        return Name == other.Name
+               && TmpContext == other.TmpContext;
+    }
 
-        public override bool Equals(object obj)
+    public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
+    {
+        var a = new NA.AwaitMany
         {
-            var other = obj as AwaitStarAction;
-            if (other == null)
-                return false;
-            return Name == other.Name
-                   && TmpContext == other.TmpContext;
-        }
+            Name = NA.SystemPlan.Dealias(Name),
+            Target = target,
+            Flag = TmpContext,
+            BaseAction = prev
+        };
+        return a;
+    }
 
-        public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
-        {
-            var a = new NA.AwaitMany
-            {
-                Name = NA.SystemPlan.Dealias(Name),
-                Target = target,
-                Flag = TmpContext,
-                BaseAction = prev
-            };
-            return a;
-        }
+    internal override IEnumerable<FC.SignedTag> ToTagActions()
+        => new List<FC.SignedTag>();
 
-        internal override IEnumerable<FC.SignedTag> ToTagActions()
-            => new List<FC.SignedTag>();
-
-        internal override IEnumerable<FC.StackAction> ToStackActions()
-        {
-            throw new System.NotImplementedException();
-        }
+    internal override IEnumerable<FC.StackAction> ToStackActions()
+    {
+        throw new System.NotImplementedException();
     }
 }

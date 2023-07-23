@@ -1,9 +1,8 @@
-﻿namespace Engage.GA
-{
-    public abstract class CsTop
-    {
-        public string Name;
+﻿namespace Engage.GA;
 
-        public abstract GC.CsTop Concretise();
-    }
+public abstract class CsTop
+{
+    public string Name;
+
+    public abstract GC.CsTop Concretise();
 }

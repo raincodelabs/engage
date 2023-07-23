@@ -1,25 +1,24 @@
 ﻿using System.Collections.Generic;
 
-namespace Engage.GC
+namespace Engage.GC;
+
+public class CsSimpleStmt : CsStmt
 {
-    public class CsSimpleStmt : CsStmt
+    public string Code;
+
+    public CsSimpleStmt()
     {
-        public string Code;
+    }
 
-        public CsSimpleStmt()
-        {
-        }
+    public CsSimpleStmt(string code)
+    {
+        Code = code;
+    }
 
-        public CsSimpleStmt(string code)
-        {
-            Code = code;
-        }
-
-        public override void GenerateCode(List<string> lines, int level)
-        {
-            if (!Code.EndsWith(";"))
-                Code += ";";
-            lines.Add(level, Code);
-        }
+    public override void GenerateCode(List<string> lines, int level)
+    {
+        if (!Code.EndsWith(";"))
+            Code += ";";
+        lines.Add(level, Code);
     }
 }

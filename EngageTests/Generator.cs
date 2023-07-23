@@ -1,96 +1,95 @@
 using System;
 using System.Text;
 
-namespace EngageTests
+namespace EngageTests;
+
+internal static class Generator
 {
-    internal static class Generator
+    private const string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static readonly Random _random = new();
+
+    internal static bool ArbitraryBoolean()
+        => _random.NextDouble() < .5;
+
+    internal static int ArbitraryNumber(int min = 0, int max = 10)
+        => _random.Next(min, max);
+
+    internal static char ArbitraryLetter()
+        => Alphabet[_random.Next(Alphabet.Length)];
+
+    internal static string ArbitraryWord()
     {
-        private const string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        private static readonly Random _random = new();
+        var sb = new StringBuilder();
+        for (var i = 0; i < ArbitraryNumber(min: 1); i++)
+            sb.Append(ArbitraryLetter());
+        return sb.ToString();
+    }
 
-        internal static bool ArbitraryBoolean()
-            => _random.NextDouble() < .5;
+    internal static string ArbitrarySequence(int limit = -1)
+    {
+        if (limit == -1)
+            limit = ArbitraryNumber(max: 100);
+        var sb = new StringBuilder();
+        for (var i = 0; i < limit; i++)
+            sb.Append($"<{(ArbitraryBoolean() ? "/" : "")}{ArbitraryWord()}>");
+        return sb.ToString();
+    }
 
-        internal static int ArbitraryNumber(int min = 0, int max = 10)
-            => _random.Next(min, max);
-
-        internal static char ArbitraryLetter()
-            => Alphabet[_random.Next(Alphabet.Length)];
-
-        internal static string ArbitraryWord()
-        {
-            var sb = new StringBuilder();
-            for (var i = 0; i < ArbitraryNumber(min: 1); i++)
-                sb.Append(ArbitraryLetter());
-            return sb.ToString();
-        }
-
-        internal static string ArbitrarySequence(int limit = -1)
-        {
-            if (limit == -1)
-                limit = ArbitraryNumber(max: 100);
-            var sb = new StringBuilder();
-            for (var i = 0; i < limit; i++)
-                sb.Append($"<{(ArbitraryBoolean() ? "/" : "")}{ArbitraryWord()}>");
-            return sb.ToString();
-        }
-
-        /**
+    /**
          * Generates a shallow balanced input, by using the recursive function below and adding one root element.
          */
-        internal static string ArbitraryBalancedSequenceShallow(int limit = 10)
-        {
-            return $"<start>{ArbitraryBalancedSequenceShallowRec(limit)}</start>";
-        }
+    internal static string ArbitraryBalancedSequenceShallow(int limit = 10)
+    {
+        return $"<start>{ArbitraryBalancedSequenceShallowRec(limit)}</start>";
+    }
 
-        /**
+    /**
          * Same as ArbitraryBalancedSequenceShallow but same name
          */
-        internal static string ArbitraryBalancedSequenceShallowConstName(string name, int limit = 10)
-        {
-            return $"<start>{ArbitraryBalancedSequenceShallowRecConstName(name, limit)}</start>";
-        }
+    internal static string ArbitraryBalancedSequenceShallowConstName(string name, int limit = 10)
+    {
+        return $"<start>{ArbitraryBalancedSequenceShallowRecConstName(name, limit)}</start>";
+    }
 
-        /**
+    /**
          * Generates a shallow balanced input
          */
-        internal static string ArbitraryBalancedSequenceShallowRec(int limit = 10)
-        {
-            //using limit < 2 because a root element is added before this function is called.
-            if (limit < 2)
-                return "";
-            var name = ArbitraryWord();
-            return $"<{name}></{name}>{ArbitraryBalancedSequenceShallowRec(limit - 1)}";
+    internal static string ArbitraryBalancedSequenceShallowRec(int limit = 10)
+    {
+        //using limit < 2 because a root element is added before this function is called.
+        if (limit < 2)
+            return "";
+        var name = ArbitraryWord();
+        return $"<{name}></{name}>{ArbitraryBalancedSequenceShallowRec(limit - 1)}";
 
-        }
+    }
 
-        /**
+    /**
          * Same as ArbitraryBalancedSequenceShallowRec but same name
          */
-        internal static string ArbitraryBalancedSequenceShallowRecConstName(string name, int limit = 10)
-        {
-            if (limit == 0)
-                return "";
-            var inner = ArbitraryWord();
-            // establish uniqueness
-            while (name == inner)
-                inner = ArbitraryWord();
-            return
-                $"<{name}><{inner}></{inner}></{name}>{ArbitraryBalancedSequenceShallowRecConstName(name, limit - 1)}";
-        }
+    internal static string ArbitraryBalancedSequenceShallowRecConstName(string name, int limit = 10)
+    {
+        if (limit == 0)
+            return "";
+        var inner = ArbitraryWord();
+        // establish uniqueness
+        while (name == inner)
+            inner = ArbitraryWord();
+        return
+            $"<{name}><{inner}></{inner}></{name}>{ArbitraryBalancedSequenceShallowRecConstName(name, limit - 1)}";
+    }
 
 
-        /**
+    /**
          * Generates a deep balanced input
          */
-        internal static string ArbitraryBalancedSequenceDeep(int limit = 10, string terminal = "")
-        {
-            if (limit < 0)
-                return terminal;
-            var name = ArbitraryWord();
-            return $"<{name}>{ArbitraryBalancedSequenceDeep(limit - 1)}</{name}>";
-        }
-        
-        
+    internal static string ArbitraryBalancedSequenceDeep(int limit = 10, string terminal = "")
+    {
+        if (limit < 0)
+            return terminal;
+        var name = ArbitraryWord();
+        return $"<{name}>{ArbitraryBalancedSequenceDeep(limit - 1)}</{name}>";
     }
+        
+        
 }

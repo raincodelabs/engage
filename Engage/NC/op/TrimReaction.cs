@@ -1,29 +1,28 @@
 ﻿using System.Collections.Generic;
 
-namespace Engage.NC
+namespace Engage.NC;
+
+public class TrimReaction : Reaction
 {
-    public class TrimReaction : Reaction
+    public bool Starred { get; init; }
+
+    public override bool Equals(object obj)
     {
-        public bool Starred { get; init; }
+        var other = obj as TrimReaction;
+        if (other == null)
+            return false;
+        return Name == other.Name
+               && Starred == other.Starred;
+    }
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as TrimReaction;
-            if (other == null)
-                return false;
-            return Name == other.Name
-                   && Starred == other.Starred;
-        }
+    public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
+        => new NA.TrimStream { Type = Name, Starred = Starred };
 
-        public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
-            => new NA.TrimStream { Type = Name, Starred = Starred };
+    internal override IEnumerable<FC.SignedTag> ToTagActions()
+        => new List<FC.SignedTag>();
 
-        internal override IEnumerable<FC.SignedTag> ToTagActions()
-            => new List<FC.SignedTag>();
-
-        internal override IEnumerable<FC.StackAction> ToStackActions()
-        {
-            throw new System.NotImplementedException();
-        }
+    internal override IEnumerable<FC.StackAction> ToStackActions()
+    {
+        throw new System.NotImplementedException();
     }
 }

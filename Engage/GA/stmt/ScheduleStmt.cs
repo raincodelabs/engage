@@ -1,43 +1,42 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Engage.GA
+namespace Engage.GA;
+
+public class ScheduleStmt : CsStmt
 {
-    public class ScheduleStmt : CsStmt
+    private readonly string _type;
+    private readonly string _var;
+    public List<CsStmt> Code { get; } = new();
+
+    public ScheduleStmt()
     {
-        public string Type;
-        public string Var;
-        public readonly List<CsStmt> Code = new();
+    }
 
-        public ScheduleStmt()
-        {
-        }
+    public ScheduleStmt(string type, string var)
+    {
+        _type = type;
+        _var = var;
+    }
 
-        public ScheduleStmt(string type, string var)
-        {
-            Type = type;
-            Var = var;
-        }
+    public void AddCode(string stmt)
+    {
+        Code.Add(new SimpleStmt(stmt));
+    }
 
-        public void AddCode(string stmt)
-        {
-            Code.Add(new SimpleStmt(stmt));
-        }
+    public void AddCode(CsStmt stmt)
+    {
+        Code.Add(stmt);
+    }
 
-        public void AddCode(CsStmt stmt)
+    public override GC.CsStmt Concretise()
+    {
+        var lambda = new GC.CsComplexStmt
         {
-            Code.Add(stmt);
-        }
-
-        public override GC.CsStmt Concretise()
-        {
-            var lambda = new GC.CsComplexStmt
-            {
-                Before = $"Schedule(typeof({Type}), {Var} =>",
-                After = ");"
-            };
-            lambda.AddCode(Code.Select(x => x.Concretise()));
-            return lambda;
-        }
+            Before = $"Schedule(typeof({_type}), {_var} =>",
+            After = ");"
+        };
+        lambda.AddCode(Code.Select(x => x.Concretise()));
+        return lambda;
     }
 }

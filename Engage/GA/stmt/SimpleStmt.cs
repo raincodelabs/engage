@@ -1,19 +1,18 @@
-﻿namespace Engage.GA
+﻿namespace Engage.GA;
+
+public class SimpleStmt : CsStmt
 {
-    public class SimpleStmt : CsStmt
+    public readonly string Code;
+
+    public SimpleStmt()
     {
-        public readonly string Code;
-
-        public SimpleStmt()
-        {
-        }
-
-        public SimpleStmt(string code)
-        {
-            Code = code;
-        }
-
-        public override GC.CsStmt Concretise()
-            => new GC.CsSimpleStmt(Code);
     }
+
+    public SimpleStmt(string code)
+    {
+        Code = code;
+    }
+
+    public override GC.CsStmt Concretise()
+        => new GC.CsSimpleStmt(Code);
 }

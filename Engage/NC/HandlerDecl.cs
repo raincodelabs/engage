@@ -2,152 +2,151 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Engage.NC
+namespace Engage.NC;
+
+public enum ComboEnum
 {
-    public enum ComboEnum
+    None,
+    Where,
+    While
+}
+
+public class HandlerDecl
+{
+    public Trigger LHS;
+    public Reaction RHS;
+    public ComboEnum ComboType = ComboEnum.None;
+    public readonly List<Assignment> Context = new();
+
+    public override bool Equals(object obj)
     {
-        None,
-        Where,
-        While
+        var other = obj as HandlerDecl;
+        if (other == null)
+        {
+            Console.WriteLine("[x] HandlerDecl compared to non-HandlerDecl");
+            return false;
+        }
+
+        if (!LHS.Equals(other.LHS))
+        {
+            Console.WriteLine("[x] HandlerDecl: LHS mismatch");
+            return false;
+        }
+
+        if (!RHS.Equals(other.RHS))
+        {
+            Console.WriteLine("[x] HandlerDecl: RHS mismatch");
+            return false;
+        }
+
+        if (Context.Count != other.Context.Count)
+        {
+            Console.WriteLine("[x] HandlerDecl: Context count mismatch");
+            return false;
+        }
+
+        if (!Context.SequenceEqual(other.Context))
+        {
+            Console.WriteLine("[x] HandlerDecl: Context mismatch");
+            return false;
+        }
+
+        Console.WriteLine("[√] HandlerDecl == HandlerDecl");
+        return true;
     }
 
-    public class HandlerDecl
+    internal Reaction GetContext(string name)
+        => (from a in Context where a.LHS == name select a.RHS)
+            .FirstOrDefault();
+
+    internal NA.HandlerPlan MakePlan()
     {
-        public Trigger LHS;
-        public Reaction RHS;
-        public ComboEnum ComboType = ComboEnum.None;
-        public readonly List<Assignment> Context = new();
+        var hp = new NA.HandlerPlan();
+        hp.ReactOn = LHS.MakeTokenPlan();
+        hp.GuardFlag = LHS.Flag;
+        ProduceActions(hp.AddAction);
+        return hp;
+    }
 
-        public override bool Equals(object obj)
+    private void ProduceActions(Action<NA.HandleAction> add)
+    {
+        if (ComboType == ComboEnum.While)
         {
-            var other = obj as HandlerDecl;
-            if (other == null)
-            {
-                Console.WriteLine("[x] HandlerDecl compared to non-HandlerDecl");
-                return false;
-            }
-
-            if (!LHS.Equals(other.LHS))
-            {
-                Console.WriteLine("[x] HandlerDecl: LHS mismatch");
-                return false;
-            }
-
-            if (!RHS.Equals(other.RHS))
-            {
-                Console.WriteLine("[x] HandlerDecl: RHS mismatch");
-                return false;
-            }
-
-            if (Context.Count != other.Context.Count)
-            {
-                Console.WriteLine("[x] HandlerDecl: Context count mismatch");
-                return false;
-            }
-
-            if (!Context.SequenceEqual(other.Context))
-            {
-                Console.WriteLine("[x] HandlerDecl: Context mismatch");
-                return false;
-            }
-
-            Console.WriteLine("[√] HandlerDecl == HandlerDecl");
-            return true;
-        }
-
-        internal Reaction GetContext(string name)
-            => (from a in Context where a.LHS == name select a.RHS)
-                .FirstOrDefault();
-
-        internal NA.HandlerPlan MakePlan()
-        {
-            var hp = new NA.HandlerPlan();
-            hp.ReactOn = LHS.MakeTokenPlan();
-            hp.GuardFlag = LHS.Flag;
-            ProduceActions(hp.AddAction);
-            return hp;
-        }
-
-        private void ProduceActions(Action<NA.HandleAction> add)
-        {
-            if (ComboType == ComboEnum.While)
-            {
-                var loop = new NA.WhileStackNotEmpty();
-                foreach (var assignment in Context)
-                {
-                    if (assignment.RHS is PopAction pop)
-                    {
-                        loop.Brancher.AddBranch($"Main.Peek() is {pop.Name}",
-                            $"{assignment.LHS}.Add(Main.Pop() as {pop.Name})");
-                        loop.AddVariable(assignment.LHS, pop.Name);
-                    }
-                    else if (assignment.RHS is DumpReaction dump)
-                    {
-                        if (dump.IsUniversal())
-                            loop.Brancher.AddElse("Main.Pop()");
-                        else
-                            loop.Brancher.AddBranch($"Main.Peek() is {dump.Name}", "Main.Pop()");
-                    }
-                    else
-                    {
-                        Console.WriteLine(
-                            $"[NC->NA] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
-                    }
-                }
-
-                add(loop);
-                add(RHS.ToHandleAction());
-                return;
-            }
-
-            if (Context.Count > 0 && (Context[0].RHS is NC.AwaitAction || Context[0].RHS is NC.AwaitStarAction))
-            {
-                int limit = Context.Count - 1;
-                NA.HandleAction tear = null;
-                if (Context[limit].RHS is NC.TearAction)
-                {
-                    limit--;
-                    tear = Context[^1].RHS.ToHandleAction();
-                }
-
-                // Asynchronously: schedule parsing
-                var act = RHS.ToHandleAction(prev: tear);
-                for (int i = limit; i >= 0; i--)
-                    act = Context[i].RHS.ToHandleAction(Context[i].LHS, act);
-                // add *one* action!
-                add(act);
-            }
-            else if (RHS is NC.WrapReaction)
-            {
-                if (Context.Count > 1 || Context[0].RHS is not NC.PopAction)
-                    Console.WriteLine(
-                        "[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
-                // add one composite action
-                add(RHS.ToHandleAction(NA.SystemPlan.Dealias((Context[0].RHS as NC.PopAction)?.Name)));
-            }
-            else
-            {
-                // Synchronously: just get it from the stack one by one
-                foreach (var ass in Context)
-                    add(ass.RHS.ToHandleAction(ass.LHS));
-                add(RHS.ToHandleAction());
-            }
-        }
-
-        internal FC.Formula MakeFormula()
-        {
-            List<FC.StackAction> sActions = new();
+            var loop = new NA.WhileStackNotEmpty();
             foreach (var assignment in Context)
-                sActions.AddRange(assignment.RHS.ToStackActions());
+            {
+                if (assignment.RHS is PopAction pop)
+                {
+                    loop.Brancher.AddBranch($"Main.Peek() is {pop.Name}",
+                        $"{assignment.LHS}.Add(Main.Pop() as {pop.Name})");
+                    loop.AddVariable(assignment.LHS, pop.Name);
+                }
+                else if (assignment.RHS is DumpReaction dump)
+                {
+                    if (dump.IsUniversal())
+                        loop.Brancher.AddElse("Main.Pop()");
+                    else
+                        loop.Brancher.AddBranch($"Main.Peek() is {dump.Name}", "Main.Pop()");
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"[NC->NA] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
+                }
+            }
 
-            sActions.AddRange(RHS.ToStackActions());
-
-            return new FC.Formula(
-                LHS.Flags,
-                LHS.ToString(),
-                RHS.ToTagActions(),
-                sActions
-            );
+            add(loop);
+            add(RHS.ToHandleAction());
+            return;
         }
+
+        if (Context.Count > 0 && (Context[0].RHS is NC.AwaitAction || Context[0].RHS is NC.AwaitStarAction))
+        {
+            int limit = Context.Count - 1;
+            NA.HandleAction tear = null;
+            if (Context[limit].RHS is NC.TearAction)
+            {
+                limit--;
+                tear = Context[^1].RHS.ToHandleAction();
+            }
+
+            // Asynchronously: schedule parsing
+            var act = RHS.ToHandleAction(prev: tear);
+            for (int i = limit; i >= 0; i--)
+                act = Context[i].RHS.ToHandleAction(Context[i].LHS, act);
+            // add *one* action!
+            add(act);
+        }
+        else if (RHS is NC.WrapReaction)
+        {
+            if (Context.Count > 1 || Context[0].RHS is not NC.PopAction)
+                Console.WriteLine(
+                    "[ERR] the WRAP reaction cannot handle multiple POPs at the moment. Future work!");
+            // add one composite action
+            add(RHS.ToHandleAction(NA.SystemPlan.Dealias((Context[0].RHS as NC.PopAction)?.Name)));
+        }
+        else
+        {
+            // Synchronously: just get it from the stack one by one
+            foreach (var ass in Context)
+                add(ass.RHS.ToHandleAction(ass.LHS));
+            add(RHS.ToHandleAction());
+        }
+    }
+
+    internal FC.Formula MakeFormula()
+    {
+        List<FC.StackAction> sActions = new();
+        foreach (var assignment in Context)
+            sActions.AddRange(assignment.RHS.ToStackActions());
+
+        sActions.AddRange(RHS.ToStackActions());
+
+        return new FC.Formula(
+            LHS.Flags,
+            LHS.ToString(),
+            RHS.ToTagActions(),
+            sActions
+        );
     }
 }
