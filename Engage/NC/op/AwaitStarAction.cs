@@ -1,4 +1,6 @@
-﻿namespace Engage.NC
+﻿using System.Collections.Generic;
+
+namespace Engage.NC
 {
     public class AwaitStarAction : Reaction
     {
@@ -23,6 +25,14 @@
                 BaseAction = prev
             };
             return a;
+        }
+
+        internal override IEnumerable<FC.TagAction> ToTagActions()
+            => new List<FC.TagAction>();
+
+        internal override IEnumerable<FC.StackAction> ToStackActions()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

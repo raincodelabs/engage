@@ -1,8 +1,10 @@
-﻿namespace Engage.NC
+﻿using System.Collections.Generic;
+
+namespace Engage.NC
 {
     public class TrimReaction : Reaction
     {
-        public bool Starred;
+        public bool Starred { get; init; }
 
         public override bool Equals(object obj)
         {
@@ -15,5 +17,13 @@
 
         public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
             => new NA.TrimStream { Type = Name, Starred = Starred };
+
+        internal override IEnumerable<FC.TagAction> ToTagActions()
+            => new List<FC.TagAction>();
+
+        internal override IEnumerable<FC.StackAction> ToStackActions()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

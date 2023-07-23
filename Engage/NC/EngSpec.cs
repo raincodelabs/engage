@@ -143,8 +143,8 @@ namespace Engage.NC
                 result.AddFormula(new Formula(
                     handler.LHS.Flags,
                     handler.LHS.ToString(), // ???
-                    null,
-                    null
+                    handler.RHS.ToTagActions(),
+                    handler.RHS.ToStackActions()
                 ));
                 // public Formula(
                 //     IEnumerable<string> tags,

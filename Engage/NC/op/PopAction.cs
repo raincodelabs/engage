@@ -1,4 +1,6 @@
-﻿namespace Engage.NC
+﻿using System.Collections.Generic;
+
+namespace Engage.NC
 {
     public class PopAction : Reaction
     {
@@ -12,5 +14,11 @@
 
         public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
             => new NA.PopOne { Name = NA.SystemPlan.Dealias(Name), Target = target };
+
+        internal override IEnumerable<FC.TagAction> ToTagActions()
+            => new List<FC.TagAction>();
+
+        internal override IEnumerable<FC.StackAction> ToStackActions()
+            => new List<FC.StackAction> { new FC.StackPop(Name) };
     }
 }

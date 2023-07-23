@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Engage.NC
 {
@@ -22,5 +23,13 @@ namespace Engage.NC
 
         public override NA.HandleAction ToHandleAction(string target = "", NA.HandleAction prev = null)
             => new NA.DumpOne(Name);
+
+        internal override IEnumerable<FC.TagAction> ToTagActions()
+            => new List<FC.TagAction>();
+
+        internal override IEnumerable<FC.StackAction> ToStackActions()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

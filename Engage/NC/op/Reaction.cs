@@ -2,7 +2,7 @@
 
 namespace Engage.NC
 {
-    public class Reaction
+    public abstract class Reaction
     {
         public string Name = "";
 
@@ -11,5 +11,8 @@ namespace Engage.NC
 
         internal virtual IEnumerable<string> GetFlags()
             => new List<string>();
+
+        internal abstract IEnumerable<FC.TagAction> ToTagActions();
+        internal abstract IEnumerable<FC.StackAction> ToStackActions();
     }
 }

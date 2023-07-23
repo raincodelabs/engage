@@ -63,7 +63,7 @@ namespace Engage.NC
         {
             var hp = new NA.HandlerPlan();
             hp.ReactOn = LHS.MakeTokenPlan();
-                hp.GuardFlag = LHS.Flag;
+            hp.GuardFlag = LHS.Flag;
             ProduceActions(hp.AddAction);
             return hp;
         }
@@ -90,7 +90,8 @@ namespace Engage.NC
                     }
                     else
                     {
-                        Console.WriteLine($"[NC->NA] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
+                        Console.WriteLine(
+                            $"[NC->NA] Cannot handle a While clause with {assignment.RHS.GetType().Name}");
                     }
                 }
 

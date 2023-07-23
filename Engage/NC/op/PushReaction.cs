@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Engage.NA;
 
 namespace Engage.NC
 {
@@ -38,5 +37,11 @@ namespace Engage.NC
             => prev is not NA.TearOne t
                 ? new NA.PushNew(Name, Args, "")
                 : new NA.PushNew(Name, Args, $"{t.Name}.{t.Target}");
+
+        internal override IEnumerable<FC.TagAction> ToTagActions()
+            => new List<FC.TagAction>();
+
+        internal override IEnumerable<FC.StackAction> ToStackActions()
+            => new List<FC.StackAction> { new FC.StackPush(Name) };
     }
 }
