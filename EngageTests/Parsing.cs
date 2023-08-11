@@ -22,7 +22,7 @@ public class Parsing
                        "types X; Y <: Z; " +
                        "tokens 'x'::skip string :: Id " +
                        "handlers EOF -> lift TAG";
-        EngSpec result = Engage.FrontEnd.EngSpecFromText(input);
+        EngSpec result = Engage.FrontEnd.TextToNotationConcrete(input);
         Assert.IsNotNull(result);
         Assert.AreEqual("abc", result.NS);
 
@@ -59,7 +59,7 @@ public class Parsing
                        "types tokens handlers " +
                        "EOF -> push String(n) " +
                        "where x := await (Lit upon BRACKET) with CHAR, n := tear x";
-        EngSpec result = Engage.FrontEnd.EngSpecFromText(input);
+        EngSpec result = Engage.FrontEnd.TextToNotationConcrete(input);
         Assert.IsNotNull(result);
         Assert.AreEqual("X", result.NS);
 
@@ -124,7 +124,7 @@ public class Parsing
     private void ProcessFile(string file)
     {
         Console.WriteLine("Found Engage! spec: " + file);
-        EngSpec result = Engage.FrontEnd.EngSpecFromFile(file);
+        EngSpec result = Engage.FrontEnd.FileToNotationConcrete(file);
         Assert.IsNotNull(result);
         Console.WriteLine("Parsed successfully");
     }

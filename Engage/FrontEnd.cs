@@ -14,11 +14,12 @@ using Engage.parsing;
 //      C = concrete (parser code as serialised)
 // Formal-related syntax:
 //      C = concrete (specification as inferred)
+//      A = abstract (state machine)
 namespace Engage;
 
 public static class FrontEnd
 {
-    public static NC.EngSpec EngSpecFromText(string code)
+    public static NC.EngSpec TextToNotationConcrete(string code)
     {
         ICharStream inputStream = CharStreams.fromString(code);
         EngageLexer lexer = new EngageLexer(inputStream);
@@ -32,10 +33,23 @@ public static class FrontEnd
         return listener.Root;
     }
 
-    public static NC.EngSpec EngSpecFromFile(string filename)
-        => EngSpecFromText(File.ReadAllText(filename));
+    public static NC.EngSpec FileToNotationConcrete(string filename)
+        => TextToNotationConcrete(File.ReadAllText(filename));
 
-    private static void FormalPipeline(NC.EngSpec eventSpec, bool verbose = true)
+    private static FC.Specification TextToFormalConcrete(string specText, bool verbose = true)
+    {
+        NC.EngSpec specNC = TextToNotationConcrete(specText);
+        FC.Specification specFC = specNC.Formalise(verbose);
+        return specFC;
+    }
+
+    private static FA.StateMachine TextToFormalAbstract(string specText, bool verbose = true)
+    {
+        FC.Specification specFC = TextToFormalConcrete(specText, verbose);
+        return new FA.StateMachine(specFC);
+    }
+
+    private static string NotationConcreteToDot(NC.EngSpec eventSpec, bool verbose = true)
     {
         if (verbose)
             Console.WriteLine("Engage the formalities!");
@@ -45,19 +59,22 @@ public static class FrontEnd
         FA.StateMachine sm = new(spec);
         if (verbose)
             Console.WriteLine("FA-level machine inferred!");
-        File.WriteAllText("machine.dot", sm.ToDot());
-        if (verbose)
-            Console.WriteLine("Graphviz file written!");
+        return sm.ToDot();
     }
 
     public static void FullPipeline(string inputFile, string outputFolder, bool verbose = true)
     {
         if (verbose)
             Console.WriteLine("Engage!");
-        NC.EngSpec spec = EngSpecFromFile(inputFile);
+        NC.EngSpec spec = FileToNotationConcrete(inputFile);
         if (verbose)
             Console.WriteLine("NC-level spec read!");
-        FormalPipeline(spec);
+
+        var dot = NotationConcreteToDot(spec);
+        File.WriteAllText("machine.dot", dot);
+        if (verbose)
+            Console.WriteLine("Graphviz file written!");
+
         NA.SystemPlan plan = spec.MakePlan();
         if (verbose)
             Console.WriteLine("NA-level plan made!");

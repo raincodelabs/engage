@@ -571,7 +571,7 @@ public class Tests
     [TestMethod]
     public void TryAppBuilder()
     {
-        var spec = Engage.FrontEnd.EngSpecFromFile(Path.Combine(FourUp, "AB", "spec", "appbuilder.eng"));
+        var spec = Engage.FrontEnd.FileToNotationConcrete(Path.Combine(FourUp, "AB", "spec", "appbuilder.eng"));
         Assert.IsNotNull(spec);
     }
 
