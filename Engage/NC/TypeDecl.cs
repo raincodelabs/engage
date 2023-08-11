@@ -5,7 +5,7 @@ namespace Engage.NC;
 
 public class TypeDecl
 {
-    public List<string> Names = new();
+    public readonly List<string> Names = new();
     public string Super = "";
 
     public override bool Equals(object obj)
@@ -18,4 +18,8 @@ public class TypeDecl
                && Names.SequenceEqual(other.Names)
             ;
     }
+
+    public override int GetHashCode()
+        => Super.GetHashCode()
+           + Names.Select(name => name.GetHashCode()).Sum();
 }

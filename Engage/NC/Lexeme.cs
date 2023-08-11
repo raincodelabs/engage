@@ -9,12 +9,11 @@ public class Lexeme
 
 public class LiteralLex : Lexeme
 {
-    public string Literal;
+    public readonly string Literal;
 
     public override bool Equals(object obj)
     {
-        var other = obj as LiteralLex;
-        if (other == null)
+        if (obj is not LiteralLex other)
         {
             Console.WriteLine("[x] LiteralLex compared to non-LiteralLex");
             return false;
@@ -35,8 +34,12 @@ public class LiteralLex : Lexeme
         return true;
     }
 
+    public override int GetHashCode()
+        => Literal.GetHashCode();
+
     public LiteralLex()
     {
+        Literal = String.Empty;
     }
 
     public LiteralLex(string q)
@@ -52,40 +55,39 @@ public class NumberLex : Lexeme
 {
     public override bool Equals(object obj)
     {
-        var other = obj as NumberLex;
-        if (other == null)
+        if (obj is not NumberLex other)
         {
             Console.WriteLine("[x] NumberLex compared to non-NumberLex");
             return false;
         }
 
-        if (Special != other.Special)
-        {
-            Console.WriteLine($"[x] NumberLex: Special mismatch");
-            return false;
-        }
+        if (Special == other.Special) return true;
 
-        return true;
+        Console.WriteLine("[x] NumberLex: Special mismatch");
+        return false;
     }
+
+    public override int GetHashCode()
+        => Special.GetHashCode();
 }
 
 public class StringLex : Lexeme
 {
     public override bool Equals(object obj)
     {
-        var other = obj as StringLex;
-        if (other == null)
+        if (obj is not StringLex other)
         {
             Console.WriteLine("[x] StringLex compared to non-StringLex");
             return false;
         }
 
-        if (Special != other.Special)
-        {
-            Console.WriteLine($"[x] StringLex: Special mismatch");
-            return false;
-        }
+        if (Special == other.Special) return true;
+        
+        Console.WriteLine("[x] StringLex: Special mismatch");
+        return false;
 
-        return true;
     }
+
+    public override int GetHashCode()
+        => Special.GetHashCode();
 }

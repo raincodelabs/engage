@@ -26,8 +26,7 @@ public class TerminalTrigger : Trigger
 
     public override bool Equals(object obj)
     {
-        var other = obj as TerminalTrigger;
-        if (other == null)
+        if (obj is not TerminalTrigger other)
         {
             Console.WriteLine("[x] Terminal trigger compared to something else");
             return false;
@@ -49,6 +48,9 @@ public class TerminalTrigger : Trigger
         return true;
     }
 
+    public override int GetHashCode()
+        => Value.GetHashCode() + Flag.GetHashCode();
+
     public override string ToString()
         => $"'{Value}'";
 
@@ -67,8 +69,7 @@ public class NonterminalTrigger : Trigger
 
     public override bool Equals(object obj)
     {
-        var other = obj as NonterminalTrigger;
-        if (other == null)
+        if (obj is not NonterminalTrigger other)
         {
             Console.WriteLine("[x] Nonterminal trigger compared to something else");
             return false;
@@ -89,6 +90,9 @@ public class NonterminalTrigger : Trigger
         Console.WriteLine("[√] Trigger == Trigger");
         return true;
     }
+
+    public override int GetHashCode()
+        => Value.GetHashCode() + Flag.GetHashCode();
 
     public override string ToString()
         => Value;
@@ -122,8 +126,7 @@ public class SpecialTrigger : Trigger
 
     public override bool Equals(object obj)
     {
-        var other = obj as SpecialTrigger;
-        if (other == null)
+        if (obj is not SpecialTrigger other)
         {
             Console.WriteLine("[x] Special trigger compared to something else");
             return false;
@@ -144,6 +147,10 @@ public class SpecialTrigger : Trigger
         Console.WriteLine("[√] Trigger == Trigger");
         return true;
     }
+
+    public override int GetHashCode()
+        => Value.GetHashCode() + Flag.GetHashCode();
+
 
     public override string ToString()
         => Value;

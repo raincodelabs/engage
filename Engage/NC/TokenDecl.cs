@@ -6,13 +6,12 @@ namespace Engage.NC;
 
 public class TokenDecl
 {
-    public List<Lexeme> Names = new List<Lexeme>();
+    public readonly List<Lexeme> Names = new();
     public string Type;
 
     public override bool Equals(object obj)
     {
-        var other = obj as TokenDecl;
-        if (other == null)
+        if (obj is not TokenDecl other)
         {
             Console.WriteLine("[x] TokenDecl compared to non-TokenDecl");
             return false;
@@ -39,16 +38,20 @@ public class TokenDecl
         return true;
     }
 
+    public override int GetHashCode()
+        => Type.GetHashCode()
+           + Names.Select(name => name.GetHashCode()).Sum();
+
     internal List<NA.TokenPlan> MakePlans()
     {
         var ts = new List<NA.TokenPlan>();
         foreach (var a in Names)
             if (a is NC.NumberLex)
-                ts.Add(new NA.TokenPlan() { Special = true, Value = "number" });
+                ts.Add(new NA.TokenPlan { Special = true, Value = "number" });
             else if (a is NC.StringLex)
-                ts.Add(new NA.TokenPlan() { Special = true, Value = "string" });
+                ts.Add(new NA.TokenPlan { Special = true, Value = "string" });
             else if (a is NC.LiteralLex al)
-                ts.Add(new NA.TokenPlan() { Special = false, Value = al.Literal });
+                ts.Add(new NA.TokenPlan { Special = false, Value = al.Literal });
         return ts;
     }
 }
