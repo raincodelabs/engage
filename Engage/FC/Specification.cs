@@ -11,14 +11,17 @@ public class Specification
     public void AddFormula(Formula f)
         => _formulae.Add(f);
 
-    public void Normalise()
+    public void Normalise(bool verbose = true)
     {
+        if (verbose)
+            PrintThis();
         Console.WriteLine("Merging duplicates...");
         MergeLeftDuplicates();
         Console.WriteLine("Distributing triggers...");
         DistributeUnflaggedTriggers();
         Console.WriteLine("Normalised specification:");
-        PrintThis();
+        if (verbose)
+            PrintThis();
     }
 
     private void DistributeUnflaggedTriggers()
@@ -42,19 +45,16 @@ public class Specification
             foreach (var unflaggedFormula in unflagged)
             {
                 List<Formula> toReverse = new();
-                foreach (var flaggedFormula in flagged)
+                foreach (var flaggedFormula in flagged
+                             .Where(formula => formula.InputEquals(unflaggedFormula)))
                 {
-                    if (flaggedFormula.InputEquals(unflaggedFormula))
-                    {
-                        adequate.Add(new Formula(flaggedFormula, unflaggedFormula));
-                        toReverse.Add(flaggedFormula);
-                    }
+                    adequate.Add(new Formula(flaggedFormula, unflaggedFormula));
+                    toReverse.Add(flaggedFormula);
                 }
 
-                if (toReverse.Any())
-                    adequate.Add(new Formula(unflaggedFormula, toReverse));
-                else
-                    adequate.Add(unflaggedFormula);
+                adequate.Add(toReverse.Any()
+                    ? new Formula(unflaggedFormula, toReverse)
+                    : unflaggedFormula);
             }
 
             adequate.AddRange(

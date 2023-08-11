@@ -129,15 +129,14 @@ public class EngSpec
         Console.WriteLine($"[NC->NA] Inferred flags: Boolean {plan.AllBoolFlags()}; counter {plan.AllIntFlags()}");
     }
 
-    internal FC.Specification Formalise()
+    internal FC.Specification Formalise(bool verbose = true)
     {
         var result = new FC.Specification();
+        var i = 1;
         foreach (var handler in Handlers)
-        {
-            result.AddFormula(handler.MakeFormula());
-        }
+            result.AddFormula(handler.MakeFormula(i++));
 
-        result.Normalise();
+        result.Normalise(verbose);
 
         return result;
     }

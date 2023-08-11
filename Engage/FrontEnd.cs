@@ -35,12 +35,19 @@ public static class FrontEnd
     public static NC.EngSpec EngSpecFromFile(string filename)
         => EngSpecFromText(File.ReadAllText(filename));
 
-    private static void FormalPipeline(NC.EngSpec eventSpec)
+    private static void FormalPipeline(NC.EngSpec eventSpec, bool verbose = true)
     {
-        FC.Specification spec = eventSpec.Formalise();
-        spec.PrintThis();
+        if (verbose)
+            Console.WriteLine("Engage the formalities!");
+        FC.Specification spec = eventSpec.Formalise(verbose);
+        if (verbose)
+            Console.WriteLine("FC-level spec created from the NC-level spec!");
         FA.StateMachine sm = new(spec);
+        if (verbose)
+            Console.WriteLine("FA-level machine inferred!");
         File.WriteAllText("machine.dot", sm.ToDot());
+        if (verbose)
+            Console.WriteLine("Graphviz file written!");
     }
 
     public static void FullPipeline(string inputFile, string outputFolder, bool verbose = true)

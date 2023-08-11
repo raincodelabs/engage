@@ -6,6 +6,7 @@ namespace Engage.FC;
 
 public class Formula
 {
+    private readonly string _origin;
     private readonly List<SignedFlag> _flags = new();
     private readonly string _input;
     private readonly List<SignedFlag> _flagActions = new();
@@ -15,11 +16,13 @@ public class Formula
     public string Input => _input;
 
     public Formula(
+        int tracebackNumber,
         IEnumerable<string> flags,
         string input,
         IEnumerable<SignedFlag> tActions,
         IEnumerable<StackAction> sActions)
     {
+        _origin = $"#{tracebackNumber}";
         if (flags != null)
             foreach (var flag in flags)
                 if (!String.IsNullOrWhiteSpace(flag))
@@ -38,6 +41,7 @@ public class Formula
     /// </summary>
     public Formula(Formula f1, Formula f2)
     {
+        _origin = $"{f1._origin} & {f2._origin}";
         _flags.AddRange(f1._flags); // assume f2.Flags are the same
         _input = f1._input; // assume f2.Input is the same
         _flagActions.AddRange(f1._flagActions);
@@ -52,6 +56,14 @@ public class Formula
     /// </summary>
     public Formula(Formula f1, IEnumerable<Formula> revFs)
     {
+        //// The following (commented) code would have given the full traceability.
+        // var x = new List<string> { f1._origin };
+        // x.AddRange(revFs.Select(f => f._origin));
+        // x.Sort();
+        // _origin = String.Join(" & ", x);
+        //// However, we only need to remember one main origin, the rest just gives it context:
+        _origin = f1._origin;
+
         _flags.AddRange(f1._flags);
         foreach (var formula in revFs)
         foreach (var flag in formula._flags)
@@ -80,15 +92,15 @@ public class Formula
 
     public override string ToString()
     {
-        List<string> elements = new();
-        if (_flags != null && _flags.Count > 0)
+        List<string> elements = new() { $"({_origin})" };
+        if (_flags is { Count: > 0 })
             elements.Add("[" + String.Join(",", _flags) + "]");
         if (!String.IsNullOrEmpty(_input))
             elements.Add(_input);
         elements.Add("-->");
-        if (_flagActions != null && _flagActions.Count > 0)
+        if (_flagActions is { Count: > 0 })
             elements.Add("[" + String.Join(",", _flagActions) + "]");
-        if (_stackActions != null && _stackActions.Count > 0)
+        if (_stackActions is { Count: > 0 })
             elements.Add("{" + String.Join(",", _stackActions) + "}");
         return String.Join(" ", elements);
     }

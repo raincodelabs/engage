@@ -134,7 +134,7 @@ public class HandlerDecl
         }
     }
 
-    internal FC.Formula MakeFormula()
+    internal FC.Formula MakeFormula(int handlerNumber)
     {
         List<FC.StackAction> sActions = new();
         foreach (var assignment in Context)
@@ -143,6 +143,7 @@ public class HandlerDecl
         sActions.AddRange(RHS.ToStackActions());
 
         return new FC.Formula(
+            handlerNumber,
             LHS.Flags,
             LHS.ToString(),
             RHS.ToFlagActions(),
