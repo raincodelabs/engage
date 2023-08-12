@@ -36,14 +36,14 @@ public static class FrontEnd
     public static NC.EngSpec FileToNotationConcrete(string filename)
         => TextToNotationConcrete(File.ReadAllText(filename));
 
-    private static FC.Specification TextToFormalConcrete(string specText, bool verbose = true)
+    public static FC.Specification TextToFormalConcrete(string specText, bool verbose = true)
     {
         NC.EngSpec specNC = TextToNotationConcrete(specText);
         FC.Specification specFC = specNC.Formalise(verbose);
         return specFC;
     }
 
-    private static FA.StateMachine TextToFormalAbstract(string specText, bool verbose = true)
+    public static FA.StateMachine TextToFormalAbstract(string specText, bool verbose = true)
     {
         FC.Specification specFC = TextToFormalConcrete(specText, verbose);
         return new FA.StateMachine(specFC);
